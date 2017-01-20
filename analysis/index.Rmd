@@ -5,6 +5,8 @@ output:
     toc: false
 ---
 
+Click on this [link](first-analysis.html) to see my results.
+
 The goal of this new template is to simplify the setup and maintenance of a research website.
 Specifically,
 
