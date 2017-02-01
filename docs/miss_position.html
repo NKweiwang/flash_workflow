@@ -9,9 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="wei wang" />
 
+<meta name="date" content="2017-01-30" />
 
-<title>Home</title>
+<title>corss validation of missing value</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +21,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
@@ -162,6 +167,101 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -202,12 +302,89 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">corss validation of missing value</h1>
+<h4 class="author"><em>wei wang</em></h4>
+<h4 class="date"><em>2017-01-30</em></h4>
 
 </div>
 
 
-<p>Click on this <a href="miss_position.html">orthogonal CV</a> to see my example.</p>
+<p><strong>Last updated:</strong> 2017-02-01</p>
+<p><strong>Code version:</strong> b1a6a3c</p>
+<div id="fold-cv" class="section level2">
+<h2>5-fold CV</h2>
+<p>start from five fold and can easily extend to 10 fold or K -fold.</p>
+<div id="code" class="section level3">
+<h3>code</h3>
+<p>To generate the cross validation data for missing value, I randomly pick the missing possition for each fold.</p>
+<p>the code is like the following:</p>
+<pre class="r"><code>cross_plot = function(Y,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = k_fold)
+  rowindex = matrix(sample(N,N),ncol = k_fold)
+  
+  missing= array(0,dim = c(k_fold,N,P))
+  foldindex = array(0,dim = c(k_fold,k_fold,2))
+  for(i in 1:k_fold){
+    for(j in 1:k_fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% k_fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = k_fold
+  for(i in 1:k_fold){
+    missing[i, , ] = Y
+    for(j in 1:k_fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  par(mfrow = c(2,3), mar = (c(5,4,4,2)-1.9))
+  image(Y,main = &quot;data Y&quot;)
+  for(i in 1:k_fold){
+    image(missing[i,,],main = &quot;missing data&quot;)
+  }
+  return(missing)
+}</code></pre>
+</div>
+<div id="block-design" class="section level3">
+<h3>block design</h3>
+<p>Starting from simplest case, where Y is <span class="math inline">\(5 \times 5\)</span> matrix.</p>
+<pre class="r"><code>N = 5
+P = 5
+Y = matrix(rep(1,N*P),ncol =  P)
+g = cross_plot(Y)</code></pre>
+<p><img src="figure/miss_position.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="permute-rows-and-columns" class="section level3">
+<h3>permute rows and columns</h3>
+<p>for larger matrix</p>
+<pre class="r"><code>N = 50
+P = 100
+Y = matrix(rep(1,N*P),ncol =  P)
+g = cross_plot(Y)</code></pre>
+<p><img src="figure/miss_position.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /> ## Session Information</p>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.12.3 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] workflowr_0.3.0 rmarkdown_1.3  
+
+loaded via a namespace (and not attached):
+ [1] backports_1.0.5 magrittr_1.5    rprojroot_1.2   htmltools_0.3.5
+ [5] tools_3.3.0     rstudioapi_0.6  yaml_2.1.14     Rcpp_0.12.8    
+ [9] stringi_1.1.1   knitr_1.15.1    git2r_0.18.0    stringr_1.1.0  
+[13] digest_0.6.11   evaluate_0.10  </code></pre>
+</div>
+</div>
 
 <hr>
 <p>
@@ -235,6 +412,8 @@ $(document).ready(function () {
 -->
 
 
+</div>
+</div>
 
 </div>
 
