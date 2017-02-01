@@ -1,0 +1,87 @@
+---
+title: "corss validation of missing value"
+author: "wei wang"
+date: 2017-01-30
+output: html_document
+---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
+## 5-fold CV
+
+start from five fold and can easily extend to 10 fold or K -fold.
+
+### code
+
+To generate the cross validation data for missing value, I randomly pick the missing possition for each fold.
+
+the code is like the following:
+
+```{r}
+
+cross_plot = function(Y,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = k_fold)
+  rowindex = matrix(sample(N,N),ncol = k_fold)
+  
+  missing= array(0,dim = c(k_fold,N,P))
+  foldindex = array(0,dim = c(k_fold,k_fold,2))
+  for(i in 1:k_fold){
+    for(j in 1:k_fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% k_fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = k_fold
+  for(i in 1:k_fold){
+    missing[i, , ] = Y
+    for(j in 1:k_fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  par(mfrow = c(2,3), mar = (c(5,4,4,2)-1.9))
+  image(Y,main = "data Y")
+  for(i in 1:k_fold){
+    image(missing[i,,],main = "missing data")
+  }
+  return(missing)
+}
+
+```
+
+### block design
+
+Starting from simplest case, where Y is $5 \times 5$ matrix.
+
+```{r}
+N = 5
+P = 5
+Y = matrix(rep(1,N*P),ncol =  P)
+g = cross_plot(Y)
+```
+
+
+### permute rows and columns
+
+for larger matrix
+
+```{r}
+N = 50
+P = 100
+Y = matrix(rep(1,N*P),ncol =  P)
+g = cross_plot(Y)
+```
+## Session Information
+
+```{r session-info}
+```
