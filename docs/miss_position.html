@@ -309,9 +309,18 @@ div.tocify {
 </div>
 
 
-<p><strong>Last updated:</strong> 2017-02-01</p>
-<p><strong>Code version:</strong> b1a6a3c</p>
+<p><strong>Last updated:</strong> 2017-02-02</p>
+<p><strong>Code version:</strong> c78d381</p>
 <div id="fold-cv" class="section level2">
+<h2>3-fold CV</h2>
+<p>take 3-fold CV as example. We want to divide the data <span class="math inline">\(Y\)</span> in to 3 parts to do 3-fold CV. We randomly divide the the columns into 3 sets and the rows into 3 sets as well. The data matrix <span class="math inline">\(Y\)</span> is divided into 9 partition (by row and column permutation):</p>
+<p><span class="math display">\[Y = \begin{pmatrix} Y_{11} &amp; Y_{12} &amp; Y_{13} \\ Y_{21} &amp; Y_{22} &amp; Y_{23} \\ Y_{31} &amp; Y_{32} &amp; Y_{33} \end{pmatrix}\]</span></p>
+<p>Then <span class="math inline">\(Y_{(1)} = \{ Y_{11}, Y_{22} , Y_{33}\}\)</span>, <span class="math inline">\(Y_{(2)} = \{ Y_{12}, Y_{23} , Y_{31}\}\)</span> and <span class="math inline">\(Y_{(3)} = \{ Y_{13}, Y_{21} , Y_{32}\}\)</span> are orthogonal to each other. Then the data matrix <span class="math inline">\(Y\)</span> is marked as: <span class="math display">\[Y = \begin{pmatrix} Y_{(1)} &amp; Y_{(2)} &amp; Y_{(3)} \\ Y_{(3)} &amp; Y_{(1)} &amp; Y_{(2)} \\ Y_{(2)} &amp; Y_{(3)} &amp; Y_{(1)} \end{pmatrix}\]</span></p>
+<p>For complete data set, we would use scheme 1. The imputation methods we consider are based on the model with low rank structure: <span class="math inline">\(LF^T\)</span>, so each <span class="math inline">\(Y_{(i)}\)</span> in scheme 1 contains equally one set of indices of <span class="math inline">\(L_{.k}\)</span> and <span class="math inline">\(F_{k.}\)</span>. This also helps to make sure that all <span class="math inline">\(i\)</span>’s and <span class="math inline">\(j\)</span>’s are included into each <span class="math inline">\(Y_{-(i)}\)</span>. Otherwise, we can’t make prediction when some times whole columns or rows are missing.</p>
+<p><span class="math display">\[Y=  \begin{pmatrix} Y_{11} &amp; Y_{12} \\ Y_{21} &amp; Y_{22}  \end{pmatrix}= \begin{bmatrix} L^{(1)}F^{(1)} &amp; L^{(1)}F^{(2)} \\ L^{(2)}F^{(1)} &amp; L^{(2)}F^{(2)} \end{bmatrix} + E = \left[ \begin{array}{c} L^{(1)} \\ L^{(2)} \end{array} \right] \times \left[ \begin{array}{cc} F^{(1)}&amp; F^{(2)} \end{array} \right] + E\]</span></p>
+<p>In this case, <span class="math inline">\(Y_{(1)} = \{ Y_{11}, Y_{22} \}\)</span>, <span class="math inline">\(Y_{(2)} = \{ Y_{12}, Y_{21} \}\)</span>, and each of <span class="math inline">\(L^{(1)},F^{(1)},L^{(2)},F^{(2)}\)</span> shows up in both <span class="math inline">\(Y_{(1)}\)</span> and <span class="math inline">\(Y_{(2)}\)</span> so the information contains in each <span class="math inline">\(Y_{(i)}\)</span> are in balance.</p>
+</div>
+<div id="fold-cv-1" class="section level2">
 <h2>5-fold CV</h2>
 <p>start from five fold and can easily extend to 10 fold or K -fold.</p>
 <div id="code" class="section level3">
@@ -380,9 +389,9 @@ other attached packages:
 
 loaded via a namespace (and not attached):
  [1] backports_1.0.5 magrittr_1.5    rprojroot_1.2   htmltools_0.3.5
- [5] tools_3.3.0     rstudioapi_0.6  yaml_2.1.14     Rcpp_0.12.8    
- [9] stringi_1.1.1   knitr_1.15.1    git2r_0.18.0    stringr_1.1.0  
-[13] digest_0.6.11   evaluate_0.10  </code></pre>
+ [5] tools_3.3.0     yaml_2.1.14     Rcpp_0.12.8     stringi_1.1.1  
+ [9] knitr_1.15.1    git2r_0.18.0    stringr_1.1.0   digest_0.6.11  
+[13] evaluate_0.10  </code></pre>
 </div>
 </div>
 
