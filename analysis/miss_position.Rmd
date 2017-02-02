@@ -16,6 +16,22 @@ knitr::read_chunk("chunks.R")
 
 **Code version:** `r workflowr::extract_commit(".", 1)$sha1`
 
+## 3-fold CV
+
+take 3-fold CV as example. We want to divide the data $Y$ in to 3 parts to do 3-fold CV. We randomly divide the the columns into 3 sets and the rows into 3 sets as well. The data matrix $Y$ is divided into 9 partition (by row and column permutation):
+
+$$Y = \begin{pmatrix} Y_{11} & Y_{12} & Y_{13} \\ Y_{21} & Y_{22} & Y_{23} \\ Y_{31} & Y_{32} & Y_{33} \end{pmatrix}$$
+
+Then $Y_{(1)} = \{  Y_{11},  Y_{22} , Y_{33}\}$, $Y_{(2)} = \{  Y_{12},  Y_{23} , Y_{31}\}$ and $Y_{(3)} = \{  Y_{13},  Y_{21} , Y_{32}\}$ are orthogonal to each other. Then the data matrix $Y$ is marked as:
+$$Y = \begin{pmatrix} Y_{(1)} & Y_{(2)} & Y_{(3)} \\ Y_{(3)} & Y_{(1)} & Y_{(2)} \\ Y_{(2)} & Y_{(3)} & Y_{(1)} \end{pmatrix}$$
+
+For complete data set, we would use scheme 1. The imputation methods we consider are based on the model with low rank structure: $LF^T$, so each $Y_{(i)}$ in scheme 1 contains equally one set of indices of $L_{.k}$ and $F_{k.}$. This also helps to make sure that all $i$'s and $j$'s are included into each $Y_{-(i)}$. Otherwise, we can't make prediction when some times whole columns or rows are missing.
+
+$$Y=  \begin{pmatrix} Y_{11} & Y_{12} \\ Y_{21} & Y_{22}  \end{pmatrix}= \begin{bmatrix} L^{(1)}F^{(1)} & L^{(1)}F^{(2)} \\ L^{(2)}F^{(1)} & L^{(2)}F^{(2)} \end{bmatrix} + E = \left[ \begin{array}{c} L^{(1)} \\ L^{(2)} \end{array} \right] \times \left[ \begin{array}{cc} F^{(1)}& F^{(2)} \end{array} \right] + E$$
+
+In this case, $Y_{(1)} = \{  Y_{11},  Y_{22} \}$, $Y_{(2)} = \{  Y_{12},  Y_{21} \}$, and each of $L^{(1)},F^{(1)},L^{(2)},F^{(2)}$ shows up in both $Y_{(1)}$ and $Y_{(2)}$ so the information contains in each $Y_{(i)}$ are in balance.
+
+
 ## 5-fold CV
 
 start from five fold and can easily extend to 10 fold or K -fold.
