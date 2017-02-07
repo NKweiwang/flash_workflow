@@ -1,0 +1,58 @@
+---
+title: "outline of questions"
+author: "Wei Wang"
+date: 2017-02-07
+output: html_document
+---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
+
+## list of questions
+
+let's write the $X$ into $2 \times2$ partitions.
+
+$$X=  \begin{pmatrix} X_{11} & X_{12} \\ X_{21} & X_{22}  \end{pmatrix}= \left[ \begin{array}{c} U_{1} \\ U_{2} \end{array} \right] \Gamma \left[ \begin{array}{cc} V_{1}^{T}& V_{2}^{T} \end{array} \right] $$
+
+### 1 algorithm to find original svd
+
+we want to find a solution for 
+
+\begin{eqnarray}
+&\min_{U,V,\Gamma}& ||X_{11} - U_1 \Gamma V_1^T||_2 + ||X_{22} - U_2 \Gamma V_2^T||_2 \\
+&st& U_1 U_1^T +  U_2 U_2^T = I \\
+& & V_1 V_1^T +  V_2 V_2^T = I
+\end{eqnarray}
+
+#### 1.1 convexity of this problem
+
+- We are not sure if this optimazation problem is convex or not.
+
+#### 1.2 uniqueness of the solution
+
+- The solution of the above problem is unique or not?
+
+#### 1.3 computational complexity
+
+- To solve this problem might be more computationaly intensive comparing with BCV which just need to calculate svd and general inverse.
+
+### 2 separate svd vs original svd
+
+we know that 
+
+\begin{eqnarray}
+X_{11} = U_1 \Gamma V_1^T \\
+X_{22} = U_2 \Gamma V_2^T
+\end{eqnarray}
+
+but $U_1 \Gamma V_1^T$ is not SVD for $X_{11}$. On the other hand, if we combine the svd for $X_{11} = \tilde{U}_1 \Sigma_{11}\tilde{V}_1$ and that for $X_{22} = \tilde{U}_2 \Sigma_{22}\tilde{V}_2$, the combining columns $\left[ \begin{array}{c} \tilde{U}_{1} \\ \tilde{U}_{2} \end{array}  \right]$ is not the original svd $\left[ \begin{array}{c} U_{1} \\ U_{2} \end{array} \right]$. It's because $\tilde{U}_{1}$ and $\tilde{U}_{2}$ just contains local information for $X_{11}$ and $X_{22}$.
+

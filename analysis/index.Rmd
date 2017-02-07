@@ -6,3 +6,5 @@ output:
 ---
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
+
+Click on this [Questions on Algorithm](first-analysis.html) to see more details.
