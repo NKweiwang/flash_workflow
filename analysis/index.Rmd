@@ -13,4 +13,4 @@ Click on this [Questions on Algorithm](first-analysis.html) to see more details.
 
 ### flash on the chipseq data from Kevin
 
-Click on this [three data sets on the 4500 rows chr1](sd_chr1_asinh.html) to see more details.
+Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html) to see more details.
