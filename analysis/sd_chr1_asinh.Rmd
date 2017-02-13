@@ -1,0 +1,91 @@
+---
+title: "FLASH on chrommarks_chipcounts_example_regions"
+author: "wei wang"
+date: 2017-02-09
+output: html_document
+---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
+```{r,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE}
+
+#GM12878 = readRDS("~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/GM12878_10marks_meanChIP_chr1_region_asinh.rds")
+#Y = GM12878[,1:9]
+#g_flash = flashr::greedy(Y, K = 8, flash_para = list(partype = "var_col"))
+#b_flash = flashr::backfitting(Y,initial_list = g_flash, flash_para = list(partype = "var_col"), maxiter_bf = 10)
+#FL_GM = b_flash
+#saveRDS(FL_GM, "~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/FL_GM_var_col.rds")
+FL_GM = readRDS("~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/FL_GM_var_col.rds")
+```
+
+
+```{r,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE}
+
+HUVEC = readRDS("~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/HUVEC_10marks_meanChIP_chr1_region_asinh.rds")
+#Y = HUVEC[,1:9]
+#g_flash = flashr::greedy(Y, K = 8, flash_para = list(partype = "var_col"))
+#b_flash = flashr::backfitting(Y,initial_list = g_flash, flash_para = list(partype = "var_col"), maxiter_bf = 10)
+#FL_HUVEC = b_flash
+#saveRDS(FL_HUVEC, "~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/FL_HUVEC_var_col.rds")
+```
+
+
+```{r,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE}
+#K562 = readRDS("~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/K562_10marks_meanChIP_chr1_region_asinh.rds")
+#Y = K562[,1:9]
+#g_flash = flashr::greedy(Y, K = 8, flash_para = list(partype = "var_col"))
+#b_flash = flashr::backfitting(Y,initial_list = g_flash, flash_para = list(partype = "var_col"), maxiter_bf = 10)
+#FL_K562 = b_flash
+#saveRDS(FL_K562, "~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/FL_K562_var_col.rds")
+FL_K562 = readRDS("~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/FL_K562_var_col.rds")
+```
+
+
+```{r,cache=TRUE,eval=TRUE,message=FALSE,warning=FALSE}
+#NHLF = readRDS("~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/NHLF_10marks_meanChIP_chr1_region_asinh.rds")
+#Y = NHLF[,1:9]
+#g_flash = flashr::greedy(Y, K = 8, flash_para = list(partype = "var_col"))
+#b_flash = flashr::backfitting(Y,initial_list = g_flash, flash_para = list(partype = "var_col"), maxiter_bf = 10)
+#FL_NHLF = b_flash
+#saveRDS(FL_NHLF, "~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/FL_NHLF_var_col.rds")
+FL_NHLF = readRDS("~/HG/flash_workflow/data/chrommarks_chipcounts_example_regions/FL_NHLF_var_col.rds")
+```
+
+## factor plot
+
+### GM12878
+
+```{r,echo=FALSE}
+par(mfrow = c(2,2))
+for(i in 1:4) barplot(FL_GM$f[,i],names = colnames(HUVEC)[1:9],main = paste("factor",i,":GM12878"),las = 2,cex.names = 0.6)
+```
+
+
+### K562
+
+```{r,echo=FALSE}
+par(mfrow = c(2,3))
+for(i in 1:5) barplot(FL_K562$f[,i],names = colnames(HUVEC)[1:9],main = paste("factor",i,"K562"),las = 2,cex.names = 0.6)
+```
+
+### NHLF
+
+```{r,echo=FALSE}
+par(mfrow = c(2,3))
+for(i in 1:5) barplot(FL_NHLF$f[,i],names = colnames(HUVEC)[1:9],main = paste("factor",i,"NHLF"),las = 2,cex.names = 0.6)
+```
+
+
+## Session Information
+
+```{r session-info}
+```
