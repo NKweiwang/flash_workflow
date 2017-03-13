@@ -8,6 +8,7 @@ output:
 ### simulation studies
 
 
+
 ### Orthogonal CV
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
@@ -23,6 +24,16 @@ Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html
 #### missing data imputation
 
 #### gene expression data
+
+### further issues
+
+#### NMF
+
+#### tensor flash
+
+
+
+
 
 
 
