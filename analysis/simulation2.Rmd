@@ -1,0 +1,88 @@
+---
+title: "Simulation with rank 2"
+author: "Wei Wang"
+date: 2017-03-13
+output: html_document
+---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
+## simulated data
+
+```{r}
+set.seed(99)
+library("MASS")
+betaO=function(P,betapi,betasigma,propt){
+  idx=rmultinom(P,size=1,prob=betapi)
+  K=length(betapi)
+  s=array(0,dim=c(K,K))
+  diag(s)=betasigma
+  bnorm=mvrnorm(P,rep(0,K),s)
+  betaO=apply(bnorm*t(idx),1,sum)
+  betaO=betaO*rbinom(P,1,propt)
+  return(betaO)
+}
+N = 180
+P = 300
+K = 2
+L_true = array(0,dim = c(N,K))
+F_true = array(0,dim = c(P,K))
+F_true[,1] = rnorm(P,0,1)
+F_true[,2] = rnorm(P,0,1)
+# F_true = scale(F_true)
+rho = rnorm(N,1.96,0.6)
+L_true[,1] = rho * sin(pi*(seq(1,N)/(N/2)))
+L_true[,2] = rho * cos(pi*(seq(1,N)/(N/2)))
+group1_index = c(31:60,121:150)
+group2_index = c(1:15,76:105,166:180)
+group3_index = seq(1:180)[-(union(group1_index,group2_index))]
+# G = L_true %*% t(F_true)
+# generate Y
+E = matrix(rnorm(N*P,0,1),nrow=N)
+Y = L_true %*% t(F_true) + E
+par(mfrow = c(1,1), mar = c(5,4,4,2) - 1.9,pty="s")
+plot(L_true[,1],L_true[,2],col = "green")
+points(L_true[group1_index,1],L_true[group1_index,2],col = "green")
+points(L_true[group2_index,1],L_true[group2_index,2],col = "red")
+points(L_true[group3_index,1],L_true[group3_index,2],col = "blue")
+plot(L_true[,1])
+plot(L_true[,2])
+g_flash = flashr::greedy(Y,K = 5)
+gPMD = PMA::PMD(Y,K = 2)
+gsvd = svd(Y,nv = 2,nu = 2)
+```
+
+```{r}
+par(mfrow = c(1,1), mar = c(5,4,4,2) - 1.9,pty="s")
+plot(g_flash$l[,1],g_flash$l[,2],col = "green")
+points(g_flash$l[group1_index,1],g_flash$l[group1_index,2],col = "green")
+points(g_flash$l[group2_index,1],g_flash$l[group2_index,2],col = "red")
+points(g_flash$l[group3_index,1],g_flash$l[group3_index,2],col = "blue")
+plot(L_true[,1],L_true[,2],col = "green")
+points(L_true[group1_index,1],L_true[group1_index,2],col = "green")
+points(L_true[group2_index,1],L_true[group2_index,2],col = "red")
+points(L_true[group3_index,1],L_true[group3_index,2],col = "blue")
+plot(gPMD$u[,1],gPMD$u[,2],col = "green")
+points(gPMD$u[group1_index,1],gPMD$u[group1_index,2],col = "green")
+points(gPMD$u[group2_index,1],gPMD$u[group2_index,2],col = "red")
+points(gPMD$u[group3_index,1],gPMD$u[group3_index,2],col = "blue")
+plot(gsvd$u[,1],gsvd$u[,2],col = "green")
+points(gsvd$u[group1_index,1],gsvd$u[group1_index,2],col = "green")
+points(gsvd$u[group2_index,1],gsvd$u[group2_index,2],col = "red")
+points(gsvd$u[group3_index,1],gsvd$u[group3_index,2],col = "blue")
+```
+
+
+## Session Information
+
+```{r session-info}
+```
