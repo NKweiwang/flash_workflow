@@ -5,6 +5,9 @@ output:
     toc: false
 ---
 
+### simulation studies
+
+
 ### Orthogonal CV
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
@@ -14,3 +17,12 @@ Click on this [Questions on Algorithm](first-analysis.html) to see more details.
 ### flash on the chipseq data from Kevin
 
 Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html) to see more details.
+
+### data analysis on the normalized data
+
+#### missing data imputation
+
+#### gene expression data
+
+
+
