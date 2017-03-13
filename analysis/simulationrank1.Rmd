@@ -1,0 +1,142 @@
+---
+title: "simulation for rankone case"
+author: "Wei Wang"
+date: 2017-03-13
+output: html_document
+---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
+## simulation rank one
+
+### simulated data
+
+```{r,echo=FALSE}
+library("MASS")
+betaO=function(P,betapi,betasigma,propt){
+  idx=rmultinom(P,size=1,prob=betapi)
+  K=length(betapi)
+  s=array(0,dim=c(K,K))
+  diag(s)=betasigma
+  bnorm=mvrnorm(P,rep(0,K),s)
+  betaO=apply(bnorm*t(idx),1,sum)
+  betaO=betaO*rbinom(P,1,propt)
+  return(betaO)
+}
+
+datamaker = function(N,P,l_pi,l_se,l_sp,f_pi,f_se,f_sp,sigmae){
+  # here I would like to fix the sparsity of L and F which is simple
+  # if we need to do futher experiment
+  L_true = betaO(N,l_pi,l_se,l_sp)
+  F_true = betaO(P,f_pi,f_se,f_sp)
+  E = matrix(rnorm(N*P,0,sigmae),ncol = P)
+  Y = L_true %*% t(F_true) + E
+  return(list(Y = Y,L_true = L_true,F_true = F_true))
+}
+# I think we can try some situation
+# pve is small due to the  
+
+# this can be a example of the bi sparse factor and loadings
+
+CVPMD=function(Y,c_u,c_v){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = 5)
+  rowindex = matrix(sample(N,N),ncol = 5)
+  
+  missing= array(0,dim = c(5,N,P))
+  foldindex = array(0,dim = c(5,5,2))
+  for(i in 1:5){
+    for(j in 1:5){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% 5
+    }
+  }
+  foldindex[which(foldindex == 0)] = 5
+  for(i in 1:5){
+    missing[i, , ] = Y
+    for(j in 1:5){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  n_u = length(c_u)
+  n_v = length(c_v)
+  CVRMSE = array(0,dim = c(n_u,n_v))
+  minrmse = Inf
+  opt_u = 0
+  opt_v = 0
+  for(t_u in 1:n_u){
+    for(t_v in 1:n_v){
+      rmse = rep(0,5)
+      for(i in 1:5){
+        out = PMD(missing[i,,], sumabsu = c_u[t_u], sumabsv = c_v[t_v])
+        misshat = out$d * out$u %*% t(out$v)
+        for(j in 1:5){
+          rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
+                                     misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+        }
+        rmse[i] = sqrt(rmse[i] / (N * P/5))
+      }
+      CVRMSE[t_u,t_v] = mean(rmse)
+      if(CVRMSE[t_u,t_v] < minrmse){
+        minrmse = CVRMSE[t_u,t_v]
+        opt_u = c_u[t_u]
+        opt_v = c_v[t_v]
+      }
+    }
+  }
+  return(list(opt_u = opt_u,opt_v = opt_v))
+}
+
+
+PMA.wrapper = function(Y,ngrids = 10){
+  library(PMA)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_u = seq(1,sqrt(N),length.out = ngrids)
+  c_v = seq(1,sqrt(P),length.out = ngrids)
+  cvout = CVPMD(Y,c_u,c_v)
+  out = PMD(Y,sumabsu = cvout$opt_u, sumabsv = cvout$opt_v )
+  residual_PMD = Y - out$d * out$u %*% t(out$v)
+  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
+}
+```
+
+## big signal
+  
+```{r}
+set.seed(99)
+Data = datamaker(60,100,c(0.5,0.1,0.2,0.15,0.05),c(0.01,0.5,1,2,5),0.5,c(0.6,0.05,0.3,0.025,0.025),c(0.01,0.5,1,2,5),0.5,sqrt(1))
+dim(Data$Y)
+gf = flashr::flash(Data$Y)
+plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "red")
+abline(0,1,col = "red")
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+```
+
+
+
+```{r}
+plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "red")
+abline(0,1,col = "red")
+plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = "blue")
+sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+plot(as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "blue")
+```
+
+
+
+## Session Information
+
+```{r session-info}
+```
