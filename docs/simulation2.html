@@ -309,8 +309,71 @@ div.tocify {
 </div>
 
 
-<p><strong>Last updated:</strong> 2017-03-13</p>
-<p><strong>Code version:</strong> 71cdb05</p>
+<p><strong>Last updated:</strong> 2017-03-14</p>
+<p><strong>Code version:</strong> d59f110</p>
+<div id="section" class="section level3">
+<h3></h3>
+<p>Here I would like to add a cv function for PMD when K larger than 1</p>
+<p>In the PMA R package we can find that they use the parameter sumabs to control the sparsity, so we use this one as well.</p>
+<pre class="r"><code>CVPMD=function(Y,c_s,K){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = 5)
+  rowindex = matrix(sample(N,N),ncol = 5)
+  
+  missing= array(0,dim = c(5,N,P))
+  foldindex = array(0,dim = c(5,5,2))
+  for(i in 1:5){
+    for(j in 1:5){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% 5
+    }
+  }
+  foldindex[which(foldindex == 0)] = 5
+  for(i in 1:5){
+    missing[i, , ] = Y
+    for(j in 1:5){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  n_s = length(c_s)
+  CVRMSE = rep(NA,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # here we only need one layer
+    for(t_s in 1:n_s){
+      rmse = rep(0,5)
+      for(i in 1:5){
+        out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+        for(j in 1:5){
+          rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
+                                     misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+        }
+        rmse[i] = sqrt(rmse[i] / (N * P/5))
+      }
+      CVRMSE[t_s] = mean(rmse)
+      if(CVRMSE[t_s] &lt; minrmse){
+        minrmse = CVRMSE[t_s]
+        opt_s = c_s[t_s]
+      }
+    }
+  
+  return(list(opt_s = opt_s ))
+}
+
+
+PMA.wrapper = function(Y,ngrids = 10,K){
+  library(PMA)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0.2,0.8,len=ngrids)
+  cvout = CVPMD(Y,c_s, K = K)
+  out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)
+  residual_PMD = Y -  out$u %*%  diag(out$d) %*% t(out$v)
+  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
+}</code></pre>
+</div>
 <div id="simulated-data" class="section level2">
 <h2>simulated data</h2>
 <pre class="r"><code>set.seed(99)
@@ -325,21 +388,23 @@ betaO=function(P,betapi,betasigma,propt){
   betaO=betaO*rbinom(P,1,propt)
   return(betaO)
 }
-N = 180
-P = 300
+N = 100
+P = 200
 K = 2
 L_true = array(0,dim = c(N,K))
 F_true = array(0,dim = c(P,K))
-F_true[,1] = rnorm(P,0,1)
-F_true[,2] = rnorm(P,0,1)
+F_true[,1] = rnorm(P,0,0.3)
+F_true[,2] = rnorm(P,0,0.3)
 # F_true = scale(F_true)
-rho = rnorm(N,1.96,0.6)
-L_true[,1] = rho * sin(pi*(seq(1,N)/(N/2)))
-L_true[,2] = rho * cos(pi*(seq(1,N)/(N/2)))
-group1_index = c(31:60,121:150)
-group2_index = c(1:15,76:105,166:180)
-group3_index = seq(1:180)[-(union(group1_index,group2_index))]
-# G = L_true %*% t(F_true)
+group1_index = c(1:30)
+group2_index = c(71:100)
+group3_index = seq(1:90)[-(union(group1_index,group2_index))]
+L_true[group1_index,1] = betaO(30,c(0.9,0.1),c(0.001,0.1),1)
+L_true[group2_index,1] = betaO(30,c(0.9,0.1),c(0.5,0.75),1)
+L_true[group3_index,1] = betaO(40,c(0.9,0.1),c(1,1.5),1)
+L_true[group1_index,2] = betaO(30,c(0.9,0.1),c(1,1.5),1)
+L_true[group2_index,2] = betaO(30,c(0.9,0.1),c(0.5,0.75),1)
+L_true[group3_index,2] = betaO(40,c(0.9,0.1),c(0.001,0.1),1)
 # generate Y
 E = matrix(rnorm(N*P,0,1),nrow=N)
 Y = L_true %*% t(F_true) + E
@@ -348,44 +413,164 @@ plot(L_true[,1],L_true[,2],col = &quot;green&quot;)
 points(L_true[group1_index,1],L_true[group1_index,2],col = &quot;green&quot;)
 points(L_true[group2_index,1],L_true[group2_index,2],col = &quot;red&quot;)
 points(L_true[group3_index,1],L_true[group3_index,2],col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulation2.Rmd/unnamed-chunk-45-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-88-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(L_true[,1])</code></pre>
-<p><img src="figure/simulation2.Rmd/unnamed-chunk-45-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-88-2.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(L_true[,2])</code></pre>
-<p><img src="figure/simulation2.Rmd/unnamed-chunk-45-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-88-3.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>g_flash = flashr::greedy(Y,K = 5)</code></pre>
 <pre><code>[1] 2
 [1] 3</code></pre>
-<pre class="r"><code>gPMD = PMA::PMD(Y,K = 2)</code></pre>
+<pre class="r"><code>g_flash = flashr::backfitting(Y,initial_list = g_flash,maxiter_bf = 10)
+gPMD = PMA.wrapper(Y,ngrids = 10,K = 2)</code></pre>
 <pre><code>1234567891011121314151617181920
-1234567891011121314151617181920</code></pre>
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+123456789101112</code></pre>
 <pre class="r"><code>gsvd = svd(Y,nv = 2,nu = 2)</code></pre>
 <pre class="r"><code>par(mfrow = c(1,1), mar = c(5,4,4,2) - 1.9,pty=&quot;s&quot;)
 plot(g_flash$l[,1],g_flash$l[,2],col = &quot;green&quot;)
 points(g_flash$l[group1_index,1],g_flash$l[group1_index,2],col = &quot;green&quot;)
 points(g_flash$l[group2_index,1],g_flash$l[group2_index,2],col = &quot;red&quot;)
 points(g_flash$l[group3_index,1],g_flash$l[group3_index,2],col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulation2.Rmd/unnamed-chunk-46-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-89-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(L_true[,1],L_true[,2],col = &quot;green&quot;)
 points(L_true[group1_index,1],L_true[group1_index,2],col = &quot;green&quot;)
 points(L_true[group2_index,1],L_true[group2_index,2],col = &quot;red&quot;)
 points(L_true[group3_index,1],L_true[group3_index,2],col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulation2.Rmd/unnamed-chunk-46-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-89-2.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(gPMD$u[,1],gPMD$u[,2],col = &quot;green&quot;)
 points(gPMD$u[group1_index,1],gPMD$u[group1_index,2],col = &quot;green&quot;)
 points(gPMD$u[group2_index,1],gPMD$u[group2_index,2],col = &quot;red&quot;)
 points(gPMD$u[group3_index,1],gPMD$u[group3_index,2],col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulation2.Rmd/unnamed-chunk-46-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-89-3.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(gsvd$u[,1],gsvd$u[,2],col = &quot;green&quot;)
 points(gsvd$u[group1_index,1],gsvd$u[group1_index,2],col = &quot;green&quot;)
 points(gsvd$u[group2_index,1],gsvd$u[group2_index,2],col = &quot;red&quot;)
 points(gsvd$u[group3_index,1],gsvd$u[group3_index,2],col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulation2.Rmd/unnamed-chunk-46-4.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-89-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(gsvd$d)</code></pre>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-89-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>par(mfrow = c(1,1), mar = c(5,4,4,2) - 1.9,pty=&quot;s&quot;)
+plot(as.vector(L_true %*% t(F_true)),as.vector(g_flash$l %*% t(g_flash$f)),pch = 16,col = &quot;red&quot;)
+abline(0,1,col = &quot;red&quot;)</code></pre>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-90-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(as.vector(L_true %*% t(F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = &quot;blue&quot;)
+abline(0,1,col = &quot;red&quot;)</code></pre>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-90-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>sqrt(mean((g_flash$l %*% t(g_flash$f) - L_true %*% t(F_true))^2))/sqrt(mean((L_true %*% t(F_true))^2))</code></pre>
+<pre><code>[1] 0.5315325</code></pre>
+<pre class="r"><code>sqrt(mean((gPMD$u %*% diag(gPMD$d) %*% t(gPMD$v) - L_true %*% t(F_true))^2))/sqrt(mean((L_true %*% t(F_true))^2))</code></pre>
+<pre><code>[1] 0.5642411</code></pre>
+<pre class="r"><code>plot(as.vector( gPMD$u %*% diag(gPMD$d) %*% t(gPMD$v) ),as.vector(g_flash$l %*% t(g_flash$f)),pch = 16,col = &quot;blue&quot;)
+abline(0,1,col = &quot;red&quot;)</code></pre>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-90-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot(as.vector( gsvd$u %*% diag(gsvd$d[1:2]) %*% t(gsvd$v) ),as.vector(g_flash$l %*% t(g_flash$f)),pch = 16,col = &quot;blue&quot;)
+abline(0,1,col = &quot;red&quot;)</code></pre>
+<p><img src="figure/simulation2.Rmd/unnamed-chunk-90-4.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session Information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 3.2.4 (2016-03-10)
+<pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
 Running under: OS X 10.12.3 (unknown)
 
@@ -396,22 +581,21 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] PMA_1.0.9       impute_1.44.0   plyr_1.8.4      MASS_7.3-45    
-[5] workflowr_0.3.0 rmarkdown_1.3  
+[1] PMA_1.0.9       impute_1.42.0   plyr_1.8.4      MASS_7.3-45    
+[5] workflowr_0.4.0 rmarkdown_1.3  
 
 loaded via a namespace (and not attached):
- [1] igraph_1.0.1      Rcpp_0.12.9       rstudioapi_0.6   
- [4] knitr_1.15.1      magrittr_1.5      REBayes_0.63     
- [7] pscl_1.4.9        doParallel_1.0.10 SQUAREM_2016.8-2 
-[10] lattice_0.20-34   foreach_1.4.3     ashr_2.1.4       
-[13] stringr_1.1.0     flashr_0.1.1      tools_3.2.4      
-[16] parallel_3.2.4    grid_3.2.4        irlba_2.1.2      
-[19] git2r_0.18.0      iterators_1.0.8   htmltools_0.3.5  
-[22] assertthat_0.1    yaml_2.1.14       rprojroot_1.2    
-[25] digest_0.6.11     Matrix_1.2-7.1    codetools_0.2-15 
-[28] rsconnect_0.4.3   evaluate_0.10     stringi_1.1.2    
-[31] Rmosek_7.1.2      backports_1.0.5   truncnorm_1.0-7  
-[34] flare_1.5.0      </code></pre>
+ [1] Rcpp_0.12.9       rstudioapi_0.6    knitr_1.15.1     
+ [4] magrittr_1.5      REBayes_0.73      doParallel_1.0.10
+ [7] pscl_1.4.9        SQUAREM_2016.8-2  lattice_0.20-34  
+[10] foreach_1.4.3     ashr_2.1.4        stringr_1.2.0    
+[13] flashr_0.1.1      tools_3.3.0       parallel_3.3.0   
+[16] grid_3.3.0        irlba_2.1.2       git2r_0.18.0     
+[19] htmltools_0.3.5   iterators_1.0.8   assertthat_0.1   
+[22] yaml_2.1.14       rprojroot_1.2     digest_0.6.12    
+[25] Matrix_1.2-8      codetools_0.2-15  evaluate_0.10    
+[28] stringi_1.1.2     Rmosek_7.1.2      backports_1.0.5  
+[31] truncnorm_1.0-7  </code></pre>
 </div>
 
 <hr>
