@@ -16,7 +16,77 @@ knitr::read_chunk("chunks.R")
 
 **Code version:** `r workflowr::extract_commit(".", 1)$sha1`
 
+
+###
+Here I would like to add a cv function for PMD when K larger than 1
+
+In the PMA R package we can find that they use the parameter sumabs to control the sparsity, so we use this one as well.
+
+```{r}
+CVPMD=function(Y,c_s,K){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = 5)
+  rowindex = matrix(sample(N,N),ncol = 5)
+  
+  missing= array(0,dim = c(5,N,P))
+  foldindex = array(0,dim = c(5,5,2))
+  for(i in 1:5){
+    for(j in 1:5){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% 5
+    }
+  }
+  foldindex[which(foldindex == 0)] = 5
+  for(i in 1:5){
+    missing[i, , ] = Y
+    for(j in 1:5){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  n_s = length(c_s)
+  CVRMSE = rep(NA,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # here we only need one layer
+    for(t_s in 1:n_s){
+      rmse = rep(0,5)
+      for(i in 1:5){
+        out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+        for(j in 1:5){
+          rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
+                                     misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+        }
+        rmse[i] = sqrt(rmse[i] / (N * P/5))
+      }
+      CVRMSE[t_s] = mean(rmse)
+      if(CVRMSE[t_s] < minrmse){
+        minrmse = CVRMSE[t_s]
+        opt_s = c_s[t_s]
+      }
+    }
+  
+  return(list(opt_s = opt_s ))
+}
+
+
+PMA.wrapper = function(Y,ngrids = 10,K){
+  library(PMA)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0.2,0.8,len=ngrids)
+  cvout = CVPMD(Y,c_s, K = K)
+  out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)
+  residual_PMD = Y -  out$u %*%  diag(out$d) %*% t(out$v)
+  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
+}
+```
+
+
+
 ## simulated data
+
 
 ```{r}
 set.seed(99)
@@ -31,21 +101,23 @@ betaO=function(P,betapi,betasigma,propt){
   betaO=betaO*rbinom(P,1,propt)
   return(betaO)
 }
-N = 180
-P = 300
+N = 100
+P = 200
 K = 2
 L_true = array(0,dim = c(N,K))
 F_true = array(0,dim = c(P,K))
-F_true[,1] = rnorm(P,0,1)
-F_true[,2] = rnorm(P,0,1)
+F_true[,1] = rnorm(P,0,0.3)
+F_true[,2] = rnorm(P,0,0.3)
 # F_true = scale(F_true)
-rho = rnorm(N,1.96,0.6)
-L_true[,1] = rho * sin(pi*(seq(1,N)/(N/2)))
-L_true[,2] = rho * cos(pi*(seq(1,N)/(N/2)))
-group1_index = c(31:60,121:150)
-group2_index = c(1:15,76:105,166:180)
-group3_index = seq(1:180)[-(union(group1_index,group2_index))]
-# G = L_true %*% t(F_true)
+group1_index = c(1:30)
+group2_index = c(71:100)
+group3_index = seq(1:90)[-(union(group1_index,group2_index))]
+L_true[group1_index,1] = betaO(30,c(0.9,0.1),c(0.001,0.1),1)
+L_true[group2_index,1] = betaO(30,c(0.9,0.1),c(0.5,0.75),1)
+L_true[group3_index,1] = betaO(40,c(0.9,0.1),c(1,1.5),1)
+L_true[group1_index,2] = betaO(30,c(0.9,0.1),c(1,1.5),1)
+L_true[group2_index,2] = betaO(30,c(0.9,0.1),c(0.5,0.75),1)
+L_true[group3_index,2] = betaO(40,c(0.9,0.1),c(0.001,0.1),1)
 # generate Y
 E = matrix(rnorm(N*P,0,1),nrow=N)
 Y = L_true %*% t(F_true) + E
@@ -57,7 +129,8 @@ points(L_true[group3_index,1],L_true[group3_index,2],col = "blue")
 plot(L_true[,1])
 plot(L_true[,2])
 g_flash = flashr::greedy(Y,K = 5)
-gPMD = PMA::PMD(Y,K = 2)
+g_flash = flashr::backfitting(Y,initial_list = g_flash,maxiter_bf = 10)
+gPMD = PMA.wrapper(Y,ngrids = 10,K = 2)
 gsvd = svd(Y,nv = 2,nu = 2)
 ```
 
@@ -79,8 +152,23 @@ plot(gsvd$u[,1],gsvd$u[,2],col = "green")
 points(gsvd$u[group1_index,1],gsvd$u[group1_index,2],col = "green")
 points(gsvd$u[group2_index,1],gsvd$u[group2_index,2],col = "red")
 points(gsvd$u[group3_index,1],gsvd$u[group3_index,2],col = "blue")
+plot(gsvd$d)
 ```
 
+
+```{r}
+par(mfrow = c(1,1), mar = c(5,4,4,2) - 1.9,pty="s")
+plot(as.vector(L_true %*% t(F_true)),as.vector(g_flash$l %*% t(g_flash$f)),pch = 16,col = "red")
+abline(0,1,col = "red")
+plot(as.vector(L_true %*% t(F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = "blue")
+abline(0,1,col = "red")
+sqrt(mean((g_flash$l %*% t(g_flash$f) - L_true %*% t(F_true))^2))/sqrt(mean((L_true %*% t(F_true))^2))
+sqrt(mean((gPMD$u %*% diag(gPMD$d) %*% t(gPMD$v) - L_true %*% t(F_true))^2))/sqrt(mean((L_true %*% t(F_true))^2))
+plot(as.vector( gPMD$u %*% diag(gPMD$d) %*% t(gPMD$v) ),as.vector(g_flash$l %*% t(g_flash$f)),pch = 16,col = "blue")
+abline(0,1,col = "red")
+plot(as.vector( gsvd$u %*% diag(gsvd$d[1:2]) %*% t(gsvd$v) ),as.vector(g_flash$l %*% t(g_flash$f)),pch = 16,col = "blue")
+abline(0,1,col = "red")
+```
 
 ## Session Information
 
