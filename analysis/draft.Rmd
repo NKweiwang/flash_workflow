@@ -1,7 +1,7 @@
 ---
-title: "missing data imputation: Tumor data"
-author: "wei wang"
-date: 2017-03-13
+title: "this is for the result part of the draft"
+author: "Wei Wang"
+date: 2017-03-15
 output: html_document
 ---
 
@@ -26,7 +26,18 @@ knitr::read_chunk("chunks.R")
 
 <!-- Add your analysis here -->
 
-We test the performance of our method on the real data where there is no ground truth. The performance is assessed by the predictive Mean Square Error (MSE) for the missing value, where the true value is know and chosen to be missing. This data set is a microarray data from 'denoiseR' package containing 43 brain tumors of four types and 356 continous variable related with the expression data. we set the rank equal to 20 for FLASH, PMD and softImpute, since we find that the rank of the low rank structure is almost always smaller than 20, whihc is around 15-20. 
+### data analysis on the normalized data
+
+#### missing data imputation
+
+#### gene expression data
+
+### further issues
+
+#### NMF
+
+#### tensor flash
+
 
 ## Session information
 
