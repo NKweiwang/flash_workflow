@@ -26,17 +26,25 @@ knitr::read_chunk("chunks.R")
 
 <!-- Add your analysis here -->
 
-### data analysis on the normalized data
+## data analysis on the normalized data
 
-#### missing data imputation
+### missing data imputation
 
-#### gene expression data
+#### Tumors data
 
-### further issues
+click here [Tumor data](MissingTumor.html) to check my result
 
-#### NMF
+#### Movie data 
 
-#### tensor flash
+click here 
+
+### gene expression data
+
+## further issues
+
+### NMF
+
+### tensor flash
 
 
 ## Session information
