@@ -9,9 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Wei Wang" />
 
+<meta name="date" content="2017-03-15" />
 
-<title>Home</title>
+<title>this is for the result part of the draft</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +21,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
@@ -162,6 +167,101 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -202,23 +302,66 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">this is for the result part of the draft</h1>
+<h4 class="author"><em>Wei Wang</em></h4>
+<h4 class="date"><em>2017-03-15</em></h4>
 
 </div>
 
 
-<div id="simulation-studies" class="section level3">
-<h3>simulation studies</h3>
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2017-03-16</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> a541d7c</p>
+<!-- Add your analysis here -->
+<div id="data-analysis-on-the-normalized-data" class="section level3">
+<h3>data analysis on the normalized data</h3>
+<div id="missing-data-imputation" class="section level4">
+<h4>missing data imputation</h4>
 </div>
-<div id="orthogonal-cv" class="section level3">
-<h3>Orthogonal CV</h3>
-<p>Click on this <a href="miss_position.html">orthogonal CV</a> to see my example.</p>
-<p>Click on this <a href="first-analysis.html">Questions on Algorithm</a> to see more details.</p>
+<div id="gene-expression-data" class="section level4">
+<h4>gene expression data</h4>
 </div>
-<div id="flash-on-the-chipseq-data-from-kevin" class="section level3">
-<h3>flash on the chipseq data from Kevin</h3>
-<p>Click on this <a href="sd_chr1_asinh.html">three data sets on the 4500 rows chr1 var_col</a> to see more details.</p>
-<p><a href="draft.html">ns</a></p>
+</div>
+<div id="further-issues" class="section level3">
+<h3>further issues</h3>
+<div id="nmf" class="section level4">
+<h4>NMF</h4>
+</div>
+<div id="tensor-flash" class="section level4">
+<h4>tensor flash</h4>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.12.3 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] workflowr_0.4.0 rmarkdown_1.3   denoiseR_1.0   
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.9          rstudioapi_0.6       knitr_1.15.1        
+ [4] cluster_2.0.5        magrittr_1.5         leaps_3.0           
+ [7] MASS_7.3-45          scatterplot3d_0.3-38 lattice_0.20-34     
+[10] stringr_1.2.0        tools_3.3.0          grid_3.3.0          
+[13] irlba_2.1.2          git2r_0.18.0         htmltools_0.3.5     
+[16] yaml_2.1.14          rprojroot_1.2        digest_0.6.12       
+[19] Matrix_1.2-8         FactoMineR_1.34      evaluate_0.10       
+[22] stringi_1.1.2        backports_1.0.5      flashClust_1.01-2   </code></pre>
 </div>
 
 <hr>
@@ -247,6 +390,8 @@ $(document).ready(function () {
 -->
 
 
+</div>
+</div>
 
 </div>
 

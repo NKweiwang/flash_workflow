@@ -313,12 +313,12 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-03-14</p>
+<p><strong>Last updated:</strong> 2017-03-16</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 6d979e8</p>
+<p><strong>Code version:</strong> a541d7c</p>
 <!-- Add your analysis here -->
-<p>try the new version of the wrokflowr package</p>
+<p>We test the performance of our method on the real data where there is no ground truth. The performance is assessed by the predictive Mean Square Error (MSE) for the missing value, where the true value is know and chosen to be missing. This data set is a microarray data from ‘denoiseR’ package containing 43 brain tumors of four types and 356 continous variable related with the expression data. we set the rank equal to 20 for FLASH, PMD and softImpute, since we find that the rank of the low rank structure is almost always smaller than 20, whihc is around 15-20.</p>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
@@ -334,13 +334,17 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] workflowr_0.4.0 rmarkdown_1.3  
+[1] workflowr_0.4.0 rmarkdown_1.3   denoiseR_1.0   
 
 loaded via a namespace (and not attached):
- [1] backports_1.0.5 magrittr_1.5    rprojroot_1.2   htmltools_0.3.5
- [5] tools_3.3.0     rstudioapi_0.6  yaml_2.1.14     Rcpp_0.12.9    
- [9] stringi_1.1.2   knitr_1.15.1    git2r_0.18.0    stringr_1.2.0  
-[13] digest_0.6.12   evaluate_0.10  </code></pre>
+ [1] Rcpp_0.12.9          rstudioapi_0.6       knitr_1.15.1        
+ [4] cluster_2.0.5        magrittr_1.5         leaps_3.0           
+ [7] MASS_7.3-45          scatterplot3d_0.3-38 lattice_0.20-34     
+[10] stringr_1.2.0        tools_3.3.0          grid_3.3.0          
+[13] irlba_2.1.2          git2r_0.18.0         htmltools_0.3.5     
+[16] yaml_2.1.14          rprojroot_1.2        digest_0.6.12       
+[19] Matrix_1.2-8         FactoMineR_1.34      evaluate_0.10       
+[22] stringi_1.1.2        backports_1.0.5      flashClust_1.01-2   </code></pre>
 </div>
 
 <hr>
