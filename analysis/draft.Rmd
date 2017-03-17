@@ -32,9 +32,24 @@ knitr::read_chunk("chunks.R")
 
 #### Tumors data
 
-click here [Tumor data](MissingTumor.html) to check my result
+We test the performance of our method on the real data where there is no ground truth. The performance is assessed by the predictive Mean Square Error (MSE) for the missing value, where the true value is know and chosen to be missing. This data set is a microarray data from 'denoiseR' package containing 43 brain tumors of four types and 356 continous variable related with the expression data. we set the rank equal to 20 for FLASH, PMD and softImpute, since we find that the rank of the low rank structure is almost always smaller than 20, whihc is around 15-20.
+
+![tumor data](~/HG/ash-sfa/Rcode/postmean/flash_simulation/denoise/denoiseRdata/tumordata/boxplot.png)
 
 #### Movie data 
+
+The MovieLens data set is available at the GroupLens Research group which is usualy used for the exploration of recommender systems. The idea of the prediction is that users with similar preference on movies might have similar ratings so that we can predict tha ratings of certain user based on other users sharing some common interests.
+the MovieLens 100K data set we used here is a data set with about 100K ratings from 1000 user and 1700 movies. The ratings are integers from 0 to 5 represent preference of users. 
+
+
+
+#### presidential address
+
+#### gene expression data
+
+#### Breast cancer data
+
+#### do I need add one more into it?
 
 click here 
 
@@ -46,6 +61,9 @@ click here
 
 ### tensor flash
 
+### rank decision
+
+there is somethig we don't fully understand.
 
 ## Session information
 

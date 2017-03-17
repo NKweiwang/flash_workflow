@@ -23,7 +23,30 @@ Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html
 
 [ns](draft.html) 
 
+data set: /project/mstephens/data/internal_supp/gtex-v6-sumstat-hdf5
 
+[5:25]  
+on midway. you can focus on `MatrixEQTLSumStats.Portable.h5`
+
+[5:26]  
+for the 16000 times 44 data-set, stored in a table called `max` (edited)
+
+[5:26]  
+To process the data, https://github.com/stephenslab/gtex-eqtls/blob/master/doc/notes/SumstatsDB.md
+
+[5:27]  
+and the relevent scripts in this MD file: https://github.com/stephenslab/lab-resource/blob/master/utilities/src/SumstatQuery.R
+
+[5:30]  
+you should use this line `GetSS("max", "/project/mstephens/gtex/analysis/april2015/query/MatrixEQTLSumStats.h5")`
+
+
+----- October 20th, 2016 -----
+gaow [6:06 PM] 
+https://github.com/stephenslab/lab-resource/wiki/Tissue-Color-Palette
+
+[6:06]  
+see "load to R"
 
 
 
