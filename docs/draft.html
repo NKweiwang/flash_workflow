@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-03-17</p>
+<p><strong>Last updated:</strong> 2017-03-21</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> b604869</p>
+<p><strong>Code version:</strong> d04cac5</p>
 <!-- Add your analysis here -->
 <div id="data-analysis-on-the-normalized-data" class="section level2">
 <h2>data analysis on the normalized data</h2>
@@ -332,36 +332,58 @@ shared across the workflowr files. -->
 </div>
 <div id="movie-data" class="section level4">
 <h4>Movie data</h4>
-<p>The MovieLens data set is available at the GroupLens Research group which is usualy used for the exploration of recommender systems. The idea of the prediction is that users with similar preference on movies might have similar ratings so that we can predict tha ratings of certain user based on other users sharing some common interests. the MovieLens 100K data set we used here is a data set with about 100K ratings from 1000 user and 1700 movies. The ratings are integers from 0 to 5 represent preference of users.</p>
+<p>The MovieLens data set is available at the GroupLens Research group which is usualy used for the exploration of recommender systems. The idea of the prediction is that users with similar preference on movies might have similar ratings so that we can predict tha ratings of certain user based on other users sharing some common preference. There are several data sets available for stable bench mark and we choose the smallest one. The MovieLens 100K data set we used here is a data set with about 100K ratings from 1000 user and 1700 movies. The ratings are integers from 0 to 5 represent preference of users. In this data, all the ratings are nonnegative, so we center and scale the data for each users. We focus on the structure that the users share common prefernce on movies, so the preference of each user on each movies remains the same.</p>
+<div class="figure">
+<img src="/Users/weiwang/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/ML100K/boxplotrowscale.png" alt="Movie data" />
+<p class="caption">Movie data</p>
+</div>
 </div>
 <div id="presidential-address" class="section level4">
 <h4>presidential address</h4>
+<p>This data set is a contingency table cross-tabulating with 13 rows and 836 columns, where rows stands for US presidents from 1940 to 2009 and columns are correspoding the words they used in thier inaugural addresses. This data set comes from ‘denoiseR’ R package. We make one more pre-processing procedure before apply all the methods. The pre-precessed data is center and scale on both rows ans columns. It is because the words and the frequency of those words vary a lot among different presidents. This is data is different from movie ratings data of which the ratings can only take values from 0 to 5. Some words show up more frequently than others, such as “a” and “the”, so we should center and scale the data not only by rows but also by coumns.</p>
+<div class="figure">
+<img src="/Users/weiwang/HG/ash-sfa/Rcode/postmean/flash_simulation/denoise/denoiseRdata/presidentdata/biscaleboxplot.png" alt="president data" />
+<p class="caption">president data</p>
 </div>
-<div id="gene-expression-data" class="section level4">
-<h4>gene expression data</h4>
+</div>
+<div id="gtex-eqtl-summary-statistic" class="section level4">
+<h4>GTEx eQTL summary statistic</h4>
+<p>This data set is summary statistics (Z-score) from eQTL analysis.</p>
+<div class="figure">
+<img src="/Users/weiwang/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/GTEXboxplot.png" alt="GTEx data" />
+<p class="caption">GTEx data</p>
+</div>
+<p>This data set is</p>
 </div>
 <div id="breast-cancer-data" class="section level4">
 <h4>Breast cancer data</h4>
+<p>The Breast cancer data is from West et al. (2007). There are 251 samples and 226 genes in this data set. For those algorithm we choose, we set the rank equal to 50 which is close the the rank of the estimation from the NSFA results. After some try of FLASH, we find that the rank picked by FLASH is also around 40-50. Following the pre-processing procedure from NSFA, we also use the centered data.</p>
+<div class="figure">
+<img src="/Users/weiwang/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/Breastcancer/boxplot_centered.png" alt="Breast Cancer data" />
+<p class="caption">Breast Cancer data</p>
 </div>
-<div id="do-i-need-add-one-more-into-it" class="section level4">
-<h4>do I need add one more into it?</h4>
-<p>click here</p>
 </div>
 </div>
-<div id="gene-expression-data-1" class="section level3">
+<div id="gene-expression-data" class="section level3">
 <h3>gene expression data</h3>
+<p>To show the flexibility of FLASH, we take the summary statistics from the expression Quantitative Trait Loci (eQTLs) of 44 human Tissues. The original data is from Genotype Tissue Expression (GTEx) project. The aim of GTEx project “s to increase our understanding of how changes in our genes contribute to common human diseases, in order to improve health care for future generations.” We try to understand the &quot; which SNPs are eQTLs (i.e. associated with expression) in which tissues.Answering this could help distinguish regulatory regions and mechanisms that are specific to a few tissues vs shared among many tissues.It could also help with analyses that aim to integrate eQTL results with GWAS results to help identify the tissues that are most relevant to any specific complex disease (e.g. [18, 19]).&quot;</p>
+<p>We apply FLASH on the matrix of summary statistics which are Z-scores.</p>
+<p>“We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues.”</p>
+<p>As input to mash we use a matrix of eQTL effect estimates ˆbjr, and corresponding standard errors ˆsij , where the rows j index different SNP-gene pairs and the columns r index tissues (or cell types). We used the effect estimates and standard errors for candidate local (“cis”) eQTLs for each gene, distributed by the GTEx project (v6 release). These were obtained by (univariate) single-SNP analyses in each tissue by applying MatrixEQTL [20] on expression levels that have been rank-transformed to the corresponding quantiles of a standard normal distribution. Thus the effect size estimates are in units of standard deviations on this transformed scale. Because, like most eQTL analyses, these estimates were obtained by single-SNP analysis, the estimated effects for each SNP actually reflect the effects of both the SNP itself and other SNPs in LD with it (see Supplementary Text for discussion). We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues.</p>
 </div>
 </div>
-<div id="further-issues" class="section level2">
-<h2>further issues</h2>
+<div id="other-potential-extension" class="section level2">
+<h2>other potential extension</h2>
 <div id="nmf" class="section level3">
 <h3>NMF</h3>
+<p>In ashr, there is a option that we can choose the prior to be half uniform or half normal, which leads to the final estimate is non-negative. In this case, we apply FLASH for non-negative matrix factorization with proper intial values. For example, we can use NMF result as intial value and apply FLASH with backfitting algorithm to get a flexible sparse solutions of factors and loadings.</p>
 </div>
 <div id="tensor-flash" class="section level3">
 <h3>tensor flash</h3>
+<p>In our frame work, it is easy to extend out method to tensor factorization. And the benfit of FLASH is we don’t need to estimate the tuning parmeters in each mode.</p>
 </div>
-<div id="rank-decision" class="section level3">
-<h3>rank decision</h3>
+<div id="rank-decision-issue" class="section level3">
+<h3>rank decision issue</h3>
 <p>there is somethig we don’t fully understand.</p>
 </div>
 </div>
