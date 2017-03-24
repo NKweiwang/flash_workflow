@@ -50,7 +50,7 @@ This data set is a contingency table cross-tabulating with 13 rows and 836 colum
 
 #### GTEx eQTL summary statistic
 
-This data set is summary statistics (Z-score) from eQTL analysis.
+This data set is summary statistics (Z-score) from eQTL analysis. We apply FLASH on the matrix of summary statistics which are Z-scores with , where the rows index different SNP-gene pairs and the columns index tissues (or cell types). We used the Z-scores for candidate local (“cis”) eQTLs for each gene, distributed by the GTEx project (v6 release). 
 
 ![GTEx data](~/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/GTEXboxplot.png)
 
@@ -58,7 +58,7 @@ This data set is
 
 #### Breast cancer data
 
-The Breast cancer data is from West et al. (2007). There are 251 samples and 226 genes in this data set. For those algorithm we choose, we set the rank equal to 50 which is close the the rank of the estimation from the NSFA results. After some try of FLASH, we find that the rank picked by FLASH is also around 40-50. Following the pre-processing procedure from NSFA, we also use the centered data. 
+The Breast cancer data is from West et al. (2007). There are 251 samples and 226 genes in this data set. For those algorithm we choose, we set the rank equal to 50 which is close the the rank of the estimation from the NSFA results. After some try of FLASH, we find that the rank picked by FLASH is also around 40-50. Following the pre-processing procedure from NSFA, we also use the centered data. Since this input data set is Z-scores data, we didn't use any pre-processing procedure.
 
 ![Breast Cancer data](~/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/Breastcancer/boxplot_centered.png)
 
@@ -70,26 +70,7 @@ To show the flexibility of FLASH, we take the summary statistics from the expres
 (GTEx) project. The aim of GTEx project "s to increase our understanding of how changes in our genes contribute to common human diseases, in order to improve health care for future generations."
 We try to understand the " which SNPs are eQTLs (i.e. associated with expression) in which tissues.Answering this could help distinguish regulatory regions and mechanisms that are specific to a few tissues vs shared among many tissues.It could also help with analyses that aim to integrate eQTL results with GWAS results to help identify the tissues that are most relevant to any specific complex disease (e.g. [18, 19])."
 
-We apply FLASH on the matrix of summary statistics which are Z-scores. 
-
-"We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues." 
-
-
-As input to mash we use a matrix of eQTL effect estimates ˆbjr, and
-corresponding standard errors ˆsij , where the rows j index different SNP-gene
-pairs and the columns r index tissues (or cell types). We used the effect
-estimates and standard errors for candidate local (“cis”) eQTLs for each gene,
-distributed by the GTEx project (v6 release). These were obtained by
-(univariate) single-SNP analyses in each tissue by applying MatrixEQTL [20] on
-expression levels that have been rank-transformed to the corresponding
-quantiles of a standard normal distribution. Thus the effect size estimates are in
-units of standard deviations on this transformed scale. Because, like most eQTL
-analyses, these estimates were obtained by single-SNP analysis, the estimated
-effects for each SNP actually reflect the effects of both the SNP itself and other
-SNPs in LD with it (see Supplementary Text for discussion). We analysed the
-16,069 genes for which univariate effect estimates were available for all 44 tissues
-we considered; the filtering criteria used ensure that these genes show at least
-some indication of expression in all 44 tissues.
+We apply FLASH on the matrix of summary statistics which are Z-scores. "We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues." 
 
 ## other potential extension
 
