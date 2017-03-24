@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-03-21</p>
+<p><strong>Last updated:</strong> 2017-03-23</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d04cac5</p>
+<p><strong>Code version:</strong> ed2edca</p>
 <!-- Add your analysis here -->
 <div id="data-analysis-on-the-normalized-data" class="section level2">
 <h2>data analysis on the normalized data</h2>
@@ -348,7 +348,7 @@ shared across the workflowr files. -->
 </div>
 <div id="gtex-eqtl-summary-statistic" class="section level4">
 <h4>GTEx eQTL summary statistic</h4>
-<p>This data set is summary statistics (Z-score) from eQTL analysis.</p>
+<p>This data set is summary statistics (Z-score) from eQTL analysis. We apply FLASH on the matrix of summary statistics which are Z-scores with , where the rows index different SNP-gene pairs and the columns index tissues (or cell types). We used the Z-scores for candidate local (“cis”) eQTLs for each gene, distributed by the GTEx project (v6 release).</p>
 <div class="figure">
 <img src="/Users/weiwang/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/GTEXboxplot.png" alt="GTEx data" />
 <p class="caption">GTEx data</p>
@@ -357,7 +357,7 @@ shared across the workflowr files. -->
 </div>
 <div id="breast-cancer-data" class="section level4">
 <h4>Breast cancer data</h4>
-<p>The Breast cancer data is from West et al. (2007). There are 251 samples and 226 genes in this data set. For those algorithm we choose, we set the rank equal to 50 which is close the the rank of the estimation from the NSFA results. After some try of FLASH, we find that the rank picked by FLASH is also around 40-50. Following the pre-processing procedure from NSFA, we also use the centered data.</p>
+<p>The Breast cancer data is from West et al. (2007). There are 251 samples and 226 genes in this data set. For those algorithm we choose, we set the rank equal to 50 which is close the the rank of the estimation from the NSFA results. After some try of FLASH, we find that the rank picked by FLASH is also around 40-50. Following the pre-processing procedure from NSFA, we also use the centered data. Since this input data set is Z-scores data, we didn’t use any pre-processing procedure.</p>
 <div class="figure">
 <img src="/Users/weiwang/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/Breastcancer/boxplot_centered.png" alt="Breast Cancer data" />
 <p class="caption">Breast Cancer data</p>
@@ -367,9 +367,7 @@ shared across the workflowr files. -->
 <div id="gene-expression-data" class="section level3">
 <h3>gene expression data</h3>
 <p>To show the flexibility of FLASH, we take the summary statistics from the expression Quantitative Trait Loci (eQTLs) of 44 human Tissues. The original data is from Genotype Tissue Expression (GTEx) project. The aim of GTEx project “s to increase our understanding of how changes in our genes contribute to common human diseases, in order to improve health care for future generations.” We try to understand the &quot; which SNPs are eQTLs (i.e. associated with expression) in which tissues.Answering this could help distinguish regulatory regions and mechanisms that are specific to a few tissues vs shared among many tissues.It could also help with analyses that aim to integrate eQTL results with GWAS results to help identify the tissues that are most relevant to any specific complex disease (e.g. [18, 19]).&quot;</p>
-<p>We apply FLASH on the matrix of summary statistics which are Z-scores.</p>
-<p>“We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues.”</p>
-<p>As input to mash we use a matrix of eQTL effect estimates ˆbjr, and corresponding standard errors ˆsij , where the rows j index different SNP-gene pairs and the columns r index tissues (or cell types). We used the effect estimates and standard errors for candidate local (“cis”) eQTLs for each gene, distributed by the GTEx project (v6 release). These were obtained by (univariate) single-SNP analyses in each tissue by applying MatrixEQTL [20] on expression levels that have been rank-transformed to the corresponding quantiles of a standard normal distribution. Thus the effect size estimates are in units of standard deviations on this transformed scale. Because, like most eQTL analyses, these estimates were obtained by single-SNP analysis, the estimated effects for each SNP actually reflect the effects of both the SNP itself and other SNPs in LD with it (see Supplementary Text for discussion). We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues.</p>
+<p>We apply FLASH on the matrix of summary statistics which are Z-scores. “We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues.”</p>
 </div>
 </div>
 <div id="other-potential-extension" class="section level2">
