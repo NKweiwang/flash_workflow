@@ -84,7 +84,7 @@ In our frame work, it is easy to extend out method to tensor factorization. And 
 
 ### rank decision issue
 
-there is somethig we don't fully understand.
+there is somethig we don't fully understand. the simplest case is comparing rank 0 and rank 1 case. 
 
 ## Session information
 
