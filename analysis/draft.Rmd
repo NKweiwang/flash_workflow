@@ -62,6 +62,36 @@ The Breast cancer data is from West et al. (2007). There are 251 samples and 226
 
 ![Breast Cancer data](~/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/Breastcancer/boxplot_centered.png)
 
+```{r}
+library(ggplot2)
+movie_res = readRDS("../data/missingvalue/box_movies.rds")
+tumor_res = readRDS("../data/missingvalue/box_tumor.rds")
+president_res = readRDS("../data/missingvalue/box_president.rds")
+breast_res = readRDS("../data/missingvalue/box_breast.rds")
+gtex_res = readRDS("../data/missingvalue/box_gtex.rds")
+plot_res = function(output,title = "data"){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  methods = rep(c("flash","NBSFA","PMD","softImpute"), each = N)
+  df = data.frame(RMSE = rmse, Method = methods )
+  p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
+  #geom_boxplot()
+  geom_violin()+
+  ggtitle(title)+theme_gray()
+  p
+}
+pm = plot_res(movie_res,"MovieLens")
+pp = plot_res(president_res,"Presidents")
+pg = plot_res(gtex_res,"GTEx Z-scores")
+pt = plot_res(tumor_res,"Tumors")
+pb = plot_res(breast_res,"Breast Cancer")
+library(cowplot)
+firstrow = plot_grid(pm, pp,pg, labels = c("A","B","C"), ncol = 3,rel_widths = c(1, 1))
+secondrow <- plot_grid(pt, pb, labels = c("D","E"), ncol = 2,rel_widths = c(1, 1))
+plot_grid(firstrow, secondrow, ncol = 1,rel_widths = c(1, 0.6))
+
+
+```
 
 
 ### gene expression data
