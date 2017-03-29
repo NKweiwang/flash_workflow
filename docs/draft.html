@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-03-27</p>
+<p><strong>Last updated:</strong> 2017-03-29</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 5561b3c</p>
+<p><strong>Code version:</strong> f8af2ba</p>
 <!-- Add your analysis here -->
 <div id="data-analysis-on-the-normalized-data" class="section level2">
 <h2>data analysis on the normalized data</h2>
@@ -362,6 +362,34 @@ shared across the workflowr files. -->
 <img src="/Users/weiwang/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/Breastcancer/boxplot_centered.png" alt="Breast Cancer data" />
 <p class="caption">Breast Cancer data</p>
 </div>
+<pre class="r"><code>library(ggplot2)
+movie_res = readRDS(&quot;../data/missingvalue/box_movies.rds&quot;)
+tumor_res = readRDS(&quot;../data/missingvalue/box_tumor.rds&quot;)
+president_res = readRDS(&quot;../data/missingvalue/box_president.rds&quot;)
+breast_res = readRDS(&quot;../data/missingvalue/box_breast.rds&quot;)
+gtex_res = readRDS(&quot;../data/missingvalue/box_gtex.rds&quot;)
+plot_res = function(output,title = &quot;data&quot;){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;), each = N)
+  df = data.frame(RMSE = rmse, Method = methods )
+  p&lt;-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
+  #geom_boxplot()
+  geom_violin()+
+  ggtitle(title)+theme_gray()
+  p
+}
+pm = plot_res(movie_res,&quot;MovieLens&quot;)
+pp = plot_res(president_res,&quot;Presidents&quot;)
+pg = plot_res(gtex_res,&quot;GTEx Z-scores&quot;)
+pt = plot_res(tumor_res,&quot;Tumors&quot;)
+pb = plot_res(breast_res,&quot;Breast Cancer&quot;)
+library(cowplot)
+firstrow = plot_grid(pm, pp,pg, labels = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;), ncol = 3,rel_widths = c(1, 1))
+secondrow &lt;- plot_grid(pt, pb, labels = c(&quot;D&quot;,&quot;E&quot;), ncol = 2,rel_widths = c(1, 1))</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_grid(firstrow, secondrow, ncol = 1,rel_widths = c(1, 0.6))</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-20-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="gene-expression-data" class="section level3">
@@ -400,13 +428,15 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] workflowr_0.4.0 rmarkdown_1.3  
+[1] workflowr_0.4.0 rmarkdown_1.3   cowplot_0.7.0   ggplot2_2.2.1  
 
 loaded via a namespace (and not attached):
- [1] backports_1.0.5 magrittr_1.5    rprojroot_1.2   htmltools_0.3.5
- [5] tools_3.3.0     yaml_2.1.14     Rcpp_0.12.9     stringi_1.1.2  
- [9] knitr_1.15.1    git2r_0.18.0    stringr_1.2.0   digest_0.6.12  
-[13] evaluate_0.10  </code></pre>
+ [1] Rcpp_0.12.9      rprojroot_1.2    digest_0.6.12    assertthat_0.1  
+ [5] grid_3.3.0       plyr_1.8.4       backports_1.0.5  gtable_0.2.0    
+ [9] git2r_0.18.0     magrittr_1.5     evaluate_0.10    scales_0.4.1    
+[13] stringi_1.1.2    lazyeval_0.2.0   labeling_0.3     tools_3.3.0     
+[17] stringr_1.2.0    munsell_0.4.3    yaml_2.1.14      colorspace_1.3-2
+[21] htmltools_0.3.5  knitr_1.15.1     tibble_1.2      </code></pre>
 </div>
 
 <hr>
