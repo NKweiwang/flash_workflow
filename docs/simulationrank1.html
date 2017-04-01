@@ -309,8 +309,8 @@ div.tocify {
 </div>
 
 
-<p><strong>Last updated:</strong> 2017-03-13</p>
-<p><strong>Code version:</strong> 57bde87</p>
+<p><strong>Last updated:</strong> 2017-03-31</p>
+<p><strong>Code version:</strong> d05aaa3</p>
 <div id="simulation-rank-one" class="section level2">
 <h2>simulation rank one</h2>
 <div id="simulated-data" class="section level3">
@@ -326,24 +326,38 @@ dim(Data$Y)</code></pre>
 <pre class="r"><code>gf = flashr::flash(Data$Y)
 plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
 abline(0,1,col = &quot;red&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-54-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })</code></pre>
+<pre><code>Loading required package: plyr</code></pre>
+<pre><code>Loading required package: impute</code></pre>
 <pre class="r"><code>plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
 abline(0,1,col = &quot;red&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-55-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-55-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
 <pre><code>[1] 0.2542683</code></pre>
 <pre class="r"><code>sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
 <pre><code>[1] 0.353972</code></pre>
 <pre class="r"><code>plot(as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-55-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-3-3.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="different-scale-of-sparsity" class="section level2">
+<h2>different scale of sparsity</h2>
+<div id="sparse" class="section level3">
+<h3>sparse</h3>
+</div>
+<div id="dense" class="section level3">
+<h3>dense</h3>
+</div>
+<div id="intermidete-sparse" class="section level3">
+<h3>intermidete sparse</h3>
+</div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session Information</h2>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 3.2.4 (2016-03-10)
+<pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
 Running under: OS X 10.12.3 (unknown)
 
@@ -354,22 +368,23 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] PMA_1.0.9       impute_1.44.0   plyr_1.8.4      MASS_7.3-45    
-[5] workflowr_0.3.0 rmarkdown_1.3  
+[1] PMA_1.0.9       impute_1.42.0   plyr_1.8.4      MASS_7.3-45    
+[5] workflowr_0.4.0 rmarkdown_1.3  
 
 loaded via a namespace (and not attached):
- [1] igraph_1.0.1      Rcpp_0.12.9       rstudioapi_0.6   
- [4] knitr_1.15.1      magrittr_1.5      REBayes_0.63     
- [7] pscl_1.4.9        doParallel_1.0.10 SQUAREM_2016.8-2 
-[10] lattice_0.20-34   foreach_1.4.3     ashr_2.1.4       
-[13] stringr_1.1.0     flashr_0.1.1      tools_3.2.4      
-[16] parallel_3.2.4    grid_3.2.4        irlba_2.1.2      
-[19] git2r_0.18.0      iterators_1.0.8   htmltools_0.3.5  
-[22] assertthat_0.1    yaml_2.1.14       rprojroot_1.2    
-[25] digest_0.6.11     Matrix_1.2-7.1    codetools_0.2-15 
-[28] rsconnect_0.4.3   evaluate_0.10     stringi_1.1.2    
-[31] Rmosek_7.1.2      backports_1.0.5   truncnorm_1.0-7  
-[34] flare_1.5.0      </code></pre>
+ [1] Rcpp_0.12.9       magrittr_1.5      knitr_1.15.1     
+ [4] REBayes_0.73      munsell_0.4.3     doParallel_1.0.10
+ [7] pscl_1.4.9        SQUAREM_2016.8-2  colorspace_1.3-2 
+[10] lattice_0.20-34   foreach_1.4.3     stringr_1.2.0    
+[13] ashr_2.1-7        flashr_0.1.1      tools_3.3.0      
+[16] parallel_3.3.0    grid_3.3.0        gtable_0.2.0     
+[19] irlba_2.1.2       git2r_0.18.0      htmltools_0.3.5  
+[22] iterators_1.0.8   yaml_2.1.14       rprojroot_1.2    
+[25] digest_0.6.12     lazyeval_0.2.0    assertthat_0.1   
+[28] tibble_1.2        Matrix_1.2-8      ggplot2_2.2.1    
+[31] codetools_0.2-15  evaluate_0.10     stringi_1.1.2    
+[34] Rmosek_7.1.2      backports_1.0.5   scales_0.4.1     
+[37] truncnorm_1.0-7  </code></pre>
 </div>
 
 <hr>
