@@ -124,7 +124,6 @@ PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
 ```
 
 
-
 ```{r}
 plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "red")
 abline(0,1,col = "red")
@@ -133,6 +132,14 @@ sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Dat
 sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
 plot(as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "blue")
 ```
+
+## different scale of sparsity
+
+### sparse
+
+### dense
+
+### intermidete sparse
 
 
 
