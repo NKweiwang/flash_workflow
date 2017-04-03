@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-03-29</p>
+<p><strong>Last updated:</strong> 2017-04-03</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> f8af2ba</p>
+<p><strong>Code version:</strong> 540818a</p>
 <!-- Add your analysis here -->
 <div id="data-analysis-on-the-normalized-data" class="section level2">
 <h2>data analysis on the normalized data</h2>
@@ -384,18 +384,115 @@ pp = plot_res(president_res,&quot;Presidents&quot;)
 pg = plot_res(gtex_res,&quot;GTEx Z-scores&quot;)
 pt = plot_res(tumor_res,&quot;Tumors&quot;)
 pb = plot_res(breast_res,&quot;Breast Cancer&quot;)
-library(cowplot)
-firstrow = plot_grid(pm, pp,pg, labels = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;), ncol = 3,rel_widths = c(1, 1))
-secondrow &lt;- plot_grid(pt, pb, labels = c(&quot;D&quot;,&quot;E&quot;), ncol = 2,rel_widths = c(1, 1))</code></pre>
-<p><img src="figure/draft.Rmd/unnamed-chunk-20-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot_grid(firstrow, secondrow, ncol = 1,rel_widths = c(1, 0.6))</code></pre>
-<p><img src="figure/draft.Rmd/unnamed-chunk-20-2.png" width="672" style="display: block; margin: auto;" /></p>
+library(cowplot)</code></pre>
+<pre><code>
+Attaching package: &#39;cowplot&#39;</code></pre>
+<pre><code>The following object is masked from &#39;package:ggplot2&#39;:
+
+    ggsave</code></pre>
+<pre class="r"><code>firstrow = plot_grid(pm, pp,pg, labels = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;), ncol = 3,rel_widths = c(1, 1))
+secondrow &lt;- plot_grid(pt, pb, labels = c(&quot;D&quot;,&quot;E&quot;), ncol = 2,rel_widths = c(1, 1))
+plot_grid(firstrow, secondrow, ncol = 1,rel_widths = c(1, 0.6))</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="gene-expression-data" class="section level3">
 <h3>gene expression data</h3>
 <p>To show the flexibility of FLASH, we take the summary statistics from the expression Quantitative Trait Loci (eQTLs) of 44 human Tissues. The original data is from Genotype Tissue Expression (GTEx) project. The aim of GTEx project “s to increase our understanding of how changes in our genes contribute to common human diseases, in order to improve health care for future generations.” We try to understand the &quot; which SNPs are eQTLs (i.e. associated with expression) in which tissues.Answering this could help distinguish regulatory regions and mechanisms that are specific to a few tissues vs shared among many tissues.It could also help with analyses that aim to integrate eQTL results with GWAS results to help identify the tissues that are most relevant to any specific complex disease (e.g. [18, 19]).&quot;</p>
 <p>We apply FLASH on the matrix of summary statistics which are Z-scores. “We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues.”</p>
+<pre class="r"><code>dat = read.table(&#39;../data/GTExColors.txt&#39;, sep = &#39;\t&#39;, comment.char = &#39;&#39;)
+colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
+# barplot(rep(1, nrow(dat)), col = as.character(dat[,2]))
+# just plot for loadings
+plot.factor = function(Y,g,k = 1,loading_label = FALSE,color.fill = NULL){
+  library(ggplot2)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  sample_name = row.names(Y)
+  variable_name = colnames(Y)
+  # plot the expectation of PVE 
+  ssY = sum(Y^2)
+  K = dim(g$l)[2]
+  pve = (sapply(seq(1,K),function(x){ sum(g$l[,x]^2 %*% t(g$f[,x]^2)) }))/ssY
+  pve_dat = data.frame(index = seq(1,K),EPVE = pve)
+  plot_pve &lt;- ggplot(pve_dat, aes(index, EPVE)) + geom_point(size = 4)  + geom_line(linetype = &quot;dotdash&quot;)
+  
+  # plot the loadings
+  if(loading_label == TRUE){
+    plot_l = plot_factor(g$l[,k],pve[k],N,k,f_lables = row.names(Y),y_lab = &quot;loading values&quot;,color.fill = color.fill)
+  }else{
+    plot_l = plot_factor(g$l[,k],pve[k],N,k,f_lables =NA,y_lab = &quot;loading values&quot;,color.fill = color.fill)
+  }
+  return(list(plot_pve = plot_pve,plot_l = plot_l))
+}
+
+
+#&#39; plot_f
+#&#39;
+#&#39; plot the factor 
+#&#39; @return list of factor, loading and variance of noise matrix
+#&#39;  \itemize{
+#&#39;   \item{\code{plot_f}} {is a ggplot object for the factors}
+#&#39;  }
+#&#39; @param f factor to plot
+#&#39; @param pve pve for this factor
+#&#39; @param P the lenght of this factor
+#&#39; @param k the order of the factor
+#&#39; @param f_lables the lables for the factor 
+#&#39; @param y_lab is the name of the Y axis
+#&#39; @details plot_f is to plot the factor as barplot.
+#&#39;
+#&#39; @importFrom ggplot2 ggplot
+#&#39;
+
+
+plot_factor = function(f,pve,P,k,f_lables = NA,y_lab = &quot;factor values&quot;,color.fill = NA){
+  library(ggplot2)
+  if(any(is.na(f_lables))){
+    f_dat &lt;- data.frame(variable = 1:P, Factor = f,
+                      sign.f = factor(sign(f)),
+                      hjust = factor(sign(f)))
+    
+    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable))) +
+      geom_bar(stat = &quot;identity&quot;,width = 0.5,color = &quot;black&quot;) +
+      scale_fill_manual(values=color.fill) + theme(legend.position=&quot;none&quot;) +
+      labs(title = paste(&quot;factor&quot;,k,&quot;with PVE=&quot;,round(pve,3)), y = y_lab ,x = &quot;index&quot;)
+  }else{
+    f_dat &lt;- data.frame(variable = 1:P, Factor = f,
+                      sign.f = factor(sign(f)),
+                      variablenames = f_lables,
+                      hjust = factor(sign(f)))
+    
+    # 120% lim 
+    range_f = max(f) - min(f)
+    upper_f = max(f,0) + 0.15 * range_f
+    lower_f = min(f,0) - 0.15 * range_f
+    
+    plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
+      geom_bar(stat = &quot;identity&quot;,width = 0.5,color = &quot;black&quot;) +
+      scale_fill_manual(values=color.fill) + theme(legend.position=&quot;none&quot;) +
+      geom_text(size = 2.75,angle = 90,hjust = as.character(f_dat$hjust),
+                nudge_y = sign(f_dat$Factor) * 0.1 * mean(abs(f_dat$Factor)) ) +
+      ylim(lower_f,upper_f) +
+      labs(title = paste(&quot;factor&quot;,k,&quot;with PVE=&quot;,round(pve,3) ), y = y_lab,x = &quot;index&quot;)
+  }
+  return(plot_f)
+}
+load(&quot;../data/GTExdata/bflashvarcol.rds&quot;)
+load(&quot;../data/GTExdata/gtexEQTL_zscore.rds&quot;)
+plot.factor(Y = t(zscore),g = b_flash,k = 1,loading_label = FALSE,color.fill = as.character(colordata[,2]))</code></pre>
+<pre><code>$plot_pve</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>
+$plot_l</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,color = factor(variable))) +
+#       geom_bar(stat = &quot;identity&quot;,width = 0.5,fill = &quot;white&quot;) +
+#       scale_color_manual(values=color.fill) + theme(legend.position=&quot;none&quot;)
+
+# ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
+#       geom_bar(stat = &quot;identity&quot;,width = 0.5,color = &quot;black&quot;) +
+#       scale_fill_manual(values=color.fill) + theme(legend.position=&quot;none&quot;)</code></pre>
 </div>
 </div>
 <div id="other-potential-extension" class="section level2">
@@ -428,10 +525,10 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] workflowr_0.4.0 rmarkdown_1.3   cowplot_0.7.0   ggplot2_2.2.1  
+[1] cowplot_0.7.0   workflowr_0.4.0 rmarkdown_1.3   ggplot2_2.2.1  
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.9      rprojroot_1.2    digest_0.6.12    assertthat_0.1  
+ [1] Rcpp_0.12.9      digest_0.6.12    rprojroot_1.2    assertthat_0.1  
  [5] grid_3.3.0       plyr_1.8.4       backports_1.0.5  gtable_0.2.0    
  [9] git2r_0.18.0     magrittr_1.5     evaluate_0.10    scales_0.4.1    
 [13] stringi_1.1.2    lazyeval_0.2.0   labeling_0.3     tools_3.3.0     
