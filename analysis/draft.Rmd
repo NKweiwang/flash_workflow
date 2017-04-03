@@ -102,6 +102,100 @@ We try to understand the " which SNPs are eQTLs (i.e. associated with expression
 
 We apply FLASH on the matrix of summary statistics which are Z-scores. "We analysed the 16,069 genes for which univariate effect estimates were available for all 44 tissues we considered; the filtering criteria used ensure that these genes show at least some indication of expression in all 44 tissues." 
 
+```{r}
+dat = read.table('../data/GTExColors.txt', sep = '\t', comment.char = '')
+colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
+# barplot(rep(1, nrow(dat)), col = as.character(dat[,2]))
+# just plot for loadings
+plot.factor = function(Y,g,k = 1,loading_label = FALSE,color.fill = NULL){
+  library(ggplot2)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  sample_name = row.names(Y)
+  variable_name = colnames(Y)
+  # plot the expectation of PVE 
+  ssY = sum(Y^2)
+  K = dim(g$l)[2]
+  pve = (sapply(seq(1,K),function(x){ sum(g$l[,x]^2 %*% t(g$f[,x]^2)) }))/ssY
+  pve_dat = data.frame(index = seq(1,K),EPVE = pve)
+  plot_pve <- ggplot(pve_dat, aes(index, EPVE)) + geom_point(size = 4)  + geom_line(linetype = "dotdash")
+  
+  # plot the loadings
+  if(loading_label == TRUE){
+    plot_l = plot_factor(g$l[,k],pve[k],N,k,f_lables = row.names(Y),y_lab = "loading values",color.fill = color.fill)
+  }else{
+    plot_l = plot_factor(g$l[,k],pve[k],N,k,f_lables =NA,y_lab = "loading values",color.fill = color.fill)
+  }
+  return(list(plot_pve = plot_pve,plot_l = plot_l))
+}
+
+
+#' plot_f
+#'
+#' plot the factor 
+#' @return list of factor, loading and variance of noise matrix
+#'  \itemize{
+#'   \item{\code{plot_f}} {is a ggplot object for the factors}
+#'  }
+#' @param f factor to plot
+#' @param pve pve for this factor
+#' @param P the lenght of this factor
+#' @param k the order of the factor
+#' @param f_lables the lables for the factor 
+#' @param y_lab is the name of the Y axis
+#' @details plot_f is to plot the factor as barplot.
+#'
+#' @importFrom ggplot2 ggplot
+#'
+
+
+plot_factor = function(f,pve,P,k,f_lables = NA,y_lab = "factor values",color.fill = NA){
+  library(ggplot2)
+  if(any(is.na(f_lables))){
+    f_dat <- data.frame(variable = 1:P, Factor = f,
+                      sign.f = factor(sign(f)),
+                      hjust = factor(sign(f)))
+    
+    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable))) +
+      geom_bar(stat = "identity",width = 0.5,color = "black") +
+      scale_fill_manual(values=color.fill) + theme(legend.position="none") +
+      labs(title = paste("factor",k,"with PVE=",round(pve,3)), y = y_lab ,x = "index")
+  }else{
+    f_dat <- data.frame(variable = 1:P, Factor = f,
+                      sign.f = factor(sign(f)),
+                      variablenames = f_lables,
+                      hjust = factor(sign(f)))
+    
+    # 120% lim 
+    range_f = max(f) - min(f)
+    upper_f = max(f,0) + 0.15 * range_f
+    lower_f = min(f,0) - 0.15 * range_f
+    
+    plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
+      geom_bar(stat = "identity",width = 0.5,color = "black") +
+      scale_fill_manual(values=color.fill) + theme(legend.position="none") +
+      geom_text(size = 2.75,angle = 90,hjust = as.character(f_dat$hjust),
+                nudge_y = sign(f_dat$Factor) * 0.1 * mean(abs(f_dat$Factor)) ) +
+      ylim(lower_f,upper_f) +
+      labs(title = paste("factor",k,"with PVE=",round(pve,3) ), y = y_lab,x = "index")
+  }
+  return(plot_f)
+}
+load("../data/GTExdata/bflashvarcol.rds")
+load("../data/GTExdata/gtexEQTL_zscore.rds")
+plot.factor(Y = t(zscore),g = b_flash,k = 1,loading_label = FALSE,color.fill = as.character(colordata[,2]))
+
+
+# plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,color = factor(variable))) +
+#       geom_bar(stat = "identity",width = 0.5,fill = "white") +
+#       scale_color_manual(values=color.fill) + theme(legend.position="none")
+
+# ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
+#       geom_bar(stat = "identity",width = 0.5,color = "black") +
+#       scale_fill_manual(values=color.fill) + theme(legend.position="none")
+
+```
+
 ## other potential extension
 
 ### NMF
