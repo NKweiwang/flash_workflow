@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-04-03</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 540818a</p>
+<p><strong>Code version:</strong> 8dabd13</p>
 <!-- Add your analysis here -->
 <div id="data-analysis-on-the-normalized-data" class="section level2">
 <h2>data analysis on the normalized data</h2>
@@ -384,16 +384,12 @@ pp = plot_res(president_res,&quot;Presidents&quot;)
 pg = plot_res(gtex_res,&quot;GTEx Z-scores&quot;)
 pt = plot_res(tumor_res,&quot;Tumors&quot;)
 pb = plot_res(breast_res,&quot;Breast Cancer&quot;)
-library(cowplot)</code></pre>
-<pre><code>
-Attaching package: &#39;cowplot&#39;</code></pre>
-<pre><code>The following object is masked from &#39;package:ggplot2&#39;:
-
-    ggsave</code></pre>
-<pre class="r"><code>firstrow = plot_grid(pm, pp,pg, labels = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;), ncol = 3,rel_widths = c(1, 1))
-secondrow &lt;- plot_grid(pt, pb, labels = c(&quot;D&quot;,&quot;E&quot;), ncol = 2,rel_widths = c(1, 1))
-plot_grid(firstrow, secondrow, ncol = 1,rel_widths = c(1, 0.6))</code></pre>
-<p><img src="figure/draft.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+library(cowplot)
+firstrow = plot_grid(pm, pp,pg, labels = c(&quot;A&quot;,&quot;B&quot;,&quot;C&quot;), ncol = 3,rel_widths = c(1, 1))
+secondrow &lt;- plot_grid(pt, pb, labels = c(&quot;D&quot;,&quot;E&quot;), ncol = 2,rel_widths = c(1, 1))</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_grid(firstrow, secondrow, ncol = 1,rel_widths = c(1, 0.6))</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-14-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="gene-expression-data" class="section level3">
@@ -453,10 +449,10 @@ plot_factor = function(f,pve,P,k,f_lables = NA,y_lab = &quot;factor values&quot;
                       sign.f = factor(sign(f)),
                       hjust = factor(sign(f)))
     
-    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable))) +
-      geom_bar(stat = &quot;identity&quot;,width = 0.5,color = &quot;black&quot;) +
-      scale_fill_manual(values=color.fill) + theme(legend.position=&quot;none&quot;) +
-      labs(title = paste(&quot;factor&quot;,k,&quot;with PVE=&quot;,round(pve,3)), y = y_lab ,x = &quot;index&quot;)
+    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable),color = factor(variable))) +
+      geom_bar(stat = &quot;identity&quot;,width = 0.6) +scale_color_manual(values=color.fill)+
+      scale_fill_manual(values=color.fill) + theme_grey()+ theme(legend.position=&quot;none&quot;,plot.background = element_rect()) + 
+      labs(title = paste(&quot;factor&quot;,k,&quot;with PVE=&quot;,max(0.001,round(pve,3))), y = y_lab ,x = &quot;index&quot;,color = &quot;index&quot;,fill=&quot;index&quot;)
   }else{
     f_dat &lt;- data.frame(variable = 1:P, Factor = f,
                       sign.f = factor(sign(f)),
@@ -468,31 +464,61 @@ plot_factor = function(f,pve,P,k,f_lables = NA,y_lab = &quot;factor values&quot;
     upper_f = max(f,0) + 0.15 * range_f
     lower_f = min(f,0) - 0.15 * range_f
     
-    plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
-      geom_bar(stat = &quot;identity&quot;,width = 0.5,color = &quot;black&quot;) +
-      scale_fill_manual(values=color.fill) + theme(legend.position=&quot;none&quot;) +
+    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable),color = factor(variable))) +
+      geom_bar(stat = &quot;identity&quot;,width = 0.6) +scale_color_manual(values=color.fill)+
+      scale_fill_manual(values=color.fill) + theme_grey()+ theme(legend.position=&quot;none&quot;,plot.background = element_rect())  +
       geom_text(size = 2.75,angle = 90,hjust = as.character(f_dat$hjust),
                 nudge_y = sign(f_dat$Factor) * 0.1 * mean(abs(f_dat$Factor)) ) +
       ylim(lower_f,upper_f) +
-      labs(title = paste(&quot;factor&quot;,k,&quot;with PVE=&quot;,round(pve,3) ), y = y_lab,x = &quot;index&quot;)
+      labs(title = paste(&quot;factor&quot;,k,&quot;with PVE=&quot;,max(0.001,round(pve,3)) ), y = y_lab,x = &quot;index&quot;)
   }
   return(plot_f)
 }
 load(&quot;../data/GTExdata/bflashvarcol.rds&quot;)
 load(&quot;../data/GTExdata/gtexEQTL_zscore.rds&quot;)
-plot.factor(Y = t(zscore),g = b_flash,k = 1,loading_label = FALSE,color.fill = as.character(colordata[,2]))</code></pre>
-<pre><code>$plot_pve</code></pre>
-<p><img src="figure/draft.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre><code>
-$plot_l</code></pre>
-<p><img src="figure/draft.Rmd/unnamed-chunk-12-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code># plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,color = factor(variable))) +
+# plot.factor(Y = t(zscore),g = b_flash,k = 1,loading_label = FALSE,color.fill = as.character(colordata[,2]))
+
+
+# plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,color = factor(variable))) +
 #       geom_bar(stat = &quot;identity&quot;,width = 0.5,fill = &quot;white&quot;) +
 #       scale_color_manual(values=color.fill) + theme(legend.position=&quot;none&quot;)
 
 # ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
 #       geom_bar(stat = &quot;identity&quot;,width = 0.5,color = &quot;black&quot;) +
-#       scale_fill_manual(values=color.fill) + theme(legend.position=&quot;none&quot;)</code></pre>
+#       scale_fill_manual(values=color.fill) + theme(legend.position=&quot;none&quot;)
+pic = list()
+for(i in 1:26){
+  pic[[i]] = plot.factor(Y = t(zscore),g = b_flash,k = i,
+                         loading_label = FALSE,color.fill = as.character(colordata[,2]))$plot_l
+}
+
+library(cowplot)
+plot_grid(pic[[1]], pic[[2]],pic[[3]],
+          pic[[4]],pic[[5]],pic[[6]],
+          pic[[7]],pic[[8]],pic[[9]],
+          labels = c(&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;), ncol = 3)
+
+plot_grid(pic[[10]], pic[[11]],pic[[12]],
+          pic[[13]],pic[[14]],pic[[15]],
+          pic[[16]],pic[[17]],pic[[18]],
+          labels = c(&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;), ncol = 3)</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/draft.Rmd/unnamed-chunk-15-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_grid(pic[[19]], pic[[20]],pic[[21]],
+          pic[[22]],pic[[23]],pic[[24]],
+          pic[[25]],pic[[26]],
+          labels = c(&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;,&quot;&quot;), ncol = 3)</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-15-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>line1 = plot_grid(pic[[19]], pic[[20]],pic[[21]],
+          labels = c(&quot;&quot;,&quot;&quot;,&quot;&quot;), ncol = 3)
+line2 = plot_grid(pic[[22]],pic[[23]],pic[[24]],
+          labels = c(&quot;&quot;,&quot;&quot;,&quot;&quot;), ncol = 3)
+pic_26 =  pic[[26]] + theme(legend.direction = &quot;horizontal&quot;,legend.position = &quot;right&quot;)+guides(col = guide_legend(ncol = 8))
+line3 = plot_grid(pic[[25]],pic_26,
+          labels = c(&quot;&quot;,&quot;&quot;), ncol = 2,rel_widths = c(1, 2))
+
+plot_grid(line1,line2,line3,labels = c(&quot;&quot;,&quot;&quot;,&quot;&quot;), ncol = 1)</code></pre>
+<p><img src="figure/draft.Rmd/unnamed-chunk-15-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># need one for the lengend</code></pre>
 </div>
 </div>
 <div id="other-potential-extension" class="section level2">
@@ -525,10 +551,10 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] cowplot_0.7.0   workflowr_0.4.0 rmarkdown_1.3   ggplot2_2.2.1  
+[1] workflowr_0.4.0 rmarkdown_1.3   cowplot_0.7.0   ggplot2_2.2.1  
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.9      digest_0.6.12    rprojroot_1.2    assertthat_0.1  
+ [1] Rcpp_0.12.9      rprojroot_1.2    digest_0.6.12    assertthat_0.1  
  [5] grid_3.3.0       plyr_1.8.4       backports_1.0.5  gtable_0.2.0    
  [9] git2r_0.18.0     magrittr_1.5     evaluate_0.10    scales_0.4.1    
 [13] stringi_1.1.2    lazyeval_0.2.0   labeling_0.3     tools_3.3.0     
