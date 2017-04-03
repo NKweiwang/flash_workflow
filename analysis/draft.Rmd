@@ -156,10 +156,10 @@ plot_factor = function(f,pve,P,k,f_lables = NA,y_lab = "factor values",color.fil
                       sign.f = factor(sign(f)),
                       hjust = factor(sign(f)))
     
-    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable))) +
-      geom_bar(stat = "identity",width = 0.5,color = "black") +
-      scale_fill_manual(values=color.fill) + theme(legend.position="none") +
-      labs(title = paste("factor",k,"with PVE=",round(pve,3)), y = y_lab ,x = "index")
+    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable),color = factor(variable))) +
+      geom_bar(stat = "identity",width = 0.6) +scale_color_manual(values=color.fill)+
+      scale_fill_manual(values=color.fill) + theme_grey()+ theme(legend.position="none",plot.background = element_rect()) + 
+      labs(title = paste("factor",k,"with PVE=",max(0.001,round(pve,3))), y = y_lab ,x = "index",color = "index",fill="index")
   }else{
     f_dat <- data.frame(variable = 1:P, Factor = f,
                       sign.f = factor(sign(f)),
@@ -171,19 +171,19 @@ plot_factor = function(f,pve,P,k,f_lables = NA,y_lab = "factor values",color.fil
     upper_f = max(f,0) + 0.15 * range_f
     lower_f = min(f,0) - 0.15 * range_f
     
-    plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
-      geom_bar(stat = "identity",width = 0.5,color = "black") +
-      scale_fill_manual(values=color.fill) + theme(legend.position="none") +
+    plot_f = ggplot(f_dat,aes(x = variable,y = Factor,fill = factor(variable),color = factor(variable))) +
+      geom_bar(stat = "identity",width = 0.6) +scale_color_manual(values=color.fill)+
+      scale_fill_manual(values=color.fill) + theme_grey()+ theme(legend.position="none",plot.background = element_rect())  +
       geom_text(size = 2.75,angle = 90,hjust = as.character(f_dat$hjust),
                 nudge_y = sign(f_dat$Factor) * 0.1 * mean(abs(f_dat$Factor)) ) +
       ylim(lower_f,upper_f) +
-      labs(title = paste("factor",k,"with PVE=",round(pve,3) ), y = y_lab,x = "index")
+      labs(title = paste("factor",k,"with PVE=",max(0.001,round(pve,3)) ), y = y_lab,x = "index")
   }
   return(plot_f)
 }
 load("../data/GTExdata/bflashvarcol.rds")
 load("../data/GTExdata/gtexEQTL_zscore.rds")
-plot.factor(Y = t(zscore),g = b_flash,k = 1,loading_label = FALSE,color.fill = as.character(colordata[,2]))
+# plot.factor(Y = t(zscore),g = b_flash,k = 1,loading_label = FALSE,color.fill = as.character(colordata[,2]))
 
 
 # plot_f = ggplot(f_dat,aes(x = factor(variable),y = Factor,color = factor(variable))) +
@@ -193,6 +193,36 @@ plot.factor(Y = t(zscore),g = b_flash,k = 1,loading_label = FALSE,color.fill = a
 # ggplot(f_dat,aes(x = factor(variable),y = Factor,fill = factor(variable))) +
 #       geom_bar(stat = "identity",width = 0.5,color = "black") +
 #       scale_fill_manual(values=color.fill) + theme(legend.position="none")
+pic = list()
+for(i in 1:26){
+  pic[[i]] = plot.factor(Y = t(zscore),g = b_flash,k = i,
+                         loading_label = FALSE,color.fill = as.character(colordata[,2]))$plot_l
+}
+
+library(cowplot)
+plot_grid(pic[[1]], pic[[2]],pic[[3]],
+          pic[[4]],pic[[5]],pic[[6]],
+          pic[[7]],pic[[8]],pic[[9]],
+          labels = c("","","","","","","","",""), ncol = 3)
+
+plot_grid(pic[[10]], pic[[11]],pic[[12]],
+          pic[[13]],pic[[14]],pic[[15]],
+          pic[[16]],pic[[17]],pic[[18]],
+          labels = c("","","","","","","","",""), ncol = 3)
+plot_grid(pic[[19]], pic[[20]],pic[[21]],
+          pic[[22]],pic[[23]],pic[[24]],
+          pic[[25]],pic[[26]],
+          labels = c("","","","","","","","",""), ncol = 3)
+line1 = plot_grid(pic[[19]], pic[[20]],pic[[21]],
+          labels = c("","",""), ncol = 3)
+line2 = plot_grid(pic[[22]],pic[[23]],pic[[24]],
+          labels = c("","",""), ncol = 3)
+pic_26 =  pic[[26]] + theme(legend.direction = "horizontal",legend.position = "right")+guides(col = guide_legend(ncol = 8))
+line3 = plot_grid(pic[[25]],pic_26,
+          labels = c("",""), ncol = 2,rel_widths = c(1, 2))
+
+plot_grid(line1,line2,line3,labels = c("","",""), ncol = 1)
+# need one for the lengend
 
 ```
 
