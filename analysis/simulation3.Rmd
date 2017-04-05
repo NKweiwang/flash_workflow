@@ -1,0 +1,174 @@
+---
+title: "simulation for the sparse factor loadings"
+author: "Wei Wang"
+date: 2017-04-04
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+```{r}
+
+CVPMD=function(Y,c_s,K){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = 5)
+  rowindex = matrix(sample(N,N),ncol = 5)
+  
+  missing= array(0,dim = c(5,N,P))
+  foldindex = array(0,dim = c(5,5,2))
+  for(i in 1:5){
+    for(j in 1:5){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% 5
+    }
+  }
+  foldindex[which(foldindex == 0)] = 5
+  for(i in 1:5){
+    missing[i, , ] = Y
+    for(j in 1:5){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  n_s = length(c_s)
+  CVRMSE = rep(NA,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # here we only need one layer
+  for(t_s in 1:n_s){
+    rmse = rep(0,5)
+    for(i in 1:5){
+      out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)
+      misshat = out$u %*%  diag(out$d) %*% t(out$v)
+      for(j in 1:5){
+        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
+                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+      }
+      rmse[i] = sqrt(rmse[i] / (N * P/5))
+    }
+    CVRMSE[t_s] = mean(rmse)
+    if(CVRMSE[t_s] < minrmse){
+      minrmse = CVRMSE[t_s]
+      opt_s = c_s[t_s]
+    }
+  }
+  
+  return(list(opt_s = opt_s ))
+}
+
+
+PMA.wrapper = function(Y,ngrids = 10,K){
+  library(PMA)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0.2,0.8,len=ngrids)
+  cvout = CVPMD(Y,c_s, K = K)
+  out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)
+  residual_PMD = Y -  out$u %*%  diag(out$d) %*% t(out$v)
+  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
+}
+
+
+
+```
+
+
+```{r}
+set.seed(99)
+N = 150
+P = 240
+K = 3
+L_true = array(0,dim = c(N,K))
+F_true = array(0,dim = c(P,K))
+F_true[1:80,1] = rnorm(80,0,0.5)
+F_true[81:160,2] = rnorm(80,0,1)
+F_true[161:240,3] = rnorm(80,0,2)
+L_true[1:10,1] = rnorm(10,0,2)
+L_true[11:60,2] = rnorm(50,0,1)
+L_true[61:150,3] = rnorm(90,0,0.5)
+G = L_true %*% t(F_true)
+# generate Y
+E = matrix(rnorm(N*P,0,2),nrow=N)
+Y = L_true %*% t(F_true) + E
+g_flash = flashr::greedy(Y,K = 5)
+g_b_flash = flashr::backfitting(Y,initial_list = g_flash)
+
+outcv = PMA.wrapper(Y,10,K = 3)
+```
+
+```{r}
+par(mfrow = c(2,2))
+image( t(apply(t(g_b_flash$l %*% t(g_b_flash$f)),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "FLASH")
+image(t(apply(t(outcv$u %*% diag(outcv$d) %*% t(outcv$v)),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "PMD")
+image(t(apply(t(Y),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "observed data")
+image(t(apply(t(G),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "underlying structure")
+par(mfrow = c(2,2))
+image( t(apply(t(g_b_flash$l %*% t(g_b_flash$f)),2,rev)),col =blues9,main = "FLASH")
+image(t(apply(t(outcv$u %*% diag(outcv$d) %*% t(outcv$v)),2,rev)),col = blues9,main = "PMD")
+image(t(apply(t(Y),2,rev)),col = blues9,main = "observed data")
+image(t(apply(t(G),2,rev)),col = blues9,main = "underlying structure")
+```
+
+
+```{r}
+library(ggplot2)
+library(cowplot)
+mat = cbind(L_true,g_b_flash$l,outcv$u)
+mat[,8] = -mat[,8]
+mat[,9] = -mat[,9]
+mat[,6] = -mat[,6]
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c("truth.l1","truth.l2","truth.l3","FLASH.l3","FLASH.l2","FLASH.l1","PMD.u3","PMD.u2","PMD.u1")
+df1 = data.frame(mat1)
+p1_1_l <- ggplot(df1, aes(truth.l1, FLASH.l1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 1 (FLASH)")
+p1_2_l <- ggplot(df1, aes(truth.l2, FLASH.l2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 2 (FLASH)")
+p1_3_l <- ggplot(df1, aes(truth.l3, FLASH.l3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 3 (FLASH)")
+p2_1_l <- ggplot(df1, aes(truth.l1, PMD.u1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 1 (PMD)")
+p2_2_l <- ggplot(df1, aes(truth.l2, PMD.u2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 2 (PMD)")
+p2_3_l <- ggplot(df1, aes(truth.l3, PMD.u3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 3 (PMD)")
+
+
+library(ggplot2)
+library(cowplot)
+mat = cbind(F_true,g_b_flash$f,outcv$v)
+mat[,8] = -mat[,8]
+mat[,9] = -mat[,9]
+mat[,6] = -mat[,6]
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c("truth.f1","truth.f2","truth.f3","FLASH.f3","FLASH.f2","FLASH.f1","PMD.v3","PMD.v2","PMD.v1")
+df1 = data.frame(mat1)
+p1_1 <- ggplot(df1, aes(truth.f1, FLASH.f1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 1 (FLASH)")
+p1_2 <- ggplot(df1, aes(truth.f2, FLASH.f2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 2 (FLASH)")
+p1_3 <- ggplot(df1, aes(truth.f3, FLASH.f3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 3 (FLASH)")
+p2_1 <- ggplot(df1, aes(truth.f1, PMD.v1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 1 (PMD)")
+p2_2 <- ggplot(df1, aes(truth.f2, PMD.v2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 2 (PMD)")
+p2_3 <- ggplot(df1, aes(truth.f3, PMD.v3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 3 (PMD)")
+plot_grid(p1_1_l, p2_1_l, p1_1, p2_1,
+          p1_2_l, p2_2_l, p1_2, p2_2,
+          p1_3_l, p2_3_l, p1_3, p2_3,labels = "" , ncol = 4)
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
