@@ -309,8 +309,8 @@ div.tocify {
 </div>
 
 
-<p><strong>Last updated:</strong> 2017-03-31</p>
-<p><strong>Code version:</strong> d05aaa3</p>
+<p><strong>Last updated:</strong> 2017-04-04</p>
+<p><strong>Code version:</strong> 3714f2e</p>
 <div id="simulation-rank-one" class="section level2">
 <h2>simulation rank one</h2>
 <div id="simulated-data" class="section level3">
@@ -319,39 +319,312 @@ div.tocify {
 </div>
 <div id="big-signal" class="section level2">
 <h2>big signal</h2>
-<pre class="r"><code>set.seed(99)
+<pre><code>set.seed(99)
 Data = datamaker(60,100,c(0.5,0.1,0.2,0.15,0.05),c(0.01,0.5,1,2,5),0.5,c(0.6,0.05,0.3,0.025,0.025),c(0.01,0.5,1,2,5),0.5,sqrt(1))
-dim(Data$Y)</code></pre>
-<pre><code>[1]  60 100</code></pre>
-<pre class="r"><code>gf = flashr::flash(Data$Y)
+dim(Data$Y)
+gf = flashr::flash(Data$Y)
 plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
-abline(0,1,col = &quot;red&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })</code></pre>
-<pre><code>Loading required package: plyr</code></pre>
-<pre><code>Loading required package: impute</code></pre>
-<pre class="r"><code>plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
-abline(0,1,col = &quot;red&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
-<pre><code>[1] 0.2542683</code></pre>
-<pre class="r"><code>sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
-<pre><code>[1] 0.353972</code></pre>
-<pre class="r"><code>plot(as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;blue&quot;)</code></pre>
-<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-3-3.png" width="672" style="display: block; margin: auto;" /></p>
+abline(0,1,col = &quot;red&quot;)
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })</code></pre>
+<pre><code>plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
+abline(0,1,col = &quot;red&quot;)
+plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = &quot;blue&quot;)
+sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+plot(as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;blue&quot;)</code></pre>
 </div>
 <div id="different-scale-of-sparsity" class="section level2">
 <h2>different scale of sparsity</h2>
 <div id="sparse" class="section level3">
 <h3>sparse</h3>
+<pre class="r"><code>library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+dim(Data$Y)</code></pre>
+<pre><code>[1] 200 300</code></pre>
+<pre class="r"><code>gf = flashr::flash(Data$Y)
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
+#abline(0,1,col = &quot;red&quot;)
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = &quot;blue&quot;)
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(gPMD$u/sqrt(sum((gPMD$u )^2)),gf$l/sqrt(sum((gf$l)^2)))
+#abline(0,1)
+
+library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim &lt;- c(-0.08,0.08); ylim &lt;- c(-0.08,0.08)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u)
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;)
+df1 = data.frame(mat1)
+
+base1 &lt;- ggplot(df1, aes(x = truth, y = FLASH)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed1 = ggplot(df1, aes(x = truth, y = FLASH)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+g1 &lt;- ggplotGrob(zoomed1)
+base1 +annotation_custom(grob = g1, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)</code></pre>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-30-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>base2 &lt;- ggplot(df1, aes(x = truth, y = PMD)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed2 = ggplot(df1, aes(x = truth, y = PMD)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey() + geom_abline(intercept = 0,slope = 1)
+
+g2 &lt;- ggplotGrob(zoomed2)
+base2 +annotation_custom(grob = g2, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)</code></pre>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-30-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_grid(base1, base2, zoomed1,zoomed2, labels = &quot;AUTO&quot;, ncol = 2)</code></pre>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-30-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>gsfamix_1 = readRDS(&quot;../data/simulation/rankone/highsparse/sfamix_res.rds&quot;)
+gsvd = svd(Data$Y)
+gsfa = readRDS(&quot;../data/simulation/rankone/highsparse/sfa_res.rds&quot;)
+
+# to get the KSVD result
+# try other methods
+library(&quot;R.matlab&quot;)
+# saveRDS(Data,file = &quot;../data/simulation/rankone/mediansparse/test_1.rds&quot;)
+# write the data into matlab
+# writeMat(&quot;../data/simulation/rankone/highsparse/test_1.mat&quot;, data = Data)
+# KSVD
+res_KSVD = readMat(&quot;../data/simulation/rankone/highsparse/KSVDtest_1.mat&quot;,sparseMatrixClass=&quot;matrix&quot;)
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+library(ggplot2)
+library(grid)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(Dic),gsvd$u[,1])
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;KSVD&quot;,&quot;SVD&quot;)
+df1 = data.frame(mat1)
+xybound = c( -0.6, -0.1, -0.05, 0.45)
+z_size = c(-0.08,0.08,-0.08,0.08)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim &lt;- c(zoom_size[1],zoom_size[2])
+  ylim &lt;- c(zoom_size[3],zoom_size[4])
+
+  base1 &lt;- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) +
+    theme_bw()+ geom_abline(intercept = 0,slope = 1)
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 &lt;- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 2)</code></pre>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-30-4.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="intermediate-sparse" class="section level3">
+<h3>intermediate sparse</h3>
+<pre class="r"><code>library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+dim(Data$Y)</code></pre>
+<pre><code>[1] 200 300</code></pre>
+<pre class="r"><code>gf = flashr::flash(Data$Y)
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
+#abline(0,1,col = &quot;red&quot;)
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = &quot;blue&quot;)
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(gPMD$u/sqrt(sum((gPMD$u )^2)),gf$l/sqrt(sum((gf$l)^2)))
+#abline(0,1)
+
+
+sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
+<pre><code>[1] 0.3622583</code></pre>
+<pre class="r"><code>sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
+<pre><code>[1] 0.3790787</code></pre>
+<pre class="r"><code># result from sfa
+
+gsfamix_1 = readRDS(&quot;../data/simulation/rankone/mediansparse/sfamix_2.rds&quot;)
+gsfamix_2 = readRDS(&quot;../data/simulation/rankone/mediansparse/sfamix_3.rds&quot;)
+gsfa = readRDS(&quot;../data/simulation/rankone/mediansparse/sfa_res.rds&quot;)
+
+# to get the KSVD result
+# try other methods
+library(&quot;R.matlab&quot;)
+# saveRDS(Data,file = &quot;../data/simulation/rankone/mediansparse/test_1.rds&quot;)
+# write the data into matlab
+# writeMat(&quot;../data/simulation/rankone/mediansparse/test_1.mat&quot;, data = Data)
+# KSVD
+res_KSVD = readMat(&quot;../data/simulation/rankone/mediansparse/KSVDtest_1.mat&quot;,sparseMatrixClass=&quot;matrix&quot;)
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim &lt;- c(-0.1,0.1); ylim &lt;- c(-0.1,0.1)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(gsfamix_2$F),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;,&quot;SFA&quot;,&quot;SFAmix.1&quot;,&quot;SFAmix.2&quot;,&quot;KSVD&quot;)
+df1 = data.frame(mat1)
+
+base1 &lt;- ggplot(df1, aes(x = truth, y = FLASH)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed1 = ggplot(df1, aes(x = truth, y = FLASH)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+g1 &lt;- ggplotGrob(zoomed1)
+pic1 = base1 +annotation_custom(grob = g1,  xmin = -0.35, xmax = 0, ymin = 0.05, ymax = 0.4)
+
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(gsfamix_2$F),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;,&quot;SFA&quot;,&quot;SFAmix.1&quot;,&quot;SFAmix.2&quot;,&quot;KSVD&quot;)
+df1 = data.frame(mat1)
+xybound = c(-0.35,0,0.03,0.38)
+z_size = c(-0.07,0.07,-0.07,0.07)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim &lt;- c(zoom_size[1],zoom_size[2])
+  ylim &lt;- c(zoom_size[3],zoom_size[4])
+
+  base1 &lt;- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) +
+    theme_bw()+ geom_abline(intercept = 0,slope = 1)
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 &lt;- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 2)</code></pre>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-31-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="dense" class="section level3">
 <h3>dense</h3>
-</div>
-<div id="intermidete-sparse" class="section level3">
-<h3>intermidete sparse</h3>
+<pre class="r"><code>library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,1,c(1),c(1),1,sqrt(100))
+dim(Data$Y)</code></pre>
+<pre><code>[1] 200 300</code></pre>
+<pre class="r"><code>gf = flashr::flash(Data$Y)
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = &quot;red&quot;)
+#abline(0,1,col = &quot;red&quot;)
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = &quot;blue&quot;)
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(gPMD$u/sqrt(sum((gPMD$u )^2)),gf$l/sqrt(sum((gf$l)^2)))
+#abline(0,1)
+
+
+sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
+<pre><code>[1] 0.7220917</code></pre>
+<pre class="r"><code>sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
+<pre><code>[1] 0.8888229</code></pre>
+<pre class="r"><code>sqrt(mean((gsfa$L %*% gsfa$F - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))</code></pre>
+<pre><code>[1] 1.312787</code></pre>
+<pre class="r"><code># result from sfa
+
+gsfamix_1 = readRDS(&quot;../data/simulation/rankone/dense/sfamix_1.rds&quot;)
+gsfamix_2 = readRDS(&quot;../data/simulation/rankone/dense/sfamix_2.rds&quot;)
+gsfa = readRDS(&quot;../data/simulation/rankone/dense/sfa_res.rds&quot;)
+
+# to get the KSVD result
+# try other methods
+library(&quot;R.matlab&quot;)
+# saveRDS(Data,file = &quot;../data/simulation/rankone/mediansparse/test_1.rds&quot;)
+# write the data into matlab
+# writeMat(&quot;../data/simulation/rankone/dense/test_1.mat&quot;, data = Data)
+# KSVD
+res_KSVD = readMat(&quot;../data/simulation/rankone/dense/KSVDtest_1.mat&quot;,sparseMatrixClass=&quot;matrix&quot;)
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim &lt;- c(-0.1,0.1); ylim &lt;- c(-0.1,0.1)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),rep(as.vector(gsfamix_2$F),N),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })</code></pre>
+<pre><code>Warning in cor(mat[, x], mat[, 1]): the standard deviation is zero</code></pre>
+<pre class="r"><code>mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+mat1[,6] = 0
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;,&quot;SFA&quot;,&quot;SFAmix.1&quot;,&quot;SFAmix.2&quot;,&quot;KSVD&quot;)
+df1 = data.frame(mat1)
+xybound = c(-0.35, -0.05, 0.03, 0.38)
+z_size = c(-0.07,0.07,-0.07,0.07)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim &lt;- c(zoom_size[1],zoom_size[2])
+  ylim &lt;- c(zoom_size[3],zoom_size[4])
+
+  base1 &lt;- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) + coord_cartesian(xlim=c(-0.3,0.3), ylim= c(-0.36,0.36) ) + 
+    theme_bw()+ geom_abline(intercept = 0,slope = 1)
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 &lt;- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 2)</code></pre>
+<p><img src="figure/simulationrank1.Rmd/unnamed-chunk-32-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
@@ -365,26 +638,28 @@ locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
 
 other attached packages:
-[1] PMA_1.0.9       impute_1.42.0   plyr_1.8.4      MASS_7.3-45    
-[5] workflowr_0.4.0 rmarkdown_1.3  
+[1] workflowr_0.4.0 rmarkdown_1.3   R.matlab_3.6.1  PMA_1.0.9      
+[5] impute_1.42.0   plyr_1.8.4      cowplot_0.7.0   ggplot2_2.2.1  
+[9] MASS_7.3-45    
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.9       magrittr_1.5      knitr_1.15.1     
- [4] REBayes_0.73      munsell_0.4.3     doParallel_1.0.10
- [7] pscl_1.4.9        SQUAREM_2016.8-2  colorspace_1.3-2 
-[10] lattice_0.20-34   foreach_1.4.3     stringr_1.2.0    
-[13] ashr_2.1-7        flashr_0.1.1      tools_3.3.0      
-[16] parallel_3.3.0    grid_3.3.0        gtable_0.2.0     
-[19] irlba_2.1.2       git2r_0.18.0      htmltools_0.3.5  
-[22] iterators_1.0.8   yaml_2.1.14       rprojroot_1.2    
-[25] digest_0.6.12     lazyeval_0.2.0    assertthat_0.1   
-[28] tibble_1.2        Matrix_1.2-8      ggplot2_2.2.1    
-[31] codetools_0.2-15  evaluate_0.10     stringi_1.1.2    
-[34] Rmosek_7.1.2      backports_1.0.5   scales_0.4.1     
-[37] truncnorm_1.0-7  </code></pre>
+ [1] Rcpp_0.12.9       git2r_0.18.0      R.methodsS3_1.7.1
+ [4] R.utils_2.5.0     iterators_1.0.8   tools_3.3.0      
+ [7] digest_0.6.12     evaluate_0.10     tibble_1.2       
+[10] gtable_0.2.0      lattice_0.20-34   Matrix_1.2-8     
+[13] foreach_1.4.3     yaml_2.1.14       parallel_3.3.0   
+[16] stringr_1.2.0     knitr_1.15.1      REBayes_0.73     
+[19] rprojroot_1.2     irlba_2.1.2       magrittr_1.5     
+[22] flashr_0.1.1      ashr_2.1-7        scales_0.4.1     
+[25] backports_1.0.5   codetools_0.2-15  htmltools_0.3.5  
+[28] assertthat_0.1    colorspace_1.3-2  labeling_0.3     
+[31] stringi_1.1.2     Rmosek_7.1.2      lazyeval_0.2.0   
+[34] pscl_1.4.9        doParallel_1.0.10 munsell_0.4.3    
+[37] truncnorm_1.0-7   SQUAREM_2016.8-2  R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>
