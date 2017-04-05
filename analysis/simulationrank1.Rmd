@@ -113,7 +113,7 @@ PMA.wrapper = function(Y,ngrids = 10){
 
 ## big signal
   
-```{r}
+```
 set.seed(99)
 Data = datamaker(60,100,c(0.5,0.1,0.2,0.15,0.05),c(0.01,0.5,1,2,5),0.5,c(0.6,0.05,0.3,0.025,0.025),c(0.01,0.5,1,2,5),0.5,sqrt(1))
 dim(Data$Y)
@@ -124,7 +124,7 @@ PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
 ```
 
 
-```{r}
+```
 plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "red")
 abline(0,1,col = "red")
 plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = "blue")
@@ -137,11 +137,289 @@ plot(as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),as.vector(gf$l %*% t(gf$f)),pc
 
 ### sparse
 
+```{r}
+library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+dim(Data$Y)
+gf = flashr::flash(Data$Y)
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "red")
+#abline(0,1,col = "red")
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = "blue")
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(gPMD$u/sqrt(sum((gPMD$u )^2)),gf$l/sqrt(sum((gf$l)^2)))
+#abline(0,1)
+
+library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim <- c(-0.08,0.08); ylim <- c(-0.08,0.08)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u)
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c("truth","FLASH","PMD")
+df1 = data.frame(mat1)
+
+base1 <- ggplot(df1, aes(x = truth, y = FLASH)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed1 = ggplot(df1, aes(x = truth, y = FLASH)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+g1 <- ggplotGrob(zoomed1)
+base1 +annotation_custom(grob = g1, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)
+
+base2 <- ggplot(df1, aes(x = truth, y = PMD)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed2 = ggplot(df1, aes(x = truth, y = PMD)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey() + geom_abline(intercept = 0,slope = 1)
+
+g2 <- ggplotGrob(zoomed2)
+base2 +annotation_custom(grob = g2, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)
+plot_grid(base1, base2, zoomed1,zoomed2, labels = "AUTO", ncol = 2)
+
+
+
+gsfamix_1 = readRDS("../data/simulation/rankone/highsparse/sfamix_res.rds")
+gsvd = svd(Data$Y)
+gsfa = readRDS("../data/simulation/rankone/highsparse/sfa_res.rds")
+
+# to get the KSVD result
+# try other methods
+library("R.matlab")
+# saveRDS(Data,file = "../data/simulation/rankone/mediansparse/test_1.rds")
+# write the data into matlab
+# writeMat("../data/simulation/rankone/highsparse/test_1.mat", data = Data)
+# KSVD
+res_KSVD = readMat("../data/simulation/rankone/highsparse/KSVDtest_1.mat",sparseMatrixClass="matrix")
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+library(ggplot2)
+library(grid)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(Dic),gsvd$u[,1])
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c("truth","FLASH","PMD","SFA","SFAmix","KSVD","SVD")
+df1 = data.frame(mat1)
+xybound = c( -0.6, -0.1, -0.05, 0.45)
+z_size = c(-0.08,0.08,-0.08,0.08)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim <- c(zoom_size[1],zoom_size[2])
+  ylim <- c(zoom_size[3],zoom_size[4])
+
+  base1 <- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) +
+    theme_bw()+ geom_abline(intercept = 0,slope = 1)
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 <- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[5]], pic_list[[6]],  labels = "AUTO", ncol = 2)
+```
+
+### intermediate sparse
+
+```{r}
+library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+dim(Data$Y)
+gf = flashr::flash(Data$Y)
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "red")
+#abline(0,1,col = "red")
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = "blue")
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(gPMD$u/sqrt(sum((gPMD$u )^2)),gf$l/sqrt(sum((gf$l)^2)))
+#abline(0,1)
+
+
+sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+# result from sfa
+
+gsfamix_1 = readRDS("../data/simulation/rankone/mediansparse/sfamix_2.rds")
+gsfamix_2 = readRDS("../data/simulation/rankone/mediansparse/sfamix_3.rds")
+gsfa = readRDS("../data/simulation/rankone/mediansparse/sfa_res.rds")
+
+# to get the KSVD result
+# try other methods
+library("R.matlab")
+# saveRDS(Data,file = "../data/simulation/rankone/mediansparse/test_1.rds")
+# write the data into matlab
+# writeMat("../data/simulation/rankone/mediansparse/test_1.mat", data = Data)
+# KSVD
+res_KSVD = readMat("../data/simulation/rankone/mediansparse/KSVDtest_1.mat",sparseMatrixClass="matrix")
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim <- c(-0.1,0.1); ylim <- c(-0.1,0.1)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(gsfamix_2$F),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c("truth","FLASH","PMD","SFA","SFAmix.1","SFAmix.2","KSVD")
+df1 = data.frame(mat1)
+
+base1 <- ggplot(df1, aes(x = truth, y = FLASH)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed1 = ggplot(df1, aes(x = truth, y = FLASH)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+g1 <- ggplotGrob(zoomed1)
+pic1 = base1 +annotation_custom(grob = g1,  xmin = -0.35, xmax = 0, ymin = 0.05, ymax = 0.4)
+
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(gsfamix_2$F),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c("truth","FLASH","PMD","SFA","SFAmix.1","SFAmix.2","KSVD")
+df1 = data.frame(mat1)
+xybound = c(-0.35,0,0.03,0.38)
+z_size = c(-0.07,0.07,-0.07,0.07)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim <- c(zoom_size[1],zoom_size[2])
+  ylim <- c(zoom_size[3],zoom_size[4])
+
+  base1 <- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) +
+    theme_bw()+ geom_abline(intercept = 0,slope = 1)
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 <- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[5]], pic_list[[6]],  labels = "AUTO", ncol = 2)
+```
+
 ### dense
 
-### intermidete sparse
+```{r}
+library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,1,c(1),c(1),1,sqrt(100))
+dim(Data$Y)
+gf = flashr::flash(Data$Y)
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector(gf$l %*% t(gf$f)),pch = 16,col = "red")
+#abline(0,1,col = "red")
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+#plot(as.vector(Data$L_true %*% t(Data$F_true)),as.vector( (gPMD$u * gPMD$d) %*% t(gPMD$v) ),pch = 16,col = "blue")
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gf$l/sqrt(sum((gf$l)^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(Data$L_true/sqrt(sum((Data$L_true)^2)),gPMD$u/sqrt(sum((gPMD$u )^2)),ylim = c(-0.1,0.1),xlim = c(-0.1,0.1))
+#plot(gPMD$u/sqrt(sum((gPMD$u )^2)),gf$l/sqrt(sum((gf$l)^2)))
+#abline(0,1)
 
 
+sqrt(mean((gf$l %*% t(gf$f) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+sqrt(mean(((gPMD$u * gPMD$d) %*% t(gPMD$v) - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+sqrt(mean((gsfa$L %*% gsfa$F - Data$L_true %*% t(Data$F_true))^2))/sqrt(mean((Data$L_true %*% t(Data$F_true))^2))
+# result from sfa
+
+gsfamix_1 = readRDS("../data/simulation/rankone/dense/sfamix_1.rds")
+gsfamix_2 = readRDS("../data/simulation/rankone/dense/sfamix_2.rds")
+gsfa = readRDS("../data/simulation/rankone/dense/sfa_res.rds")
+
+# to get the KSVD result
+# try other methods
+library("R.matlab")
+# saveRDS(Data,file = "../data/simulation/rankone/mediansparse/test_1.rds")
+# write the data into matlab
+# writeMat("../data/simulation/rankone/dense/test_1.mat", data = Data)
+# KSVD
+res_KSVD = readMat("../data/simulation/rankone/dense/KSVDtest_1.mat",sparseMatrixClass="matrix")
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim <- c(-0.1,0.1); ylim <- c(-0.1,0.1)
+
+mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),rep(as.vector(gsfamix_2$F),N),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+mat1[,6] = 0
+colnames(mat1) = c("truth","FLASH","PMD","SFA","SFAmix.1","SFAmix.2","KSVD")
+df1 = data.frame(mat1)
+xybound = c(-0.35, -0.05, 0.03, 0.38)
+z_size = c(-0.07,0.07,-0.07,0.07)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim <- c(zoom_size[1],zoom_size[2])
+  ylim <- c(zoom_size[3],zoom_size[4])
+
+  base1 <- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) + coord_cartesian(xlim=c(-0.3,0.3), ylim= c(-0.36,0.36) ) + 
+    theme_bw()+ geom_abline(intercept = 0,slope = 1)
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 <- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[5]], pic_list[[6]],  labels = "AUTO", ncol = 2)
+```
 
 ## Session Information
 
