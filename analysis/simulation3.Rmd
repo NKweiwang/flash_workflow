@@ -116,16 +116,39 @@ outcv = PMA.wrapper(Y,10,K = 3)
 ```
 
 ```{r}
-par(mfrow = c(2,2))
-image( t(apply(t(g_b_flash$l %*% t(g_b_flash$f)),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "FLASH")
-image(t(apply(t(outcv$u %*% diag(outcv$d) %*% t(outcv$v)),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "PMD")
-image(t(apply(t(Y),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "observed data")
-image(t(apply(t(G),2,rev)),col = grey(seq(0,1,length.out = 5)),main = "underlying structure")
-par(mfrow = c(2,2))
-image( t(apply(t(g_b_flash$l %*% t(g_b_flash$f)),2,rev)),col =blues9,main = "FLASH")
-image(t(apply(t(outcv$u %*% diag(outcv$d) %*% t(outcv$v)),2,rev)),col = blues9,main = "PMD")
-image(t(apply(t(Y),2,rev)),col = blues9,main = "observed data")
-image(t(apply(t(G),2,rev)),col = blues9,main = "underlying structure")
+library(reshape2)
+melted_cormat_1 <- melt(G, na.rm = TRUE)
+melted_cormat_2 <- melt(g_b_flash$l %*% t(g_b_flash$f), na.rm = TRUE)
+melted_cormat_3 <- melt(outcv$u %*% diag(outcv$d) %*% t(outcv$v), na.rm = TRUE)
+melted_cormat_4 <- melt(Y, na.rm = TRUE)
+# Heatmap
+library(ggplot2)
+p1 = ggplot(data = melted_cormat_1, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "truth", y = "sample", x = "variable") +
+  theme_minimal() + theme(legend.position="none",plot.background = element_rect()) 
+
+p2 = ggplot(data = melted_cormat_2, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "FLASH",y = "sample", x = "variable") +
+  theme_minimal() + theme(legend.position="none",plot.background = element_rect())
+
+p3 = ggplot(data = melted_cormat_3, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "PMD",y = "sample", x = "variable") +
+  theme_minimal() + theme(legend.position="none",plot.background = element_rect())
+
+p4 = ggplot(data = melted_cormat_4, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "observed data",y = "sample", x = "variable") +
+  theme_minimal() + theme(legend.position="none",plot.background = element_rect())
+
+library(cowplot)
+plot_grid(p1,p4,p3,p2, ncol = 2)
 ```
 
 
