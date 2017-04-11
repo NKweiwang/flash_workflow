@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-04-05</p>
+<p><strong>Last updated:</strong> 2017-04-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 4ef3c21</p>
+<p><strong>Code version:</strong> d9e56dd</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>CVPMD=function(Y,c_s,K){
   N = dim(Y)[1]
@@ -552,18 +552,39 @@ outcv = PMA.wrapper(Y,10,K = 3)</code></pre>
 1234567891011121314
 123456789101112131415161718
 1234567891011121314151617181920</code></pre>
-<pre class="r"><code>par(mfrow = c(2,2))
-image( t(apply(t(g_b_flash$l %*% t(g_b_flash$f)),2,rev)),col = grey(seq(0,1,length.out = 5)),main = &quot;FLASH&quot;)
-image(t(apply(t(outcv$u %*% diag(outcv$d) %*% t(outcv$v)),2,rev)),col = grey(seq(0,1,length.out = 5)),main = &quot;PMD&quot;)
-image(t(apply(t(Y),2,rev)),col = grey(seq(0,1,length.out = 5)),main = &quot;observed data&quot;)
-image(t(apply(t(G),2,rev)),col = grey(seq(0,1,length.out = 5)),main = &quot;underlying structure&quot;)</code></pre>
-<p><img src="figure/simulation3.Rmd/unnamed-chunk-16-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>par(mfrow = c(2,2))
-image( t(apply(t(g_b_flash$l %*% t(g_b_flash$f)),2,rev)),col =blues9,main = &quot;FLASH&quot;)
-image(t(apply(t(outcv$u %*% diag(outcv$d) %*% t(outcv$v)),2,rev)),col = blues9,main = &quot;PMD&quot;)
-image(t(apply(t(Y),2,rev)),col = blues9,main = &quot;observed data&quot;)
-image(t(apply(t(G),2,rev)),col = blues9,main = &quot;underlying structure&quot;)</code></pre>
-<p><img src="figure/simulation3.Rmd/unnamed-chunk-16-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>library(reshape2)
+melted_cormat_1 &lt;- melt(G, na.rm = TRUE)
+melted_cormat_2 &lt;- melt(g_b_flash$l %*% t(g_b_flash$f), na.rm = TRUE)
+melted_cormat_3 &lt;- melt(outcv$u %*% diag(outcv$d) %*% t(outcv$v), na.rm = TRUE)
+melted_cormat_4 &lt;- melt(Y, na.rm = TRUE)
+# Heatmap
+library(ggplot2)
+p1 = ggplot(data = melted_cormat_1, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = &quot;truth&quot;, y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect()) 
+
+p2 = ggplot(data = melted_cormat_2, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = &quot;FLASH&quot;,y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect())
+
+p3 = ggplot(data = melted_cormat_3, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = &quot;PMD&quot;,y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect())
+
+p4 = ggplot(data = melted_cormat_4, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = &quot;observed data&quot;,y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect())
+
+library(cowplot)
+plot_grid(p1,p4,p3,p2, ncol = 2)</code></pre>
 <pre class="r"><code>library(ggplot2)
 library(cowplot)
 mat = cbind(L_true,g_b_flash$l,outcv$u)
@@ -615,7 +636,7 @@ attached base packages:
 
 other attached packages:
 [1] workflowr_0.4.0 rmarkdown_1.3   cowplot_0.7.0   ggplot2_2.2.1  
-[5] PMA_1.0.9       impute_1.42.0   plyr_1.8.4     
+[5] reshape2_1.4.2  PMA_1.0.9       impute_1.42.0   plyr_1.8.4     
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.9       git2r_0.18.0      iterators_1.0.8  
