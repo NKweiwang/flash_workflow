@@ -312,13 +312,88 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-04-06</p>
+<p><strong>Last updated:</strong> 2017-04-13</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 91b7203</p>
+<p><strong>Code version:</strong> 42b753b</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(readxl)
-Data = read_excel(&quot;../data/DNAdata/sd03.xls&quot;)</code></pre>
+Data = read_excel(&quot;../data/DNAdata/sd03.xls&quot;)
+data = as.matrix(Data[,-c(1,2)])
+#saveRDS(data,file = &quot;../data/DNAdata/sd03.rds&quot;)</code></pre>
+<pre><code>source(&quot;~/HG/flash/Rcode/flash.R&quot;)
+source(&quot;~/HG/flash/Rcode/greedy.R&quot;)
+source(&quot;~/HG/flash/Rcode/backfitting.R&quot;)
+Y = readRDS(&quot;sd03.rds&quot;)
+Y = t(Y)
+dim(Y)
+g_flash = greedy(Y, K = 30, flash_para = list(partype = &quot;var_col&quot;))
+saveRDS(g_flash, &quot;./logcpm/gflash_var_col_imput.rds&quot;)
+
+b_flash = backfitting(Y,initial_list = g_flash, flash_para = list(partype = &quot;var_col&quot;), maxiter_bf = 6)
+saveRDS(b_flash, &quot;./logcpm/bflash_var_col_imput.rds&quot;)</code></pre>
+<pre><code>#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1
+#SBATCH --time=32:00:00
+#SBATCH --partition=broadwl
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=32G
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job&#39;s task ID
+cd /home/weidong/HG/flash/data/DNAdata
+Rscript --verbose /home/weidong/HG/flash/data/DNAdata/flash_const_wrapper.R
+</code></pre>
+<pre><code>#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1
+#SBATCH --time=32:00:00
+#SBATCH --partition=mstephens
+#SBATCH --account=pi-mstephens
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem-per-cpu=32G
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job&#39;s task ID
+cd /home/weidong/HG/flash/data/DNAdata
+Rscript --verbose /home/weidong/HG/flash/data/DNAdata/flash_varcol_wrapper.R</code></pre>
+<pre><code>gc = readRDS(&quot;../data/DNAdata/b_flash_const.rds&quot;)
+gv = readRDS(&quot;../data/DNAdata/bflash_varcol.rds&quot;)
+gsvd = svd(t(data))
+library(flashr)
+library(reshape2)
+melted_data &lt;- melt((gv$l %*% t(gv$f))[1:30,1:20000], na.rm = TRUE)
+# Heatmap
+library(ggplot2)
+p1 = ggplot(data = melted_data, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;black&quot;, high = &quot;red&quot;, mid = &quot;blue&quot;, 
+   midpoint = 0, limit = c(-0.6,0.6), space = &quot;Lab&quot;) + labs(title = &quot;truth&quot;, y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect()) 
+
+image(t(gv$l %*% t(gv$f)),col = rainbow(7))
+
+i = 3
+par(mfrow = c(2,2))
+barplot(gc$l[,i])
+barplot(gv$l[,i])
+barplot(gsvd$u[,i])</code></pre>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
@@ -334,13 +409,22 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] readxl_0.1.1    workflowr_0.4.0 rmarkdown_1.3  
+[1] workflowr_0.4.0 rmarkdown_1.3   reshape2_1.4.2  ggplot2_2.2.1  
+[5] flashr_0.1.1    readxl_0.1.1   
 
 loaded via a namespace (and not attached):
- [1] backports_1.0.5 magrittr_1.5    rprojroot_1.2   htmltools_0.3.5
- [5] tools_3.3.0     rstudioapi_0.6  yaml_2.1.14     Rcpp_0.12.9    
- [9] stringi_1.1.2   knitr_1.15.1    git2r_0.18.0    stringr_1.2.0  
-[13] digest_0.6.12   evaluate_0.10  </code></pre>
+ [1] Rcpp_0.12.9       magrittr_1.5      knitr_1.15.1     
+ [4] MASS_7.3-45       munsell_0.4.3     doParallel_1.0.10
+ [7] pscl_1.4.9        SQUAREM_2016.8-2  colorspace_1.3-2 
+[10] lattice_0.20-34   foreach_1.4.3     ashr_2.1-7       
+[13] stringr_1.2.0     plyr_1.8.4        tools_3.3.0      
+[16] parallel_3.3.0    grid_3.3.0        gtable_0.2.0     
+[19] git2r_0.18.0      htmltools_0.3.5   iterators_1.0.8  
+[22] yaml_2.1.14       rprojroot_1.2     digest_0.6.12    
+[25] lazyeval_0.2.0    assertthat_0.1    tibble_1.2       
+[28] codetools_0.2-15  evaluate_0.10     labeling_0.3     
+[31] stringi_1.1.2     backports_1.0.5   scales_0.4.1     
+[34] truncnorm_1.0-7  </code></pre>
 </div>
 
 <hr>
