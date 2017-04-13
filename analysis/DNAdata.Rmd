@@ -29,6 +29,95 @@ knitr::read_chunk("chunks.R")
 ```{r}
 library(readxl)
 Data = read_excel("../data/DNAdata/sd03.xls")
+data = as.matrix(Data[,-c(1,2)])
+#saveRDS(data,file = "../data/DNAdata/sd03.rds")
+```
+
+```
+source("~/HG/flash/Rcode/flash.R")
+source("~/HG/flash/Rcode/greedy.R")
+source("~/HG/flash/Rcode/backfitting.R")
+Y = readRDS("sd03.rds")
+Y = t(Y)
+dim(Y)
+g_flash = greedy(Y, K = 30, flash_para = list(partype = "var_col"))
+saveRDS(g_flash, "./logcpm/gflash_var_col_imput.rds")
+
+b_flash = backfitting(Y,initial_list = g_flash, flash_para = list(partype = "var_col"), maxiter_bf = 6)
+saveRDS(b_flash, "./logcpm/bflash_var_col_imput.rds")
+```
+
+
+
+```
+#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1
+#SBATCH --time=32:00:00
+#SBATCH --partition=broadwl
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=32G
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job's task ID
+cd /home/weidong/HG/flash/data/DNAdata
+Rscript --verbose /home/weidong/HG/flash/data/DNAdata/flash_const_wrapper.R
+
+```
+
+```
+#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/DNAdata/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1
+#SBATCH --time=32:00:00
+#SBATCH --partition=mstephens
+#SBATCH --account=pi-mstephens
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem-per-cpu=32G
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job's task ID
+cd /home/weidong/HG/flash/data/DNAdata
+Rscript --verbose /home/weidong/HG/flash/data/DNAdata/flash_varcol_wrapper.R
+```
+
+```
+gc = readRDS("../data/DNAdata/b_flash_const.rds")
+gv = readRDS("../data/DNAdata/bflash_varcol.rds")
+gsvd = svd(t(data))
+library(flashr)
+library(reshape2)
+melted_data <- melt((gv$l %*% t(gv$f))[1:30,1:20000], na.rm = TRUE)
+# Heatmap
+library(ggplot2)
+p1 = ggplot(data = melted_data, aes(Var2, Var1, fill = value))+
+ geom_tile(color = "white")+
+ scale_fill_gradient2(low = "black", high = "red", mid = "blue", 
+   midpoint = 0, limit = c(-0.6,0.6), space = "Lab") + labs(title = "truth", y = "sample", x = "variable") +
+  theme_minimal() + theme(legend.position="none",plot.background = element_rect()) 
+
+image(t(gv$l %*% t(gv$f)),col = rainbow(7))
+
+i = 3
+par(mfrow = c(2,2))
+barplot(gc$l[,i])
+barplot(gv$l[,i])
+barplot(gsvd$u[,i])
 ```
 
 ## Session information
