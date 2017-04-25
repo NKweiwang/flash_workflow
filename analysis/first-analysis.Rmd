@@ -25,7 +25,7 @@ $$X=  \begin{pmatrix} X_{00} & X_{01} \\ X_{10} & X_{11}  \end{pmatrix}= \left[ 
 
 ### 1 algorithm to find original svd
 
-This is one of the old quesitons and I think I would like to keep this question.
+__This is one of the old quesitons and I think I would like to keep this question.__
 
 we want to find a solution for 
 
@@ -38,7 +38,7 @@ we want to find a solution for
 
 #### 1.1 convexity of this problem
 
-- We are not sure if this optimazation problem is convex or not.
+- We are not sure if this optimization problem is convex or not.
 
 #### 1.2 uniqueness of the solution
 
@@ -46,25 +46,25 @@ we want to find a solution for
 
 #### 1.3 computational complexity
 
-- To solve this problem might be more computationaly intensive comparing with BCV which just need to calculate svd and general inverse.
+- To solve this problem might be more computationally intensive comparing with BCV which just need to calculate svd and general inverse.
 
 Maybe this is too ambitious? __Let's start from a simple toy example to check if it is possible.__
 
 ### 2 toy example with low rank assumption
 
-#### 2.1  2 by 2 case
+#### 2.1 Toy example: 2 by 2 case
 
-Here we take the simpliest example: 2 by 2 matrix $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$
+Here we take the simplest example: 2 by 2 matrix $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$
 
 #### 2.1.1 BCV in 2 by 2 case
 
 In the original BCV frame work, we can use $||A - B D_k^+C||_F^2$ as objective function. 
 
-As I understand here, in the simpliest case, $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$ is $2 \times 2$ matrix and we assume the this matrix is a rank one matrix. So we can use $a = bd^{-1}c$ to "impute" (or "predict") the value of $a$.
+As I understand here, in the simplest case, $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$ is $2 \times 2$ matrix and we assume the this matrix is a rank one matrix to make the determinant equal to zero. So we can use $a = bd^{-1}c$ to "impute" (or "predict") the value of $a$. __Thus we can get the solution.__
 
 For example, we know the the matrix is $\begin{pmatrix} a & 3 \\ 2 & 3  \end{pmatrix}$ with rank one, so we know $a = 2$.
 
-#### 2.1.1 OCV in 2 by 2 case
+#### 2.1.2 OCV in 2 by 2 case
 
 What if we hold out two parts $b,c$ and once and hold out $a,b$ in the other time? This goes to two separate problems:
 
@@ -78,7 +78,7 @@ If the matrix looks like $\begin{pmatrix} a & 3 \\ 2 & d  \end{pmatrix}$ with ra
 
 When we try to solve the two problems (2.1), (2.2) separately, it seems there is no gain from the hold out pattern.
 
-But what if we solve the together as we discussed previously on Orthogonal Cross Validation (OCV)?
+**But what if we solve them together as we discussed previously using Orthogonal Cross Validation (OCV)?**
 
 #### 2.2 Orthogonal Cross Validation (background)
 
@@ -113,7 +113,7 @@ cross_plot = function(Y,k_fold = 3){
   }
   return(missing)
 }
-
+set.seed(999)
 N = 3
 P = 3
 Y = matrix(rep(1,N*P),ncol =  P)
@@ -124,18 +124,38 @@ $$Y = \begin{pmatrix} Y_{11} & Y_{12} & Y_{13} \\ Y_{21} & Y_{22} & Y_{23} \\ Y_
 
 by letting $Y_{(1)} = \{  Y_{11},  Y_{22} , Y_{33}\}$, $Y_{(2)} = \{  Y_{12},  Y_{23} , Y_{31}\}$ and $Y_{(3)} = \{  Y_{13},  Y_{21} , Y_{32}\}$, which are orthogonal to each other.
 
-Then the MSE for each row and column permutation would be:
+For each row and column permutation, we calculate the MSE as follows:
 
 \begin{eqnarray}
 MSE &=& MSE_1 + MSE_2 + MSE_3\\
- &=& ||\hat{Y}_{(1)} - Y_{(1)}||_2 + ||\hat{Y}_{(2)} - Y_{(2)}||_2 + ||\hat{Y}_{(3)} - Y_{(3)}||_2
+ &=& ||\hat{Y}_{(1)} - Y_{(1)}||_F^2 + ||\hat{Y}_{(2)} - Y_{(2)}||_F^2 + ||\hat{Y}_{(3)} - Y_{(3)}||_F^2
 \end{eqnarray}
 
-#### 2.3 2 by 2 matrix again
+#### 2.3 back to 2 by 2 matrix again
 
 Let's go back to 2 by 2 case:
 
-The question is can we get better idea by solving problem (2.1) and (2.2) together (by taking the average of MSE)?
+- problem (2.1) 
+
+\begin{eqnarray}
+& & \min_{u^*, v^*, \lambda^*, b, c} ||b - u_0^*\lambda^* v_1^*||_F^2 + ||c - u_1^* \lambda^* v_0^*||_F^2\\
+&s.t.& u^*u^{*T} = I\\
+&& v^* v^{*T} = I \\
+&& \lambda^* >0 \\
+& & ||a - u_0^*\lambda^* v_0^*||_F^2 + ||d - u_1^* \lambda^* v_1^*||_F^2 = 0
+\end{eqnarray}
+
+- problem (2.2) 
+
+\begin{eqnarray}
+& & \min_{u^{**}, v^{**}, \lambda^{**}, a, d} ||a - u_0^{**}\lambda^{**} v_0^{**}||_F^2 + ||d - u_1^{**} \lambda^{**} v_1^{**}||_F^2\\
+&s.t.& u^**u^{**T} = I\\
+&& v^{**} v^{**T} = I \\
+&& \lambda^{**} >0 \\
+& & ||b - u_0^{**}\lambda^{**} v_1^{**}||_F^2 + ||c - u_1^{**} \lambda^{**} v_0^{**}||_F^2 = 0
+\end{eqnarray}
+
+**The question is can we get better idea by solving problem (2.1) and (2.2) together (by taking the average of MSE)?** It means that we want $u^*,v^*$ and $u^{**},v{**}$ to be same. Similarly as the MSE in OCV, we would like use the average (sum) of those two MSE. 
 
 So I would guess that the problem goes to:
 
@@ -144,8 +164,8 @@ So I would guess that the problem goes to:
 &s.t.& uu^T = I\\
 && v v^T = I \\
 && \lambda >0 \\
-&where& MSE_1 = ||a - u_0\lambda v_0||_F + ||d - u_1 \lambda v_1||_F\\
-&and& MSE_2 = ||b - u_0\lambda v_1||_F + ||c - u_1 \lambda v_0||_F
+&where& MSE_1 = ||a - u_0\lambda v_0||_F^2 + ||d - u_1 \lambda v_1||_F^2\\
+&and& MSE_2 = ||b - u_0\lambda v_1||_F^2 + ||c - u_1 \lambda v_0||_F^2
 \end{eqnarray}
 
 
@@ -153,3 +173,4 @@ with assumption the $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$ is rank one 
 
 **So we can see that SVD solution is the solution of our problem. What's more, in this simple example, we might be able to find rank two solution which BCV can't.**
 
+In practice, we might get $u_0^*, v_0^*, u_1^*, v_1^*$ in $MSE_1$ to predict $a,d$ and get $u_0^{**}, v_0^{**}, u_1^{**}, v_1^{**}$ in $MSE_2$ to predict $b,c$. 
