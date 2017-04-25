@@ -309,15 +309,15 @@ div.tocify {
 </div>
 
 
-<p><strong>Last updated:</strong> 2017-04-24</p>
-<p><strong>Code version:</strong> 7c13a02</p>
+<p><strong>Last updated:</strong> 2017-04-25</p>
+<p><strong>Code version:</strong> 47b328f</p>
 <div id="list-of-questions" class="section level2">
 <h2>list of questions</h2>
 <p>let’s write the <span class="math inline">\(X\)</span> into <span class="math inline">\(2 \times2\)</span> partitions.</p>
 <p><span class="math display">\[X=  \begin{pmatrix} X_{00} &amp; X_{01} \\ X_{10} &amp; X_{11}  \end{pmatrix}= \left[ \begin{array}{c} U_{0} \\ U_{1} \end{array} \right] \Sigma \left[ \begin{array}{cc} V_{0}^{T}&amp; V_{1}^{T} \end{array} \right] \]</span></p>
 <div id="algorithm-to-find-original-svd" class="section level3">
 <h3>1 algorithm to find original svd</h3>
-<p>This is one of the old quesitons and I think I would like to keep this question.</p>
+<p><strong>This is one of the old quesitons and I think I would like to keep this question.</strong></p>
 <p>we want to find a solution for</p>
 <span class="math display">\[\begin{eqnarray}
 &amp;\min_{U,V,\Sigma}&amp; ||X_{01} - U_0 \Sigma V_1^T||_2 + ||X_{10} - U_1 \Sigma V_0^T||_1 \\
@@ -328,7 +328,7 @@ div.tocify {
 <div id="convexity-of-this-problem" class="section level4">
 <h4>1.1 convexity of this problem</h4>
 <ul>
-<li>We are not sure if this optimazation problem is convex or not.</li>
+<li>We are not sure if this optimization problem is convex or not.</li>
 </ul>
 </div>
 <div id="uniqueness-of-the-solution" class="section level4">
@@ -340,25 +340,25 @@ div.tocify {
 <div id="computational-complexity" class="section level4">
 <h4>1.3 computational complexity</h4>
 <ul>
-<li>To solve this problem might be more computationaly intensive comparing with BCV which just need to calculate svd and general inverse.</li>
+<li>To solve this problem might be more computationally intensive comparing with BCV which just need to calculate svd and general inverse.</li>
 </ul>
 <p>Maybe this is too ambitious? <strong>Let’s start from a simple toy example to check if it is possible.</strong></p>
 </div>
 </div>
 <div id="toy-example-with-low-rank-assumption" class="section level3">
 <h3>2 toy example with low rank assumption</h3>
-<div id="by-2-case" class="section level4">
-<h4>2.1 2 by 2 case</h4>
-<p>Here we take the simpliest example: 2 by 2 matrix <span class="math inline">\(\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix}\)</span></p>
+<div id="toy-example-2-by-2-case" class="section level4">
+<h4>2.1 Toy example: 2 by 2 case</h4>
+<p>Here we take the simplest example: 2 by 2 matrix <span class="math inline">\(\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix}\)</span></p>
 </div>
 <div id="bcv-in-2-by-2-case" class="section level4">
 <h4>2.1.1 BCV in 2 by 2 case</h4>
 <p>In the original BCV frame work, we can use <span class="math inline">\(||A - B D_k^+C||_F^2\)</span> as objective function.</p>
-<p>As I understand here, in the simpliest case, <span class="math inline">\(\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix}\)</span> is <span class="math inline">\(2 \times 2\)</span> matrix and we assume the this matrix is a rank one matrix. So we can use <span class="math inline">\(a = bd^{-1}c\)</span> to “impute” (or “predict”) the value of <span class="math inline">\(a\)</span>.</p>
+<p>As I understand here, in the simplest case, <span class="math inline">\(\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix}\)</span> is <span class="math inline">\(2 \times 2\)</span> matrix and we assume the this matrix is a rank one matrix to make the determinant equal to zero. So we can use <span class="math inline">\(a = bd^{-1}c\)</span> to “impute” (or “predict”) the value of <span class="math inline">\(a\)</span>. <strong>Thus we can get the solution.</strong></p>
 <p>For example, we know the the matrix is <span class="math inline">\(\begin{pmatrix} a &amp; 3 \\ 2 &amp; 3 \end{pmatrix}\)</span> with rank one, so we know <span class="math inline">\(a = 2\)</span>.</p>
 </div>
 <div id="ocv-in-2-by-2-case" class="section level4">
-<h4>2.1.1 OCV in 2 by 2 case</h4>
+<h4>2.1.2 OCV in 2 by 2 case</h4>
 <p>What if we hold out two parts <span class="math inline">\(b,c\)</span> and once and hold out <span class="math inline">\(a,b\)</span> in the other time? This goes to two separate problems:</p>
 <ul>
 <li>(2.1) For holding out <span class="math inline">\(b,c\)</span>:</li>
@@ -369,7 +369,7 @@ div.tocify {
 </ul>
 <p>If the matrix looks like <span class="math inline">\(\begin{pmatrix} a &amp; 3 \\ 2 &amp; d \end{pmatrix}\)</span> with rank one, we actually have more than one solutions.</p>
 <p>When we try to solve the two problems (2.1), (2.2) separately, it seems there is no gain from the hold out pattern.</p>
-<p>But what if we solve the together as we discussed previously on Orthogonal Cross Validation (OCV)?</p>
+<p><strong>But what if we solve them together as we discussed previously using Orthogonal Cross Validation (OCV)?</strong></p>
 </div>
 <div id="orthogonal-cross-validation-background" class="section level4">
 <h4>2.2 Orthogonal Cross Validation (background)</h4>
@@ -377,27 +377,48 @@ div.tocify {
 <p><img src="figure/first-analysis.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p><span class="math display">\[Y = \begin{pmatrix} Y_{11} &amp; Y_{12} &amp; Y_{13} \\ Y_{21} &amp; Y_{22} &amp; Y_{23} \\ Y_{31} &amp; Y_{32} &amp; Y_{33} \end{pmatrix}= \begin{pmatrix} Y_{(1)} &amp; Y_{(2)} &amp; Y_{(3)} \\ Y_{(3)} &amp; Y_{(1)} &amp; Y_{(2)} \\ Y_{(2)} &amp; Y_{(3)} &amp; Y_{(1)} \end{pmatrix}\]</span></p>
 <p>by letting <span class="math inline">\(Y_{(1)} = \{ Y_{11}, Y_{22} , Y_{33}\}\)</span>, <span class="math inline">\(Y_{(2)} = \{ Y_{12}, Y_{23} , Y_{31}\}\)</span> and <span class="math inline">\(Y_{(3)} = \{ Y_{13}, Y_{21} , Y_{32}\}\)</span>, which are orthogonal to each other.</p>
-<p>Then the MSE for each row and column permutation would be:</p>
+<p>For each row and column permutation, we calculate the MSE as follows:</p>
 <span class="math display">\[\begin{eqnarray}
 MSE &amp;=&amp; MSE_1 + MSE_2 + MSE_3\\
- &amp;=&amp; ||\hat{Y}_{(1)} - Y_{(1)}||_2 + ||\hat{Y}_{(2)} - Y_{(2)}||_2 + ||\hat{Y}_{(3)} - Y_{(3)}||_2
+ &amp;=&amp; ||\hat{Y}_{(1)} - Y_{(1)}||_F^2 + ||\hat{Y}_{(2)} - Y_{(2)}||_F^2 + ||\hat{Y}_{(3)} - Y_{(3)}||_F^2
 \end{eqnarray}\]</span>
 </div>
-<div id="by-2-matrix-again" class="section level4">
-<h4>2.3 2 by 2 matrix again</h4>
+<div id="back-to-2-by-2-matrix-again" class="section level4">
+<h4>2.3 back to 2 by 2 matrix again</h4>
 <p>Let’s go back to 2 by 2 case:</p>
-<p>The question is can we get better idea by solving problem (2.1) and (2.2) together (by taking the average of MSE)?</p>
+<ul>
+<li>problem (2.1)</li>
+</ul>
+<span class="math display">\[\begin{eqnarray}
+&amp; &amp; \min_{u^*, v^*, \lambda^*, b, c} ||b - u_0^*\lambda^* v_1^*||_F^2 + ||c - u_1^* \lambda^* v_0^*||_F^2\\
+&amp;s.t.&amp; u^*u^{*T} = I\\
+&amp;&amp; v^* v^{*T} = I \\
+&amp;&amp; \lambda^* &gt;0 \\
+&amp; &amp; ||a - u_0^*\lambda^* v_0^*||_F^2 + ||d - u_1^* \lambda^* v_1^*||_F^2 = 0
+\end{eqnarray}\]</span>
+<ul>
+<li>problem (2.2)</li>
+</ul>
+<span class="math display">\[\begin{eqnarray}
+&amp; &amp; \min_{u^{**}, v^{**}, \lambda^{**}, a, d} ||a - u_0^{**}\lambda^{**} v_0^{**}||_F^2 + ||d - u_1^{**} \lambda^{**} v_1^{**}||_F^2\\
+&amp;s.t.&amp; u^**u^{**T} = I\\
+&amp;&amp; v^{**} v^{**T} = I \\
+&amp;&amp; \lambda^{**} &gt;0 \\
+&amp; &amp; ||b - u_0^{**}\lambda^{**} v_1^{**}||_F^2 + ||c - u_1^{**} \lambda^{**} v_0^{**}||_F^2 = 0
+\end{eqnarray}\]</span>
+<p><strong>The question is can we get better idea by solving problem (2.1) and (2.2) together (by taking the average of MSE)?</strong> It means that we want <span class="math inline">\(u^*,v^*\)</span> and <span class="math inline">\(u^{**},v{**}\)</span> to be same. Similarly as the MSE in OCV, we would like use the average (sum) of those two MSE.</p>
 <p>So I would guess that the problem goes to:</p>
 <span class="math display">\[\begin{eqnarray}
 &amp; &amp; \min_{u,v,\lambda} MSE_1 + MSE_2\\
 &amp;s.t.&amp; uu^T = I\\
 &amp;&amp; v v^T = I \\
 &amp;&amp; \lambda &gt;0 \\
-&amp;where&amp; MSE_1 = ||a - u_0\lambda v_0||_F + ||d - u_1 \lambda v_1||_F\\
-&amp;and&amp; MSE_2 = ||b - u_0\lambda v_1||_F + ||c - u_1 \lambda v_0||_F
+&amp;where&amp; MSE_1 = ||a - u_0\lambda v_0||_F^2 + ||d - u_1 \lambda v_1||_F^2\\
+&amp;and&amp; MSE_2 = ||b - u_0\lambda v_1||_F^2 + ||c - u_1 \lambda v_0||_F^2
 \end{eqnarray}\]</span>
 <p>with assumption the <span class="math inline">\(\begin{pmatrix} a &amp; b \\ c &amp; d \end{pmatrix}\)</span> is rank one matrix and SVD is as <span class="math display">\[\begin{pmatrix} a &amp; b \\ c &amp; d  \end{pmatrix} = u\lambda v^T\]</span></p>
 <p><strong>So we can see that SVD solution is the solution of our problem. What’s more, in this simple example, we might be able to find rank two solution which BCV can’t.</strong></p>
+<p>In practice, we might get <span class="math inline">\(u_0^*, v_0^*, u_1^*, v_1^*\)</span> in <span class="math inline">\(MSE_1\)</span> to predict <span class="math inline">\(a,d\)</span> and get <span class="math inline">\(u_0^{**}, v_0^{**}, u_1^{**}, v_1^{**}\)</span> in <span class="math inline">\(MSE_2\)</span> to predict <span class="math inline">\(b,c\)</span>.</p>
 </div>
 </div>
 </div>
