@@ -149,7 +149,7 @@ Let's go back to 2 by 2 case:
 
 \begin{eqnarray}
 & & \min_{u^{**}, v^{**}, \lambda^{**}, a, d} ||a - u_0^{**}\lambda^{**} v_0^{**}||_F^2 + ||d - u_1^{**} \lambda^{**} v_1^{**}||_F^2\\
-&s.t.& u^**u^{**T} = I\\
+&s.t.& u^{**}u^{**T} = I\\
 && v^{**} v^{**T} = I \\
 && \lambda^{**} >0 \\
 & & ||b - u_0^{**}\lambda^{**} v_1^{**}||_F^2 + ||c - u_1^{**} \lambda^{**} v_0^{**}||_F^2 = 0
