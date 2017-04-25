@@ -1,7 +1,7 @@
 ---
 title: "outline of questions"
 author: "Wei Wang"
-date: 2017-02-07
+date: 2017-04-24
 output: html_document
 ---
 
@@ -21,16 +21,19 @@ knitr::read_chunk("chunks.R")
 
 let's write the $X$ into $2 \times2$ partitions.
 
-$$X=  \begin{pmatrix} X_{11} & X_{12} \\ X_{21} & X_{22}  \end{pmatrix}= \left[ \begin{array}{c} U_{1} \\ U_{2} \end{array} \right] \Gamma \left[ \begin{array}{cc} V_{1}^{T}& V_{2}^{T} \end{array} \right] $$
+$$X=  \begin{pmatrix} X_{00} & X_{01} \\ X_{10} & X_{11}  \end{pmatrix}= \left[ \begin{array}{c} U_{0} \\ U_{1} \end{array} \right] \Sigma \left[ \begin{array}{cc} V_{0}^{T}& V_{1}^{T} \end{array} \right] $$
 
 ### 1 algorithm to find original svd
+
+This is one of the old quesitons and I think I would like to keep this question.
 
 we want to find a solution for 
 
 \begin{eqnarray}
-&\min_{U,V,\Gamma}& ||X_{11} - U_1 \Gamma V_1^T||_2 + ||X_{22} - U_2 \Gamma V_2^T||_2 \\
-&st& U_1 U_1^T +  U_2 U_2^T = I \\
-& & V_1 V_1^T +  V_2 V_2^T = I
+&\min_{U,V,\Sigma}& ||X_{01} - U_0 \Sigma V_1^T||_2 + ||X_{10} - U_1 \Sigma V_0^T||_1 \\
+&st& ||X_{00} - U_0 \Sigma V_0^T||_2 + ||X_{11} - U_1 \Sigma V_1^T||_1 = 0\\
+&& U_1 U_1^T +  U_0 U_0^T = I \\
+& & V_1 V_1^T +  V_0 V_0^T = I
 \end{eqnarray}
 
 #### 1.1 convexity of this problem
@@ -45,14 +48,108 @@ we want to find a solution for
 
 - To solve this problem might be more computationaly intensive comparing with BCV which just need to calculate svd and general inverse.
 
-### 2 separate svd vs original svd
+Maybe this is too ambitious? __Let's start from a simple toy example to check if it is possible.__
 
-we know that 
+### 2 toy example with low rank assumption
+
+#### 2.1  2 by 2 case
+
+Here we take the simpliest example: 2 by 2 matrix $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$
+
+#### 2.1.1 BCV in 2 by 2 case
+
+In the original BCV frame work, we can use $||A - B D_k^+C||_F^2$ as objective function. 
+
+As I understand here, in the simpliest case, $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$ is $2 \times 2$ matrix and we assume the this matrix is a rank one matrix. So we can use $a = bd^{-1}c$ to "impute" (or "predict") the value of $a$.
+
+For example, we know the the matrix is $\begin{pmatrix} a & 3 \\ 2 & 3  \end{pmatrix}$ with rank one, so we know $a = 2$.
+
+#### 2.1.1 OCV in 2 by 2 case
+
+What if we hold out two parts $b,c$ and once and hold out $a,b$ in the other time? This goes to two separate problems:
+
+- (2.1) For holding out $b,c$:
+
+If the matrix looks like $\begin{pmatrix} 2 & b \\ c & 3  \end{pmatrix}$ with rank one, we actually have more than one solutions.
+
+- (2.2) For holding our $a,d$:
+
+If the matrix looks like $\begin{pmatrix} a & 3 \\ 2 & d  \end{pmatrix}$ with rank one, we actually have more than one solutions.
+
+When we try to solve the two problems (2.1), (2.2) separately, it seems there is no gain from the hold out pattern.
+
+But what if we solve the together as we discussed previously on Orthogonal Cross Validation (OCV)?
+
+#### 2.2 Orthogonal Cross Validation (background)
+
+In OCV, we hold out each orthogonal part, and then take the average of MSE of the prediction and the hold out data, we take 3-fold as example:
+
+```{r,echo=F}
+cross_plot = function(Y,k_fold = 3){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = k_fold)
+  rowindex = matrix(sample(N,N),ncol = k_fold)
+  
+  missing= array(0,dim = c(k_fold,N,P))
+  foldindex = array(0,dim = c(k_fold,k_fold,2))
+  for(i in 1:k_fold){
+    for(j in 1:k_fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% k_fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = k_fold
+  for(i in 1:k_fold){
+    missing[i, , ] = Y
+    for(j in 1:k_fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  par(mfrow = c(2,2), mar = (c(5,4,4,2)-1.9))
+  image(Y,main = "data Y")
+  for(i in 1:k_fold){
+    image(missing[i,,],main = "missing data")
+  }
+  return(missing)
+}
+
+N = 3
+P = 3
+Y = matrix(rep(1,N*P),ncol =  P)
+g = cross_plot(Y)
+```
+
+$$Y = \begin{pmatrix} Y_{11} & Y_{12} & Y_{13} \\ Y_{21} & Y_{22} & Y_{23} \\ Y_{31} & Y_{32} & Y_{33} \end{pmatrix}= \begin{pmatrix} Y_{(1)} & Y_{(2)} & Y_{(3)} \\ Y_{(3)} & Y_{(1)} & Y_{(2)} \\ Y_{(2)} & Y_{(3)} & Y_{(1)} \end{pmatrix}$$
+
+by letting $Y_{(1)} = \{  Y_{11},  Y_{22} , Y_{33}\}$, $Y_{(2)} = \{  Y_{12},  Y_{23} , Y_{31}\}$ and $Y_{(3)} = \{  Y_{13},  Y_{21} , Y_{32}\}$, which are orthogonal to each other.
+
+Then the MSE for each row and column permutation would be:
 
 \begin{eqnarray}
-X_{11} = U_1 \Gamma V_1^T \\
-X_{22} = U_2 \Gamma V_2^T
+MSE &=& MSE_1 + MSE_2 + MSE_3\\
+ &=& ||\hat{Y}_{(1)} - Y_{(1)}||_2 + ||\hat{Y}_{(2)} - Y_{(2)}||_2 + ||\hat{Y}_{(3)} - Y_{(3)}||_2
 \end{eqnarray}
 
-but $U_1 \Gamma V_1^T$ is not SVD for $X_{11}$. On the other hand, if we combine the svd for $X_{11} = \tilde{U}_1 \Sigma_{11}\tilde{V}_1$ and that for $X_{22} = \tilde{U}_2 \Sigma_{22}\tilde{V}_2$, the combining columns $\left[ \begin{array}{c} \tilde{U}_{1} \\ \tilde{U}_{2} \end{array}  \right]$ is not the original svd $\left[ \begin{array}{c} U_{1} \\ U_{2} \end{array} \right]$. It's because $\tilde{U}_{1}$ and $\tilde{U}_{2}$ just contains local information for $X_{11}$ and $X_{22}$.
+#### 2.3 2 by 2 matrix again
+
+Let's go back to 2 by 2 case:
+
+The question is can we get better idea by solving problem (2.1) and (2.2) together (by taking the average of MSE)?
+
+So I would guess that the problem goes to:
+
+\begin{eqnarray}
+& & \min_{u,v,\lambda} MSE_1 + MSE_2\\
+&s.t.& uu^T = I\\
+&& v v^T = I \\
+&& \lambda >0 \\
+&where& MSE_1 = ||a - u_0\lambda v_0||_F + ||d - u_1 \lambda v_1||_F\\
+&and& MSE_2 = ||b - u_0\lambda v_1||_F + ||c - u_1 \lambda v_0||_F
+\end{eqnarray}
+
+
+with assumption the $\begin{pmatrix} a & b \\ c & d  \end{pmatrix}$ is rank one matrix and SVD is as $$\begin{pmatrix} a & b \\ c & d  \end{pmatrix} = u\lambda v^T$$
+
+**So we can see that SVD solution is the solution of our problem. What's more, in this simple example, we might be able to find rank two solution which BCV can't.**
 
