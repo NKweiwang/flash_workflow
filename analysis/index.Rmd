@@ -22,6 +22,8 @@ Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html
 
 [ns](draft.html) 
 
-
 Click on this [load reslut of GTEx data](GTExresult.html) to see more details.
 
+### meeting summary
+
+[04-26](meetnotes.html)
