@@ -1,0 +1,57 @@
+---
+title: "Meeting notes"
+author: "Wei"
+date: 2017-04-27
+output: html_document
+---
+
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+**Last updated:** `r Sys.Date()`
+
+**Code version:** `r workflowr::extract_commit(".", 1)$sha1`
+
+## meeting summary 04-26
+
+### on flash paper
+
+#### OCV criteria
+
+we will introduce OCV in FLASH paper for missing data impute. But the criteria of the OCV is RMSE of the data.
+$$RMSE(\hat{Y},\Omega) = \sqrt{\frac{1}{|\Omega|}\sum_{ij \in \Omega}(Y_{(ij)} - \hat{Y}_{(ij)})^2}$$
+ where the $\Omega$ is the set of missing index. However we discussed that there is another criteria we can use.
+ 
+ First fit the model 
+ $$Y_{ij} = \alpha_i +\beta_j + N(0,\sigma_i^2 \sigma_j^2)$$
+ $$Z_{ij} = \frac{Y_{ij} - \alpha_i -\beta_j}{\sigma_i \sigma_j} $$
+and use 
+
+$$\frac{\sqrt{\frac{1}{|\Omega|}\sum_{ij \in \Omega}(Z_{(ij)} - \hat{Z}_{(ij)})^2}}{\sqrt{\frac{1}{|\Omega|}\sum_{ij \in \Omega}(Z_{(ij)} )^2}}$$
+
+To compare which one is better, we will try both method and compare the result. In the second criteria, we can impute the missing data and transform $Z_{ij}$ back to $Y_{ij}$ to make the results comparable.
+
+#### On the lemma
+
+In our meeting, Matthew mentioned that we can provide a general lemma to show that the VEM factor analysis can be convert to EB approach of normal means problem.
+
+#### psuedo algorithm 
+
+I should add the step of estimating $\sigma^2$ into the psuedo algorithm
+
+#### combine the marginalization on $f$ and maximization on $l$ together
+
+The two steps are basically for one problem so we can combine these two subsections together.
+
+#### barplot for flash result 
+
+In the Gtex data, the plot is too big to fit one page. try to break the plot into two pages.
+
+## Session Information
+
+```{r session-info}
+```
