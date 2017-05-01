@@ -9,9 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="Wei" />
 
+<meta name="date" content="2017-04-27" />
 
-<title>Home</title>
+<title>Meeting notes</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +21,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
@@ -162,6 +167,101 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -202,29 +302,65 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">Meeting notes</h1>
+<h4 class="author"><em>Wei</em></h4>
+<h4 class="date"><em>2017-04-27</em></h4>
 
 </div>
 
 
-<div id="simulation-studies" class="section level3">
-<h3>simulation studies</h3>
+<p><strong>Last updated:</strong> 2017-04-27</p>
+<p><strong>Code version:</strong> 6f30120</p>
+<div id="meeting-summary-04-26" class="section level2">
+<h2>meeting summary 04-26</h2>
+<div id="on-flash-paper" class="section level3">
+<h3>on flash paper</h3>
+<div id="ocv-criteria" class="section level4">
+<h4>OCV criteria</h4>
+<p>we will introduce OCV in FLASH paper for missing data impute. But the criteria of the OCV is RMSE of the data. <span class="math display">\[RMSE(\hat{Y},\Omega) = \sqrt{\frac{1}{|\Omega|}\sum_{ij \in \Omega}(Y_{(ij)} - \hat{Y}_{(ij)})^2}\]</span> where the <span class="math inline">\(\Omega\)</span> is the set of missing index. However we discussed that there is another criteria we can use.</p>
+<p>First fit the model <span class="math display">\[Y_{ij} = \alpha_i +\beta_j + N(0,\sigma_i^2 \sigma_j^2)\]</span> <span class="math display">\[Z_{ij} = \frac{Y_{ij} - \alpha_i -\beta_j}{\sigma_i \sigma_j} \]</span> and use</p>
+<p><span class="math display">\[\frac{\sqrt{\frac{1}{|\Omega|}\sum_{ij \in \Omega}(Z_{(ij)} - \hat{Z}_{(ij)})^2}}{\sqrt{\frac{1}{|\Omega|}\sum_{ij \in \Omega}(Z_{(ij)} )^2}}\]</span></p>
+<p>To compare which one is better, we will try both method and compare the result. In the second criteria, we can impute the missing data and transform <span class="math inline">\(Z_{ij}\)</span> back to <span class="math inline">\(Y_{ij}\)</span> to make the results comparable.</p>
 </div>
-<div id="orthogonal-cv" class="section level3">
-<h3>Orthogonal CV</h3>
-<p>Click on this <a href="miss_position.html">orthogonal CV</a> to see my example.</p>
-<p>Click on this <a href="first-analysis.html">Questions on Algorithm</a> to see more details.</p>
+<div id="on-the-lemma" class="section level4">
+<h4>On the lemma</h4>
+<p>In our meeting, Matthew mentioned that we can provide a general lemma to show that the VEM factor analysis can be convert to EB approach of normal means problem.</p>
 </div>
-<div id="flash-on-the-chipseq-data-from-kevin" class="section level3">
-<h3>flash on the chipseq data from Kevin</h3>
-<p>Click on this <a href="sd_chr1_asinh.html">three data sets on the 4500 rows chr1 var_col</a> to see more details.</p>
-<p><a href="draft.html">ns</a></p>
-<p>Click on this <a href="GTExresult.html">load reslut of GTEx data</a> to see more details.</p>
-<p>Click on this <a href="pairwiseplotofflashgtexzscore.html">pairwise plot</a> to see more details.</p>
+<div id="psuedo-algorithm" class="section level4">
+<h4>psuedo algorithm</h4>
+<p>I should add the step of estimating <span class="math inline">\(\sigma^2\)</span> into the psuedo algorithm</p>
 </div>
-<div id="meeting-summary" class="section level3">
-<h3>meeting summary</h3>
-<p><a href="meetnotes.html">04-26</a></p>
+<div id="combine-the-marginalization-on-f-and-maximization-on-l-together" class="section level4">
+<h4>combine the marginalization on <span class="math inline">\(f\)</span> and maximization on <span class="math inline">\(l\)</span> together</h4>
+<p>The two steps are basically for one problem so we can combine these two subsections together.</p>
+</div>
+<div id="barplot-for-flash-result" class="section level4">
+<h4>barplot for flash result</h4>
+<p>In the Gtex data, the plot is too big to fit one page. try to break the plot into two pages.</p>
+</div>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session Information</h2>
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.2.4 (2016-03-10)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.12.4 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] workflowr_0.3.0 rmarkdown_1.3  
+
+loaded via a namespace (and not attached):
+ [1] backports_1.0.5 magrittr_1.5    rsconnect_0.4.3 rprojroot_1.2  
+ [5] htmltools_0.3.5 tools_3.2.4     rstudioapi_0.6  yaml_2.1.14    
+ [9] Rcpp_0.12.9     stringi_1.1.2   knitr_1.15.1    git2r_0.18.0   
+[13] stringr_1.1.0   digest_0.6.11   evaluate_0.10  </code></pre>
 </div>
 
 <hr>
@@ -253,6 +389,8 @@ $(document).ready(function () {
 -->
 
 
+</div>
+</div>
 
 </div>
 
