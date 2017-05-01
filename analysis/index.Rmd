@@ -25,3 +25,4 @@ Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html
 
 Click on this [load reslut of GTEx data](GTExresult.html) to see more details.
 
+Click on this [pairwise plot](pairwiseplotofflashgtexzscore.html) to see more details.
