@@ -33,8 +33,10 @@ colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
 ```
 
 ```{r}
-plot(b_flash$l[,1],b_flash$l[,3],col = as.vector(colordata[,2]),pch = 16)
-text(b_flash$l[,1],b_flash$l[,3], labels=colordata[,1], cex= 0.7)
+i = 1
+j = 3
+plot(b_flash$l[,i],b_flash$l[,j],col = as.vector(colordata[,2]),pch = 16)
+text(b_flash$l[,i],b_flash$l[,j], labels=colordata[,1], cex= 0.7)
 ```
 
 
