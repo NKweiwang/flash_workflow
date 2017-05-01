@@ -316,13 +316,15 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-05-01</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 687673a</p>
+<p><strong>Code version:</strong> e666a88</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>load(&quot;../data/GTExdata/bflashvarcol.rds&quot;)
 dat = read.table(&#39;../data/GTExColors.txt&#39;, sep = &#39;\t&#39;, comment.char = &#39;&#39;)
 colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]</code></pre>
-<pre class="r"><code>plot(b_flash$l[,1],b_flash$l[,3],col = as.vector(colordata[,2]),pch = 16)
-text(b_flash$l[,1],b_flash$l[,3], labels=colordata[,1], cex= 0.7)</code></pre>
+<pre class="r"><code>i = 1
+j = 3
+plot(b_flash$l[,i],b_flash$l[,j],col = as.vector(colordata[,2]),pch = 16)
+text(b_flash$l[,i],b_flash$l[,j], labels=colordata[,1], cex= 0.7)</code></pre>
 <p><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
