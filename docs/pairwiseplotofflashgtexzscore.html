@@ -313,19 +313,48 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-05-01</p>
+<p><strong>Last updated:</strong> 2017-05-03</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> e666a88</p>
+<p><strong>Code version:</strong> 8377a2f</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>load(&quot;../data/GTExdata/bflashvarcol.rds&quot;)
 dat = read.table(&#39;../data/GTExColors.txt&#39;, sep = &#39;\t&#39;, comment.char = &#39;&#39;)
 colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]</code></pre>
+<div id="plot-of-l_1-vs-l_3" class="section level3">
+<h3>plot of <span class="math inline">\(l_1\)</span> vs <span class="math inline">\(l_3\)</span></h3>
 <pre class="r"><code>i = 1
 j = 3
 plot(b_flash$l[,i],b_flash$l[,j],col = as.vector(colordata[,2]),pch = 16)
 text(b_flash$l[,i],b_flash$l[,j], labels=colordata[,1], cex= 0.7)</code></pre>
 <p><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="plot-f_1-vs-f_3" class="section level3">
+<h3>plot <span class="math inline">\(f_1\)</span> vs <span class="math inline">\(f_3\)</span></h3>
+<pre class="r"><code>i = 1
+j = 3
+plot(b_flash$f[,i],b_flash$f[,j],col = &quot;grey&quot;,pch = 16)</code></pre>
+<p><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="logcpm-of-count" class="section level2">
+<h2>logcpm of count</h2>
+<p>here I use - 2 brain tissues - testis + pituitary - 2 skin - Mammary+ adipose - 2 heart - uterus + Ovary</p>
+<p>for each tissue, we random pick 50 smaples.</p>
+<pre class="r"><code>bfl = readRDS(&quot;../data/GTExdata/logcpm/sixpairssubsample/bflash_varcol.rds&quot;)</code></pre>
+<p>I run flash with K=60 and it provide 60 factors in greedy algorithm, which mean it didn’t stop. I run backfitting procedure with 6 iteration due to the time limit, it still provide 60 factors.</p>
+<p>I am not sure the factor are useful a</p>
+<pre class="r"><code>color_six = c(rep(&quot;#eeee00&quot;,100),rep(&quot;#aaaaaa&quot;,50),rep(&quot;#aaff99&quot;,50),
+              rep(&quot;#0000ff&quot;,50),rep(&quot;#7777ff&quot;,50),
+              rep(&quot;#ffaa00&quot;,50),rep(&quot;#33cccc&quot;,50),
+              rep(&quot;#9900ff&quot;,50),rep(&quot;#660099&quot;,50),
+              rep(&quot;#ff66ff&quot;,50),rep(&quot;#ffaaff&quot;,50))
+
+par(mfrow = c(3,3),mar = c(5,4,4,2)-1.8)
+for(i in 1:60){
+  barplot(bfl$l[,i],col = color_six,border = color_six)
+}</code></pre>
+<p><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" /><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-5-5.png" width="672" style="display: block; margin: auto;" /><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-5-6.png" width="672" style="display: block; margin: auto;" /><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-5-7.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
