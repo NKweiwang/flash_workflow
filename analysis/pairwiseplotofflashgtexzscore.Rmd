@@ -32,6 +32,8 @@ dat = read.table('../data/GTExColors.txt', sep = '\t', comment.char = '')
 colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
 ```
 
+### plot of $l_1$ vs $l_3$
+
 ```{r}
 i = 1
 j = 3
@@ -39,6 +41,47 @@ plot(b_flash$l[,i],b_flash$l[,j],col = as.vector(colordata[,2]),pch = 16)
 text(b_flash$l[,i],b_flash$l[,j], labels=colordata[,1], cex= 0.7)
 ```
 
+### plot $f_1$ vs $f_3$
+
+```{r}
+i = 1
+j = 3
+plot(b_flash$f[,i],b_flash$f[,j],col = "grey",pch = 16)
+
+```
+
+## logcpm of count
+
+here I use
+- 2 brain tissues
+- testis + pituitary
+- 2 skin
+- Mammary+ adipose
+- 2 heart
+- uterus + Ovary
+
+for each tissue, we random pick 50 smaples. 
+
+```{r}
+bfl = readRDS("../data/GTExdata/logcpm/sixpairssubsample/bflash_varcol.rds")
+```
+
+I run flash with K=60 and it provide 60 factors in greedy algorithm, which mean it didn't stop. I run backfitting procedure with 6 iteration due to the time limit, it still provide 60 factors. 
+
+I am not sure the factor are useful a
+
+```{r}
+color_six = c(rep("#eeee00",100),rep("#aaaaaa",50),rep("#aaff99",50),
+              rep("#0000ff",50),rep("#7777ff",50),
+              rep("#ffaa00",50),rep("#33cccc",50),
+              rep("#9900ff",50),rep("#660099",50),
+              rep("#ff66ff",50),rep("#ffaaff",50))
+
+par(mfrow = c(3,3),mar = c(5,4,4,2)-1.8)
+for(i in 1:60){
+  barplot(bfl$l[,i],col = color_six,border = color_six)
+}
+```
 
 ## Session information
 
