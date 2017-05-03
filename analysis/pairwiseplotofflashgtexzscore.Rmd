@@ -1,5 +1,5 @@
 ---
-title: "pairwise plot of flash result of flash Z-score"
+title: "pairwise plot of flash result of flash Z-score and loading of flash on logcpm of count data"
 author: "Wei Wang"
 date: 2017-05-01
 output: html_document
@@ -25,6 +25,8 @@ knitr::read_chunk("chunks.R")
 ```
 
 <!-- Add your analysis here -->
+
+## pairwise loading plot of Z-score
 
 ```{r}
 load("../data/GTExdata/bflashvarcol.rds")
