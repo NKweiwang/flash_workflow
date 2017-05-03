@@ -49,7 +49,8 @@ text(b_flash$l[,i],b_flash$l[,j], labels=colordata[,1], cex= 0.7)
 i = 1
 j = 3
 plot(b_flash$f[,i],b_flash$f[,j],col = "grey",pch = 16)
-
+plot(as.vector(b_flash$l[,i] %*% t(b_flash$f[,i])),
+     as.vector(b_flash$l[,j] %*% t(b_flash$f[,j])),col = "grey",pch = 16)
 ```
 
 ## logcpm of count
@@ -84,6 +85,16 @@ for(i in 1:60){
   barplot(bfl$l[,i],col = color_six,border = color_six)
 }
 ```
+
+
+```{r}
+gsvd = readRDS("../data/GTExdata/logcpm/sixpairssubsample/svd60.rds")
+par(mfrow = c(3,3),mar = c(5,4,4,2)-1.8)
+for(i in 1:60){
+  barplot(gsvd$u[,i],col = color_six,border = color_six)
+}
+```
+
 
 ## Session information
 
