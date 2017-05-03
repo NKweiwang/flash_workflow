@@ -13,7 +13,7 @@
 
 <meta name="date" content="2017-05-01" />
 
-<title>pairwise plot of flash result of flash Z-score</title>
+<title>pairwise plot of flash result of flash Z-score and loading of flash on logcpm of count data</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -302,7 +302,7 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">pairwise plot of flash result of flash Z-score</h1>
+<h1 class="title toc-ignore">pairwise plot of flash result of flash Z-score and loading of flash on logcpm of count data</h1>
 <h4 class="author"><em>Wei Wang</em></h4>
 <h4 class="date"><em>2017-05-01</em></h4>
 
@@ -316,8 +316,10 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-05-03</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8377a2f</p>
+<p><strong>Code version:</strong> e05f116</p>
 <!-- Add your analysis here -->
+<div id="pairwise-loading-plot-of-z-score" class="section level2">
+<h2>pairwise loading plot of Z-score</h2>
 <pre class="r"><code>load(&quot;../data/GTExdata/bflashvarcol.rds&quot;)
 dat = read.table(&#39;../data/GTExColors.txt&#39;, sep = &#39;\t&#39;, comment.char = &#39;&#39;)
 colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]</code></pre>
@@ -335,6 +337,7 @@ text(b_flash$l[,i],b_flash$l[,j], labels=colordata[,1], cex= 0.7)</code></pre>
 j = 3
 plot(b_flash$f[,i],b_flash$f[,j],col = &quot;grey&quot;,pch = 16)</code></pre>
 <p><img src="figure/pairwiseplotofflashgtexzscore.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
 </div>
 <div id="logcpm-of-count" class="section level2">
 <h2>logcpm of count</h2>
