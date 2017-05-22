@@ -1,0 +1,116 @@
+---
+title: "impute stragergy"
+author: "Wei Wang"
+date: 2017-05-22
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## try the breast cancer data
+
+```{r}
+library(R.matlab)
+library(PMA)
+datapath = "~/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/nsfaexample.mat"
+Y_centered = readMat(datapath)
+Y = Y_centered$Ycentered
+library(flashr)
+library(softImpute)
+## to get the biscale data
+Y_bs = biScale(Y)
+
+para_list = attributes(Y_bs)
+
+set.seed(999)
+# set the missing position
+
+row_index = sample(dim(Y)[1],20)
+col_index = sample(dim(Y)[2],20)
+Y_miss = Y[row_index,col_index]
+
+Y_input = Y
+Y_input[row_index,col_index] = NA
+Y_bs_input = Y_bs
+Y_bs_input[row_index,col_index] = NA
+
+#g1 = flashr::greedy(Y_input, K  = 60)
+#g2 = flashr::greedy(Y_bs_input, K  = 60)
+#saveRDS(g1,"../data/missingvalue/imputescheme/g1_original.rds")
+#saveRDS(g2,"../data/missingvalue/imputescheme/g2_biscale.rds")
+g1 = readRDS("../data/missingvalue/imputescheme/g1_original.rds")
+g2 = readRDS("../data/missingvalue/imputescheme/g2_biscale.rds")
+Y_hat_1 = (g1$l %*% t(g1$f))[row_index,col_index]
+sqrt(mean((Y_miss - Y_hat_1)^2))
+Y_hat_2 = diag(para_list$`biScale:row`$scale) %*%  (g1$l %*% t(g1$f)) %*% diag(para_list$`biScale:column`$scale) +  (para_list$`biScale:row`$center) %*% t(rep(1,251)) + rep(1,226) %*% t(para_list$`biScale:column`$center)
+sqrt(mean((Y_miss - Y_hat_2[row_index,col_index])^2))
+```
+
+```
+#### for RCC
+library(R.matlab)
+library(PMA)
+datapath = "/home/weidong/HG/flash/data/missingvalue/Breastcancer/nsfaexample.mat"
+Y_centered = readMat(datapath)
+Y = Y_centered$Ycentered
+source("~/HG/flash/Rcode/flash.R")
+source("~/HG/flash/Rcode/greedy.R")
+source("~/HG/flash/Rcode/backfitting.R")
+library(softImpute)
+## to get the biscale data
+Y_bs = biScale(Y)
+para_list = attributes(Y_bs)
+
+set.seed(99)
+results = matrix(0,ncol = 2, nrow = 30)
+for(i in 1:30){
+  print(i)
+  row_index = sample(dim(Y)[1],20)
+  col_index = sample(dim(Y)[2],20)
+  Y_miss = Y[row_index,col_index]
+
+  Y_input = Y
+  Y_input[row_index,col_index] = NA
+  Y_bs_input = Y_bs
+  Y_bs_input[row_index,col_index] = NA
+
+  g1 = greedy(Y_input, K  = 60)
+  g2 = greedy(Y_bs_input, K  = 60)
+
+  Y_hat_1 = (g1$l %*% t(g1$f))[row_index,col_index]
+  results[i,1] =  sqrt(mean((Y_miss - Y_hat_1)^2))
+  Y_hat_2 = diag(para_list$`biScale:row`$scale) %*%  (g1$l %*% t(g1$f)) %*% diag(para_list$`biScale:column`$scale) +  (para_list$`biScale:row`$center) %*% t(rep(1,251)) + rep(1,226) %*% t(para_list$`biScale:column`$center)
+  results[i,2] = sqrt(mean((Y_miss - Y_hat_2[row_index,col_index])^2))
+}
+saveRDS(results, "./results.rds")
+```
+
+
+
+```
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
