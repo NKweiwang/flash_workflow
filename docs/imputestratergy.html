@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-05-22</p>
+<p><strong>Last updated:</strong> 2017-05-23</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> bddfa36</p>
+<p><strong>Code version:</strong> 171ea3d</p>
 <!-- Add your analysis here -->
 <div id="try-the-breast-cancer-data" class="section level2">
 <h2>try the breast cancer data</h2>
@@ -392,7 +392,9 @@ for(i in 1:30){
   results[i,2] = sqrt(mean((Y_miss - Y_hat_2[row_index,col_index])^2))
 }
 saveRDS(results, &quot;./results.rds&quot;)</code></pre>
-<p>```</p>
+<pre class="r"><code>results = readRDS(&quot;../data/missingvalue/imputescheme/results.rds&quot;)
+boxplot(results)</code></pre>
+<p><img src="figure/imputestratergy.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
