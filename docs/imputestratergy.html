@@ -313,10 +313,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-05-23</p>
+<p><strong>Last updated:</strong> 2017-05-24</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 171ea3d</p>
+<p><strong>Code version:</strong> 4a8ecda</p>
 <!-- Add your analysis here -->
 <div id="try-the-breast-cancer-data" class="section level2">
 <h2>try the breast cancer data</h2>
@@ -326,8 +326,11 @@ datapath = &quot;~/HG/ash-sfa/Rcode/postmean/flash_simulation/missingvalue/nsfae
 Y_centered = readMat(datapath)
 Y = Y_centered$Ycentered
 library(flashr)
-library(softImpute)
-## to get the biscale data
+library(softImpute)</code></pre>
+<pre><code>Loading required package: Matrix</code></pre>
+<pre><code>Warning: package &#39;Matrix&#39; was built under R version 3.3.2</code></pre>
+<pre><code>Loaded softImpute 1.4</code></pre>
+<pre class="r"><code>## to get the biscale data
 Y_bs = biScale(Y)
 
 para_list = attributes(Y_bs)
@@ -395,6 +398,8 @@ saveRDS(results, &quot;./results.rds&quot;)</code></pre>
 <pre class="r"><code>results = readRDS(&quot;../data/missingvalue/imputescheme/results.rds&quot;)
 boxplot(results)</code></pre>
 <p><img src="figure/imputestratergy.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>hist((results[,1] - results[,2]),breaks = 10)</code></pre>
+<p><img src="figure/imputestratergy.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -411,25 +416,25 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] softImpute_1.4  Matrix_1.2-8    flashr_0.1.1    PMA_1.0.9      
-[5] impute_1.42.0   plyr_1.8.4      R.matlab_3.6.1  workflowr_0.4.0
-[9] rmarkdown_1.3  
+ [1] softImpute_1.4  Matrix_1.2-8    flashr_0.1.1    workflowr_0.4.0
+ [5] rmarkdown_1.3   R.matlab_3.6.1  cowplot_0.7.0   ggplot2_2.2.1  
+ [9] reshape2_1.4.2  PMA_1.0.9       impute_1.42.0   plyr_1.8.4     
+[13] ssvd_1.0       
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.10      git2r_0.18.0      R.methodsS3_1.7.1
- [4] R.utils_2.5.0     iterators_1.0.8   tools_3.3.0      
+ [1] Rcpp_0.12.10      git2r_0.18.0      R.utils_2.5.0    
+ [4] R.methodsS3_1.7.1 iterators_1.0.8   tools_3.3.0      
  [7] digest_0.6.12     evaluate_0.10     tibble_1.2       
 [10] gtable_0.2.0      lattice_0.20-34   foreach_1.4.3    
-[13] rstudioapi_0.6    yaml_2.1.14       parallel_3.3.0   
-[16] stringr_1.2.0     knitr_1.15.1      REBayes_0.73     
-[19] rprojroot_1.2     grid_3.3.0        irlba_2.1.2      
-[22] ggplot2_2.2.1     ashr_2.1-10       magrittr_1.5     
-[25] backports_1.0.5   scales_0.4.1      codetools_0.2-15 
-[28] htmltools_0.3.5   MASS_7.3-45       assertthat_0.2.0 
-[31] colorspace_1.3-2  stringi_1.1.2     Rmosek_7.1.2     
-[34] lazyeval_0.2.0    doParallel_1.0.10 pscl_1.4.9       
-[37] munsell_0.4.3     truncnorm_1.0-7   SQUAREM_2016.8-2 
-[40] R.oo_1.21.0      </code></pre>
+[13] yaml_2.1.14       parallel_3.3.0    stringr_1.2.0    
+[16] knitr_1.15.1      REBayes_0.73      rprojroot_1.2    
+[19] grid_3.3.0        irlba_2.1.2       ashr_2.1-10      
+[22] magrittr_1.5      scales_0.4.1      backports_1.0.5  
+[25] codetools_0.2-15  htmltools_0.3.5   MASS_7.3-45      
+[28] assertthat_0.2.0  colorspace_1.3-2  labeling_0.3     
+[31] stringi_1.1.2     Rmosek_7.1.2      lazyeval_0.2.0   
+[34] pscl_1.4.9        doParallel_1.0.10 munsell_0.4.3    
+[37] truncnorm_1.0-7   SQUAREM_2016.8-2  R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>
