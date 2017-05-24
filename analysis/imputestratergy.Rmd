@@ -108,6 +108,7 @@ saveRDS(results, "./results.rds")
 ```{r}
 results = readRDS("../data/missingvalue/imputescheme/results.rds")
 boxplot(results)
+hist((results[,1] - results[,2]),breaks = 10)
 ```
 
 
