@@ -28,7 +28,9 @@ knitr::read_chunk("chunks.R")
 
 ## introduction of the problem.
 
-In the old code of flash. we found that the greedy algorithm 
+In the old code of flash. we found that the greedy algorithm doesn't increase the lower bound of the log-likelihood. So we turn to understand the likelihood of rank-one and rank-zero model.
+
+Here I will rerun all the representative code, and just provide the original document describing this issue.
 
 ### old version documnt
 
@@ -36,6 +38,42 @@ The old version document is in `ash-sfa` git repo [ash-sfa repo](https://github.
 
 In the document, we have several observations:
 
+1. In the rank one FLASH, we can see that our algorithm monotonically increase that lower-bound of the log-likelihood. [show case in old code](https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/convergereport.pdf)
+2. In the greedy algorithm, the objective function is not increase in each time adding one more factor. We thought the penalty term in `ash` might cause this problem, and we find one case that the penalty term does have effect in rank one model. After we change `method = "fdr"` to `method = "shrink"` in `ash`, the objective function monotonically increase in the algorithm. But when we change the `mehtod ="shrink"` in `greedy` and `backfitting` function, the log-likelihood still doesn't increase in each time by adding a new factor. [show case in old code](https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/testKfactorVEM.pdf).
+3. Then we know that change `method = shrink` can guarantee that rank one and backfitting(if not add or remove factor) algorithm monotonic increase. The only problem is adding or removing factor, which cause the log-likelihood not monotonic. Then we turn to the simplest case of adding or removing factor: rank-one vs rank-zero model. In this document, one thing we can't understand well is that the prediction result seems not corresponding to the objective value. [show case in old code](https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/objcheck.pdf)
+
+We will rerun the analysis in this document. The above observations just show the old documents. 
+
+The following is the main part of this document.
+
+## examples
+
+We will start from the problem in greedy algorithm:
+
+```{r}
+sim_K = function(K, N, P, SF, SL, signal,noise){
+  E = matrix(rnorm(N*P,0,noise),nrow=N)
+  Y = E
+  L_true = array(0, dim = c(N,K))
+  F_true = array(0, dim = c(P,K))
+  
+  for(k in 1:K){
+    lstart = rnorm(N, 0, signal)
+    fstart = rnorm(P, 0, signal)
+    
+    index = sample(seq(1:N),(N*SL))
+    lstart[index] = 0
+    index = sample(seq(1:P),(P*SF))
+    fstart[index] = 0
+    
+    L_true[,k] = lstart
+    F_true[,k] = fstart
+    
+    Y = Y + lstart %*% t(fstart)
+  }
+  return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
+}
+```
 
 
 
