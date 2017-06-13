@@ -7,8 +7,6 @@ output:
 
 ### simulation studies
 
-
-
 ### Orthogonal CV
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
