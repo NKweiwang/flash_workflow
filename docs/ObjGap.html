@@ -316,7 +316,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-06-13</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> e477d00</p>
+<p><strong>Code version:</strong> 46206a9</p>
 <!-- Add your analysis here -->
 <div id="introduction-of-the-problem." class="section level2">
 <h2>0 introduction of the problem.</h2>
@@ -472,12 +472,24 @@ rank1test(1,100,200,0.5,0.5,1,1)</code></pre>
 <p>We can see that the objective function is not increasing in <code>method = &quot;fdr&quot;</code></p>
 <pre class="r"><code>rank1test(1,20,30,0.5,0.6,1,1)</code></pre>
 <p><img src="figure/ObjGap.rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="special-case" class="section level4">
+<h4>special case</h4>
+<pre class="r"><code>rank1test(1,10,200,0.5,0.6,1,1)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>this case</p>
+<pre class="r"><code>rank1test(1,10,200,0.5,0.5,1,3)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>this case show that the <code>shink</code> and <code>uniform + point mass</code> are not same.</p>
+<pre class="r"><code>rank1test(1,10,200,0.5,0.5,1,2.5)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>In this case, <code>fdr</code> method tend to get rank zero estimation, which has highest value of objective function, but rank one model with <code>spike and slab</code> has better performance in prediction.</p>
+</div>
 <div id="very-sparse-case" class="section level4">
 <h4>very sparse case</h4>
 <pre class="r"><code>rank1test(1,100,300,0.9,0.9,1,1)</code></pre>
-<p><img src="figure/ObjGap.rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>rank1test(1,100,300,0.95,0.99,1,0.5)</code></pre>
-<p><img src="figure/ObjGap.rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="apply-greedy-without-penalty" class="section level3">
@@ -500,7 +512,7 @@ Greedy_showcase_1(K=5,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 1,noise = 3,f
 [1] 4
 [1] 5
 [1] 6</code></pre>
-<p><img src="figure/ObjGap.rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre><code>$obj_track
 [1] -51543.11 -51477.99 -51445.58 -51408.87 -51418.96
 
@@ -545,15 +557,11 @@ $RMSE
 }
 
 rank1test_0(1,20,60,1,0.6,1,1)</code></pre>
-<p><img src="figure/ObjGap.rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>rank1test_0(1,100,200,1,0.6,1,2)</code></pre>
-<p><img src="figure/ObjGap.rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-14-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>rank1test_0(1,60,100,1,0.6,1,0.5)</code></pre>
-<p><img src="figure/ObjGap.rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
-</div>
-</div>
-<div id="session-information" class="section level2">
-<h2>Session information</h2>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-15-1.png" width="672" style="display: block; margin: auto;" /> test ## Session information</p>
 <!-- Insert the session information into the document -->
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
@@ -583,6 +591,7 @@ loaded via a namespace (and not attached):
 [31] ggplot2_2.2.1     codetools_0.2-15  evaluate_0.10    
 [34] rmarkdown_1.3     stringi_1.1.2     Rmosek_7.1.2     
 [37] scales_0.4.1      backports_1.0.5   truncnorm_1.0-7  </code></pre>
+</div>
 </div>
 
 <hr>
