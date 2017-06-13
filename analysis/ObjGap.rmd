@@ -26,17 +26,17 @@ knitr::read_chunk("chunks.R")
 
 <!-- Add your analysis here -->
 
-## introduction of the problem.
+## 0 introduction of the problem.
 
 In the old code of flash. we found that the greedy algorithm doesn't increase the lower bound of the log-likelihood. So we turn to understand the likelihood of rank-one and rank-zero model.
 
 Here I will rerun all the representative code, and just provide the original document describing this issue.
 
-### old version documnt
+### 0.1 old version documnt
 
 The old version document is in `ash-sfa` git repo [ash-sfa repo](https://github.com/stephenslab/ash-sfa).
 
-In the document, we have several observations:
+In the document, we have several observations (**please ignore this section since it is just a record for the old code, I will show all the cases in the next section**):
 
 1. In the rank one FLASH, we can see that our algorithm monotonically increase that lower-bound of the log-likelihood. [show case in old code](https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/convergereport.pdf)
 2. In the greedy algorithm, the objective function is not increase in each time adding one more factor. We thought the penalty term in `ash` might cause this problem, and we find one case that the penalty term does have effect in rank one model. After we change `method = "fdr"` to `method = "shrink"` in `ash`, the objective function monotonically increase in the algorithm. But when we change the `mehtod ="shrink"` in `greedy` and `backfitting` function, the log-likelihood still doesn't increase in each time by adding a new factor. [show case in old code](https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/testKfactorVEM.pdf).
@@ -46,11 +46,38 @@ We will rerun the analysis in this document. The above observations just show th
 
 The following is the main part of this document.
 
-## examples
+## 1 summary of the result
+
+- section 2.1 shows that in the greedy algorithm doesn't always increase the lower bound of the log-likelihood when we add one more factor. When we add one more factor the marginal (conditional) likelihood, $E_q \log\{P(Y|L,F)\} = -\frac{1}{2\sigma^2}(Y_{ij} - \sum_k l_{ik}f_{kj})^2$, would increase, but the $\log(\frac{P(L)}{q(L)}) = \sum_k \log(\frac{P(L_k)}{q(L_k)})$ would decrease since:
+\begin{eqnarray} E_q log(\frac{P}{q}) \leq log E_q (\frac{P}{q}) = 0 \end{eqnarray}
+
+> I think the KL(q || p) is not continuous as q,p -> delta_0 [point mass at 0]
+> eg q_n = N(0,1/n) and p_n = N(0,2/n)
+> I think lim_{n \rightarrow \inf} KL(q_n, p_n) may not be 0?
+> If that is right then the lower bound F(g; qhat(g)) is not necessarily continuous in g (even though likelihood is continuous in g I think)…
+> maybe this explains the gap; and may also tell us what to do about it.
+> —— Matthew's comments
+
+$$lim_{n \rightarrow \inf} KL(q_n, p_n) = -\frac{1}{2}\{\log2 - \frac{1}{2}\} \neq 0$$
+
+- section 2.2 shows that rank one FLASH with 4 different method: `method = "fdr"`, `method = "shrink"`, `method = "spike and slab"`, `method = "uniform with point mass"`. We can see that the lower bound of the log likelihood is increase if we apply different methods without penalty term. The objective value is not always increase in `method = "fdr"` case.
+
+- In section 2.2, there is an interesting observation that the RMSE results don't always agree wit the value of the objective function, which means that the method with larger objective function value doesn't has smaller RMSE value (better in prediction). 
+
+- In section 2.3 we use `method = "shrink"` to the same data in section 2.1.2 where the loglikelihood is not monotonically increase, and we find that the loglikelihood still decrease when we add fifth factor. So this is probably because of the penalty term.
+
+- Section 2.4 shows that the `method = "fdr"` performs very well in rank zero case.
+
+- In section 2.3 and 2.12, we can see that rank 4 model have larger value of lower bound but rank 5 model has better performance in RMSE.
+
+## 2 examples
+
+### 2.1 greedy algorithm
 
 We will start from the problem in greedy algorithm:
 
 ```{r}
+library(flashr)
 sim_K = function(K, N, P, SF, SL, signal,noise){
   E = matrix(rnorm(N*P,0,noise),nrow=N)
   Y = E
@@ -73,6 +100,168 @@ sim_K = function(K, N, P, SF, SL, signal,noise){
   }
   return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
 }
+```
+
+#### 2.1.1 
+
+"fdr" method looks fine in many cases.
+
+```{r}
+Greedy_showcase = function(K=5,N = 100, P = 200, SF = 0.8, SL = 0.8, signal = 1,noise = 1){
+  set.seed(99)
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  g1 = greedy(Y,K = 10)
+  plot(g1$clik_vec + cumsum(g1$priorpost_vec),main = "fdr method")
+  # show the prediction
+  rmse_5 = sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) / sqrt(mean((Y - E)^2))
+  rmse_4 = sqrt(mean((Y - g1$l[,1:4] %*% t(g1$f[,1:4]) -E)^2)) / sqrt(mean((Y - E)^2))
+  return(list(obj_track = g1$clik_vec + cumsum(g1$priorpost_vec),RMSE = c(rmse_4,rmse_5)))
+}
+Greedy_showcase(K=5,N = 100, P = 200, SF = 0.8, SL = 0.8, signal = 1,noise = 1)
+```
+
+#### 2.1.2
+
+But in some case, the lower bound is decrease when we add one more factor:
+
+```{r}
+Greedy_showcase(K=5,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 1,noise = 3)
+```
+
+We guess that it is because the penalty term in `ash` we use.
+
+### 2.2 rank one model with different method
+
+Here we use four different methods: fdr, shrink, uniform without penalty and spike and slab.
+
+```{r}
+rank1test = function(K,N, P, SF , SL , signal ,noise ){
+  set.seed(99)
+  par(mfrow = c(3, 2))
+  par(cex = 0.6)
+  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  # "l" is for lower bound
+  g3_1 = flash(Y,objtype = "l")
+  plot(g3_1$obj_val_track,main = "fdr method",type = "l")
+  g3_2 = flash(Y,objtype = "l",ash_para = list( prior = "uniform",pointmass = TRUE,method = NULL))
+  plot(g3_2$obj_val_track,main = "uniform + pointmass method",type = "l")
+  g3_3 = flash(Y,objtype = "l",ash_para = list(method = "shrink"))
+  plot(g3_3$obj_val_track,main = "shrink method",type = "l")
+  g3_4 = flash(Y,objtype = "l",ash_para = list( prior = "uniform",pointmass = TRUE,method = NULL,mixsd = c(1)))
+  plot(g3_4$obj_val_track,main = "spike and slab method",type = "l")
+  obj = c(g3_1$obj_val,g3_2$obj_val,g3_3$obj_val,g3_4$obj_val)
+  RMSE = c(sqrt(mean((Y - g3_1$l %*% t(g3_1$f) -E)^2)) / sqrt(mean((Y - E)^2)),
+           sqrt(mean((Y - g3_2$l %*% t(g3_2$f) -E)^2)) / sqrt(mean((Y - E)^2)),
+           sqrt(mean((Y - g3_3$l %*% t(g3_3$f) -E)^2)) / sqrt(mean((Y - E)^2)),
+           sqrt(mean((Y - g3_4$l %*% t(g3_4$f) -E)^2)) / sqrt(mean((Y - E)^2)))
+  plot(RMSE, col =c("magenta","cyan","yellow","green"), pch = 16, cex = 2,main = "RMSE")
+  legend("top", cex = 1,
+       legend = c("fdr","Uniform","shrink","SpikeSlab"),
+       col = c("magenta","cyan","yellow","green"),
+       pch=16)
+  plot(obj, col =c("magenta","cyan","yellow","green"), pch = 16, cex = 2,main = "objective value")
+  legend("top",  cex = 1,
+       legend = c("fdr","Uniform","shrink","SpikeSlab"),
+       col = c("magenta","cyan","yellow","green"),
+       pch=16)
+}
+
+rank1test(1,100,200,0.5,0.5,1,1)
+```
+
+we can see that the RMSE doesn't agree with the value of objective function.
+
+```{r}
+rank1test(1,100,200,0.8,0.8,1,2)
+```
+
+We can see that the objective function is not increasing in `method = "fdr"`
+
+```{r}
+rank1test(1,20,30,0.5,0.6,1,1)
+```
+
+#### very sparse case
+
+```{r}
+rank1test(1,100,300,0.9,0.9,1,1)
+```
+
+```{r}
+rank1test(1,100,300,0.95,0.99,1,0.5)
+```
+
+### 2.3 apply greedy without penalty
+
+```{r}
+Greedy_showcase_1 = function(K=5,N = 100, P = 200, SF = 0.8, SL = 0.8, signal = 1,noise = 1,flash_para = list(ash_para = list(method = "shrink"))){
+  set.seed(99)
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  g1 = greedy(Y,K = 10,flash_para)
+  plot(g1$clik_vec + cumsum(g1$priorpost_vec),main = "shrink method")
+  # show the prediction
+  rmse_5 = sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) / sqrt(mean((Y - E)^2))
+  rmse_4 = sqrt(mean((Y - g1$l[,1:4] %*% t(g1$f[,1:4]) -E)^2)) / sqrt(mean((Y - E)^2))
+  return(list(obj_track = g1$clik_vec + cumsum(g1$priorpost_vec),RMSE = c(rmse_4,rmse_5)))
+}
+Greedy_showcase_1(K=5,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 1,noise = 3,flash_para = list(ash_para = list(method = "shrink")))
+```
+
+by using the `method = "shrink"`, we can see that the objective function getting large but the lower bound is still not monotonically increasing. So it's not because of the penalty we use in `ash`.
+
+### 2.4 rank zero case
+
+```{r}
+rank1test_0 = function(K,N, P, SF , SL , signal ,noise ){
+  set.seed(99)
+  par(mfrow = c(3, 2))
+  par(cex = 0.6)
+  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  # "l" is for lower bound
+  g3_1 = flash(Y,objtype = "l")
+  plot(g3_1$obj_val_track,main = "fdr method",type = "l")
+  g3_2 = flash(Y,objtype = "l",ash_para = list( prior = "uniform",pointmass = TRUE,method = NULL))
+  plot(g3_2$obj_val_track,main = "uniform + pointmass method",type = "l")
+  g3_3 = flash(Y,objtype = "l",ash_para = list(method = "shrink"))
+  plot(g3_3$obj_val_track,main = "shrink method",type = "l")
+  g3_4 = flash(Y,objtype = "l",ash_para = list( prior = "uniform",pointmass = TRUE,method = NULL,mixsd = c(1)))
+  plot(g3_4$obj_val_track,main = "spike and slab method",type = "l")
+  obj = c(g3_1$obj_val,g3_2$obj_val,g3_3$obj_val,g3_4$obj_val)
+  RMSE = c(sqrt(mean((Y - g3_1$l %*% t(g3_1$f) -E)^2)) ,
+           sqrt(mean((Y - g3_2$l %*% t(g3_2$f) -E)^2)) ,
+           sqrt(mean((Y - g3_3$l %*% t(g3_3$f) -E)^2)) ,
+           sqrt(mean((Y - g3_4$l %*% t(g3_4$f) -E)^2)) )
+  plot(RMSE, col =c("magenta","cyan","yellow","green"), pch = 16, cex = 2,main = "RMSE")
+  legend("top", cex = 1,
+       legend = c("fdr","Uniform","shrink","SpikeSlab"),
+       col = c("magenta","cyan","yellow","green"),
+       pch=16)
+  plot(obj, col =c("magenta","cyan","yellow","green"), pch = 16, cex = 2,main = "objective value")
+  legend("top",  cex = 1,
+       legend = c("fdr","Uniform","shrink","SpikeSlab"),
+       col = c("magenta","cyan","yellow","green"),
+       pch=16)
+}
+
+rank1test_0(1,20,60,1,0.6,1,1)
+```
+
+```{r}
+rank1test_0(1,100,200,1,0.6,1,2)
+```
+
+```{r}
+rank1test_0(1,60,100,1,0.6,1,0.5)
 ```
 
 
