@@ -186,6 +186,26 @@ We can see that the objective function is not increasing in `method = "fdr"`
 rank1test(1,20,30,0.5,0.6,1,1)
 ```
 
+#### special case
+
+```{r}
+rank1test(1,10,200,0.5,0.6,1,1)
+```
+
+this case 
+
+```{r}
+rank1test(1,10,200,0.5,0.5,1,3)
+```
+
+this case show that the `shink` and `uniform + point mass` are not same.
+
+```{r}
+rank1test(1,10,200,0.5,0.5,1,2.5)
+```
+
+In this case, `fdr` method tend to get rank zero estimation, which has highest value of objective function, but rank one model with `spike and slab` has better performance in prediction.
+
 #### very sparse case
 
 ```{r}
