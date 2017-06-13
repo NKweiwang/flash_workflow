@@ -19,12 +19,15 @@ Click on this [Questions on Algorithm](first-analysis.html) to see more details.
 
 Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html) to see more details.
 
-
 [ns](draft.html) 
 
 Click on this [load reslut of GTEx data](GTExresult.html) to see more details.
 
 Click on this [pairwise plot](pairwiseplotofflashgtexzscore.html) to see more details.
+
+### Issues
+
+Click on this [gap issue](ObjGap.html) to see more details.
 
 ### meeting summary
 
