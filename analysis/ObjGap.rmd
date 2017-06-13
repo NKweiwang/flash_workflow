@@ -263,7 +263,7 @@ rank1test_0(1,100,200,1,0.6,1,2)
 ```{r}
 rank1test_0(1,60,100,1,0.6,1,0.5)
 ```
-
+test
 ## Session information
 
 <!-- Insert the session information into the document -->
