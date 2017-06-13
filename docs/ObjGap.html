@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Wei Wang" />
+
+<meta name="date" content="2017-06-12" />
+
+<title>gap issue</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 52px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+
+.section h2 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h3 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h4 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h5 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h6 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">flash workflow</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/NKweiwang/flash_workflow">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">‘gap’ issue</h1>
+<h4 class="author"><em>Wei Wang</em></h4>
+<h4 class="date"><em>2017-06-12</em></h4>
+
+</div>
+
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2017-06-13</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> e477d00</p>
+<!-- Add your analysis here -->
+<div id="introduction-of-the-problem." class="section level2">
+<h2>0 introduction of the problem.</h2>
+<p>In the old code of flash. we found that the greedy algorithm doesn’t increase the lower bound of the log-likelihood. So we turn to understand the likelihood of rank-one and rank-zero model.</p>
+<p>Here I will rerun all the representative code, and just provide the original document describing this issue.</p>
+<div id="old-version-documnt" class="section level3">
+<h3>0.1 old version documnt</h3>
+<p>The old version document is in <code>ash-sfa</code> git repo <a href="https://github.com/stephenslab/ash-sfa">ash-sfa repo</a>.</p>
+<p>In the document, we have several observations (<strong>please ignore this section since it is just a record for the old code, I will show all the cases in the next section</strong>):</p>
+<ol style="list-style-type: decimal">
+<li>In the rank one FLASH, we can see that our algorithm monotonically increase that lower-bound of the log-likelihood. <a href="https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/convergereport.pdf">show case in old code</a></li>
+<li>In the greedy algorithm, the objective function is not increase in each time adding one more factor. We thought the penalty term in <code>ash</code> might cause this problem, and we find one case that the penalty term does have effect in rank one model. After we change <code>method = &quot;fdr&quot;</code> to <code>method = &quot;shrink&quot;</code> in <code>ash</code>, the objective function monotonically increase in the algorithm. But when we change the <code>mehtod =&quot;shrink&quot;</code> in <code>greedy</code> and <code>backfitting</code> function, the log-likelihood still doesn’t increase in each time by adding a new factor. <a href="https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/testKfactorVEM.pdf">show case in old code</a>.</li>
+<li>Then we know that change <code>method = shrink</code> can guarantee that rank one and backfitting(if not add or remove factor) algorithm monotonic increase. The only problem is adding or removing factor, which cause the log-likelihood not monotonic. Then we turn to the simplest case of adding or removing factor: rank-one vs rank-zero model. In this document, one thing we can’t understand well is that the prediction result seems not corresponding to the objective value. <a href="https://github.com/stephenslab/ash-sfa/blob/master/Rcode/postmean/flash/simulation/objcheck.pdf">show case in old code</a></li>
+</ol>
+<p>We will rerun the analysis in this document. The above observations just show the old documents.</p>
+<p>The following is the main part of this document.</p>
+</div>
+</div>
+<div id="summary-of-the-result" class="section level2">
+<h2>1 summary of the result</h2>
+<ul>
+<li>section 2.1 shows that in the greedy algorithm doesn’t always increase the lower bound of the log-likelihood when we add one more factor. When we add one more factor the marginal (conditional) likelihood, <span class="math inline">\(E_q \log\{P(Y|L,F)\} = -\frac{1}{2\sigma^2}(Y_{ij} - \sum_k l_{ik}f_{kj})^2\)</span>, would increase, but the <span class="math inline">\(\log(\frac{P(L)}{q(L)}) = \sum_k \log(\frac{P(L_k)}{q(L_k)})\)</span> would decrease since:
+<span class="math display">\[\begin{eqnarray} E_q log(\frac{P}{q}) \leq log E_q (\frac{P}{q}) = 0 \end{eqnarray}\]</span></li>
+</ul>
+<blockquote>
+<p>I think the KL(q || p) is not continuous as q,p -&gt; delta_0 [point mass at 0] eg q_n = N(0,1/n) and p_n = N(0,2/n) I think lim_{n } KL(q_n, p_n) may not be 0? If that is right then the lower bound F(g; qhat(g)) is not necessarily continuous in g (even though likelihood is continuous in g I think)… maybe this explains the gap; and may also tell us what to do about it. —— Matthew’s comments</p>
+</blockquote>
+<p><span class="math display">\[lim_{n \rightarrow \inf} KL(q_n, p_n) = -\frac{1}{2}\{\log2 - \frac{1}{2}\} \neq 0\]</span></p>
+<ul>
+<li><p>section 2.2 shows that rank one FLASH with 4 different method: <code>method = &quot;fdr&quot;</code>, <code>method = &quot;shrink&quot;</code>, <code>method = &quot;spike and slab&quot;</code>, <code>method = &quot;uniform with point mass&quot;</code>. We can see that the lower bound of the log likelihood is increase if we apply different methods without penalty term. The objective value is not always increase in <code>method = &quot;fdr&quot;</code> case.</p></li>
+<li><p>In section 2.2, there is an interesting observation that the RMSE results don’t always agree wit the value of the objective function, which means that the method with larger objective function value doesn’t has smaller RMSE value (better in prediction).</p></li>
+<li><p>In section 2.3 we use <code>method = &quot;shrink&quot;</code> to the same data in section 2.1.2 where the loglikelihood is not monotonically increase, and we find that the loglikelihood still decrease when we add fifth factor. So this is probably because of the penalty term.</p></li>
+<li><p>Section 2.4 shows that the <code>method = &quot;fdr&quot;</code> performs very well in rank zero case.</p></li>
+<li><p>In section 2.3 and 2.12, we can see that rank 4 model have larger value of lower bound but rank 5 model has better performance in RMSE.</p></li>
+</ul>
+</div>
+<div id="examples" class="section level2">
+<h2>2 examples</h2>
+<div id="greedy-algorithm" class="section level3">
+<h3>2.1 greedy algorithm</h3>
+<p>We will start from the problem in greedy algorithm:</p>
+<pre class="r"><code>library(flashr)
+sim_K = function(K, N, P, SF, SL, signal,noise){
+  E = matrix(rnorm(N*P,0,noise),nrow=N)
+  Y = E
+  L_true = array(0, dim = c(N,K))
+  F_true = array(0, dim = c(P,K))
+  
+  for(k in 1:K){
+    lstart = rnorm(N, 0, signal)
+    fstart = rnorm(P, 0, signal)
+    
+    index = sample(seq(1:N),(N*SL))
+    lstart[index] = 0
+    index = sample(seq(1:P),(P*SF))
+    fstart[index] = 0
+    
+    L_true[,k] = lstart
+    F_true[,k] = fstart
+    
+    Y = Y + lstart %*% t(fstart)
+  }
+  return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
+}</code></pre>
+<div id="section" class="section level4">
+<h4>2.1.1</h4>
+<p>“fdr” method looks fine in many cases.</p>
+<pre class="r"><code>Greedy_showcase = function(K=5,N = 100, P = 200, SF = 0.8, SL = 0.8, signal = 1,noise = 1){
+  set.seed(99)
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  g1 = greedy(Y,K = 10)
+  plot(g1$clik_vec + cumsum(g1$priorpost_vec),main = &quot;fdr method&quot;)
+  # show the prediction
+  rmse_5 = sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) / sqrt(mean((Y - E)^2))
+  rmse_4 = sqrt(mean((Y - g1$l[,1:4] %*% t(g1$f[,1:4]) -E)^2)) / sqrt(mean((Y - E)^2))
+  return(list(obj_track = g1$clik_vec + cumsum(g1$priorpost_vec),RMSE = c(rmse_4,rmse_5)))
+}
+Greedy_showcase(K=5,N = 100, P = 200, SF = 0.8, SL = 0.8, signal = 1,noise = 1)</code></pre>
+<pre><code>[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>$obj_track
+[1] -29754.56 -29569.95 -29393.01 -29301.72 -29223.50
+
+$RMSE
+[1] 0.4631371 0.3659628</code></pre>
+</div>
+<div id="section-1" class="section level4">
+<h4>2.1.2</h4>
+<p>But in some case, the lower bound is decrease when we add one more factor:</p>
+<pre class="r"><code>Greedy_showcase(K=5,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 1,noise = 3)</code></pre>
+<pre><code>[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>$obj_track
+[1] -51550.21 -51490.24 -51464.19 -51429.13 -51434.28
+
+$RMSE
+[1] 0.7213337 0.6820024</code></pre>
+<p>We guess that it is because the penalty term in <code>ash</code> we use.</p>
+</div>
+</div>
+<div id="rank-one-model-with-different-method" class="section level3">
+<h3>2.2 rank one model with different method</h3>
+<p>Here we use four different methods: fdr, shrink, uniform without penalty and spike and slab.</p>
+<pre class="r"><code>rank1test = function(K,N, P, SF , SL , signal ,noise ){
+  set.seed(99)
+  par(mfrow = c(3, 2))
+  par(cex = 0.6)
+  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  # &quot;l&quot; is for lower bound
+  g3_1 = flash(Y,objtype = &quot;l&quot;)
+  plot(g3_1$obj_val_track,main = &quot;fdr method&quot;,type = &quot;l&quot;)
+  g3_2 = flash(Y,objtype = &quot;l&quot;,ash_para = list( prior = &quot;uniform&quot;,pointmass = TRUE,method = NULL))
+  plot(g3_2$obj_val_track,main = &quot;uniform + pointmass method&quot;,type = &quot;l&quot;)
+  g3_3 = flash(Y,objtype = &quot;l&quot;,ash_para = list(method = &quot;shrink&quot;))
+  plot(g3_3$obj_val_track,main = &quot;shrink method&quot;,type = &quot;l&quot;)
+  g3_4 = flash(Y,objtype = &quot;l&quot;,ash_para = list( prior = &quot;uniform&quot;,pointmass = TRUE,method = NULL,mixsd = c(1)))
+  plot(g3_4$obj_val_track,main = &quot;spike and slab method&quot;,type = &quot;l&quot;)
+  obj = c(g3_1$obj_val,g3_2$obj_val,g3_3$obj_val,g3_4$obj_val)
+  RMSE = c(sqrt(mean((Y - g3_1$l %*% t(g3_1$f) -E)^2)) / sqrt(mean((Y - E)^2)),
+           sqrt(mean((Y - g3_2$l %*% t(g3_2$f) -E)^2)) / sqrt(mean((Y - E)^2)),
+           sqrt(mean((Y - g3_3$l %*% t(g3_3$f) -E)^2)) / sqrt(mean((Y - E)^2)),
+           sqrt(mean((Y - g3_4$l %*% t(g3_4$f) -E)^2)) / sqrt(mean((Y - E)^2)))
+  plot(RMSE, col =c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;), pch = 16, cex = 2,main = &quot;RMSE&quot;)
+  legend(&quot;top&quot;, cex = 1,
+       legend = c(&quot;fdr&quot;,&quot;Uniform&quot;,&quot;shrink&quot;,&quot;SpikeSlab&quot;),
+       col = c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;),
+       pch=16)
+  plot(obj, col =c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;), pch = 16, cex = 2,main = &quot;objective value&quot;)
+  legend(&quot;top&quot;,  cex = 1,
+       legend = c(&quot;fdr&quot;,&quot;Uniform&quot;,&quot;shrink&quot;,&quot;SpikeSlab&quot;),
+       col = c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;),
+       pch=16)
+}
+
+rank1test(1,100,200,0.5,0.5,1,1)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>we can see that the RMSE doesn’t agree with the value of objective function.</p>
+<pre class="r"><code>rank1test(1,100,200,0.8,0.8,1,2)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>We can see that the objective function is not increasing in <code>method = &quot;fdr&quot;</code></p>
+<pre class="r"><code>rank1test(1,20,30,0.5,0.6,1,1)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<div id="very-sparse-case" class="section level4">
+<h4>very sparse case</h4>
+<pre class="r"><code>rank1test(1,100,300,0.9,0.9,1,1)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>rank1test(1,100,300,0.95,0.99,1,0.5)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="apply-greedy-without-penalty" class="section level3">
+<h3>2.3 apply greedy without penalty</h3>
+<pre class="r"><code>Greedy_showcase_1 = function(K=5,N = 100, P = 200, SF = 0.8, SL = 0.8, signal = 1,noise = 1,flash_para = list(ash_para = list(method = &quot;shrink&quot;))){
+  set.seed(99)
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  g1 = greedy(Y,K = 10,flash_para)
+  plot(g1$clik_vec + cumsum(g1$priorpost_vec),main = &quot;shrink method&quot;)
+  # show the prediction
+  rmse_5 = sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) / sqrt(mean((Y - E)^2))
+  rmse_4 = sqrt(mean((Y - g1$l[,1:4] %*% t(g1$f[,1:4]) -E)^2)) / sqrt(mean((Y - E)^2))
+  return(list(obj_track = g1$clik_vec + cumsum(g1$priorpost_vec),RMSE = c(rmse_4,rmse_5)))
+}
+Greedy_showcase_1(K=5,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 1,noise = 3,flash_para = list(ash_para = list(method = &quot;shrink&quot;)))</code></pre>
+<pre><code>[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>$obj_track
+[1] -51543.11 -51477.99 -51445.58 -51408.87 -51418.96
+
+$RMSE
+[1] 0.6844070 0.6806335</code></pre>
+<p>by using the <code>method = &quot;shrink&quot;</code>, we can see that the objective function getting large but the lower bound is still not monotonically increasing. So it’s not because of the penalty we use in <code>ash</code>.</p>
+</div>
+<div id="rank-zero-case" class="section level3">
+<h3>2.4 rank zero case</h3>
+<pre class="r"><code>rank1test_0 = function(K,N, P, SF , SL , signal ,noise ){
+  set.seed(99)
+  par(mfrow = c(3, 2))
+  par(cex = 0.6)
+  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  # &quot;l&quot; is for lower bound
+  g3_1 = flash(Y,objtype = &quot;l&quot;)
+  plot(g3_1$obj_val_track,main = &quot;fdr method&quot;,type = &quot;l&quot;)
+  g3_2 = flash(Y,objtype = &quot;l&quot;,ash_para = list( prior = &quot;uniform&quot;,pointmass = TRUE,method = NULL))
+  plot(g3_2$obj_val_track,main = &quot;uniform + pointmass method&quot;,type = &quot;l&quot;)
+  g3_3 = flash(Y,objtype = &quot;l&quot;,ash_para = list(method = &quot;shrink&quot;))
+  plot(g3_3$obj_val_track,main = &quot;shrink method&quot;,type = &quot;l&quot;)
+  g3_4 = flash(Y,objtype = &quot;l&quot;,ash_para = list( prior = &quot;uniform&quot;,pointmass = TRUE,method = NULL,mixsd = c(1)))
+  plot(g3_4$obj_val_track,main = &quot;spike and slab method&quot;,type = &quot;l&quot;)
+  obj = c(g3_1$obj_val,g3_2$obj_val,g3_3$obj_val,g3_4$obj_val)
+  RMSE = c(sqrt(mean((Y - g3_1$l %*% t(g3_1$f) -E)^2)) ,
+           sqrt(mean((Y - g3_2$l %*% t(g3_2$f) -E)^2)) ,
+           sqrt(mean((Y - g3_3$l %*% t(g3_3$f) -E)^2)) ,
+           sqrt(mean((Y - g3_4$l %*% t(g3_4$f) -E)^2)) )
+  plot(RMSE, col =c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;), pch = 16, cex = 2,main = &quot;RMSE&quot;)
+  legend(&quot;top&quot;, cex = 1,
+       legend = c(&quot;fdr&quot;,&quot;Uniform&quot;,&quot;shrink&quot;,&quot;SpikeSlab&quot;),
+       col = c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;),
+       pch=16)
+  plot(obj, col =c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;), pch = 16, cex = 2,main = &quot;objective value&quot;)
+  legend(&quot;top&quot;,  cex = 1,
+       legend = c(&quot;fdr&quot;,&quot;Uniform&quot;,&quot;shrink&quot;,&quot;SpikeSlab&quot;),
+       col = c(&quot;magenta&quot;,&quot;cyan&quot;,&quot;yellow&quot;,&quot;green&quot;),
+       pch=16)
+}
+
+rank1test_0(1,20,60,1,0.6,1,1)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>rank1test_0(1,100,200,1,0.6,1,2)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>rank1test_0(1,60,100,1,0.6,1,0.5)</code></pre>
+<p><img src="figure/ObjGap.rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.12.4 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] flashr_0.1.1
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.10      knitr_1.15.1      magrittr_1.5     
+ [4] REBayes_0.73      MASS_7.3-45       munsell_0.4.3    
+ [7] doParallel_1.0.10 pscl_1.4.9        colorspace_1.3-2 
+[10] SQUAREM_2016.8-2  lattice_0.20-34   foreach_1.4.3    
+[13] plyr_1.8.4        ashr_2.1-10       stringr_1.2.0    
+[16] tools_3.3.0       parallel_3.3.0    grid_3.3.0       
+[19] gtable_0.2.0      irlba_2.1.2       git2r_0.18.0     
+[22] htmltools_0.3.5   iterators_1.0.8   assertthat_0.2.0 
+[25] lazyeval_0.2.0    yaml_2.1.14       rprojroot_1.2    
+[28] digest_0.6.12     tibble_1.2        Matrix_1.2-8     
+[31] ggplot2_2.2.1     codetools_0.2-15  evaluate_0.10    
+[34] rmarkdown_1.3     stringi_1.1.2     Rmosek_7.1.2     
+[37] scales_0.4.1      backports_1.0.5   truncnorm_1.0-7  </code></pre>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
