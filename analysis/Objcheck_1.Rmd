@@ -215,7 +215,7 @@ sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 
   RMSE = rep(NA,T)
   sign_obj = rep(NA,T)
   for(t in 1:T){
-    g0 = rank0check(K = 1,N, P, SF, SL , signal=0,noise,mtype = mtype)
+    g0 = rank0check(K = 1,N, P, SF, SL , signal,noise,mtype = mtype)
     RMSE[t] = g0$rmse
     sign_obj[t] = sign(g0$obj_val - g0$obj_0)
   }
@@ -223,7 +223,7 @@ sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 
   par(cex = 0.6)
   par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
   boxplot(RMSE,main = "RMSE")
-  hist(sign_obj, main = "sign of difference of obj value")
+  hist(sign_obj, breaks = 3,main = "sign of difference of obj value")
   hist(RMSE,breaks = 50,main = "RMSE")
   plot(sign_obj,RMSE, main = "sign of obj diff vs RMSE")
 }
