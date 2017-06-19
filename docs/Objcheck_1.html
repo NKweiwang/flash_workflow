@@ -315,7 +315,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-06-19</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8ac43e2</p>
+<p><strong>Code version:</strong> 5731020</p>
 <!-- Add your analysis here -->
 <div id="rank-1-vs-rank-0" class="section level2">
 <h2>rank 1 vs rank 0</h2>
@@ -384,7 +384,7 @@ sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 
   RMSE = rep(NA,T)
   sign_obj = rep(NA,T)
   for(t in 1:T){
-    g0 = rank0check(K = 1,N, P, SF, SL , signal=0,noise,mtype = mtype)
+    g0 = rank0check(K = 1,N, P, SF, SL , signal,noise,mtype = mtype)
     RMSE[t] = g0$rmse
     sign_obj[t] = sign(g0$obj_val - g0$obj_0)
   }
@@ -392,7 +392,7 @@ sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 
   par(cex = 0.6)
   par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
   boxplot(RMSE,main = &quot;RMSE&quot;)
-  hist(sign_obj, main = &quot;sign of difference of obj value&quot;)
+  hist(sign_obj, breaks = 3,main = &quot;sign of difference of obj value&quot;)
   hist(RMSE,breaks = 50,main = &quot;RMSE&quot;)
   plot(sign_obj,RMSE, main = &quot;sign of obj diff vs RMSE&quot;)
 }</code></pre>
