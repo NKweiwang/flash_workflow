@@ -1,0 +1,317 @@
+---
+title: "objective function checking"
+author: "Wei Wang"
+date: YYYY-MM-DD
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## rank 1 vs rank 0
+
+*we focus on the "shrink" method now*
+
+As Matthew suggested, we focus on the rank 0 vs rank 1 case.
+
+```{r}
+library(flashr)
+sim_K = function(K, N, P, SF, SL, signal,noise){
+  E = matrix(rnorm(N*P,0,noise),nrow=N)
+  Y = E
+  L_true = array(0, dim = c(N,K))
+  F_true = array(0, dim = c(P,K))
+  
+  for(k in 1:K){
+    lstart = rnorm(N, 0, signal)
+    fstart = rnorm(P, 0, signal)
+    
+    index = sample(seq(1:N),(N*SL))
+    lstart[index] = 0
+    index = sample(seq(1:P),(P*SF))
+    fstart[index] = 0
+    
+    L_true[,k] = lstart
+    F_true[,k] = fstart
+    
+    Y = Y + lstart %*% t(fstart)
+  }
+  return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
+}
+```
+
+### simulation: rank 0
+
+In this section, we will use the flash since it is a rank one model.
+
+There are code from `flashr` package to get the objective funtion, and we will use them to calculate the objective function for rank one case.
+
+```{r,echo=FALSE}
+#' title prior and posterior part in objective function
+#'
+#' description prior and posterior part in objective function
+#'
+#' @return PrioPost the value for the proir and posterior in objectice function
+#' @param mat matrix of flash.data in ash output which is for posterior
+#' @param fit_g in fitted.g in ash output which is for prior
+#' @keywords internal
+#'
+# two parts for the likelihood
+Fval = function(mat,fit_g){
+  # make sure the first row included in the index
+  nonzeroindex = unique(c(1,which(fit_g$pi != 0)))
+  #prepare for the posterior part
+  mat_postmean = mat$comp_postmean[nonzeroindex,]
+  mat_postmean2 = mat$comp_postmean2[nonzeroindex,]
+  mat_postvar = mat_postmean2 - mat_postmean^2
+  mat_postprob = mat$comp_postprob[nonzeroindex,]
+  # figure our the dimension
+  K = dim(mat_postprob)[1]
+  N = dim(mat_postprob)[2]
+  if(is.vector(mat_postprob)){
+    K = 1
+    N = length(mat_postprob)
+  }
+  # prepare for the prior
+  prior_pi = fit_g$pi[nonzeroindex]
+  prior_var = (fit_g$sd[nonzeroindex])^2
+  mat_priorvar = matrix(rep(prior_var,N),ncol = N)
+  mat_priorprob = matrix(rep(prior_pi,N),ncol = N)
+  # to get the value
+  varodds = mat_priorvar / mat_postvar
+  varodds[1,] = 1 # deal with 0/0
+  probodds = mat_priorprob / mat_postprob
+  ssrodds = mat_postmean2 / mat_priorvar
+  ssrodds[1,] = 1  # deal with 0/0
+  priorpost = mat_postprob * (log(probodds) - (1/2)*log(varodds) - (1/2)* (ssrodds -1))
+  # in case of mat_postprob = 0
+  priorpost[which(mat_postprob< 1e-100)] = 0
+  PrioPost = sum(priorpost)
+  return(list(PrioPost = PrioPost))
+}
+
+#' title conditional likelihood
+#'
+#' description conditional likelihood in objective function
+#'
+#' @return c_lik for the onditional likelihood in objectice function
+#' @param N  dimension of residual matrix
+#' @param P  dimension of residual matrix
+#' @param sigmae2_v  residual matrix
+#' @param sigmae2  variance structure of error
+#' @keywords internal
+#'
+# this version we need to know the truth of sigmae2, we can use sigmae2_v as the truth
+C_likelihood = function(N,P,sigmae2_v,sigmae2){
+  if(is.matrix(sigmae2)){
+    # print("clik as matrix of sigmae2")
+    c_lik = -(1/2) * sum( log(2*pi*sigmae2) + (sigmae2_v)/(sigmae2) )
+  }else if(is.vector(sigmae2) & length(sigmae2)==P){
+    # print("clik as vector sigmae2")
+    # change the format to fit the conditional likelihood
+    sigmae2_v = colMeans(sigmae2_v)
+    c_lik = -(N/2) * sum( log(2*pi*sigmae2) + (sigmae2_v)/(sigmae2) )
+  } else {
+    # print("clik as sigmae2 is constant")
+    # change the format to fit the conditional likelihood and accelerate the computation.
+    sigmae2_v = mean(sigmae2_v)
+    c_lik = -(N*P)/2 * ( log(2*pi*sigmae2) + (sigmae2_v)/(sigmae2) )
+    # here I want to use fully variantional inference Elogsigmae2 rather logEsigmae2
+    # c_lik = -(N*P)/2 * ( log(2*pi*sigmae2_true) + (sigmae2_v)/(sigmae2_true) + log(N*P/2) - digamma(N*P/2) )
+  }
+  return(list(c_lik = c_lik))
+}
+
+#' title objective function in VEM
+#'
+#' description  objective function
+#'
+#' @return obj_val value of the objectice function
+#' @param N  dimension of residual matrix
+#' @param P  dimension of residual matrix
+#' @param sigmae2_v  residual matrix
+#' @param sigmae2_true  true variance structure (we use the estimated one to replace that if the truth is unknown)
+#' @param par_l ash output for l
+#' @param par_f ash output for f
+#' @param objtype  objective function type,
+#' "margin_lik" for conditional likelihood,
+#' "lowerbound_lik" for full objective function
+#' @keywords internal
+#'
+
+# objective function
+obj = function(N,P,sigmae2_v,sigmae2,par_f,par_l,objtype = "margin_lik"){
+  if(is.list(sigmae2)){
+    # print("obj using kronecker product")
+    sigmae2 = sigmae2$sig2_l %*% t(sigmae2$sig2_f)
+  }
+  if(objtype=="lowerbound_lik"){
+    priopost_f = Fval(par_f$mat, par_f$g)$PrioPost
+    priopost_l = Fval(par_l$mat, par_l$g)$PrioPost
+    c_lik = C_likelihood(N,P,sigmae2_v,sigmae2)$c_lik
+    obj_val = c_lik + priopost_l + priopost_f
+  } else {
+    obj_val = C_likelihood(N,P,sigmae2_v,sigmae2)$c_lik
+  }
+  return(obj_val)
+}
+
+```
+
+
+```{r}
+
+rank0check = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1, mtype = "shrink"){
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  if(mtype == "fdr"){
+    g1 = flash(Y,objtype = "l")
+  }else{
+    g1 = flash(Y,objtype = "l",ash_para = list(method = "shrink"))
+  }
+  
+  RMSE = sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) 
+  obj_val = g1$obj_val
+  # to get the rank zero objective value
+  sigmae2_v0 = Y^2
+  fit_g0 = list(pi=c(1,0,0),sd = c(0,0.1,1))
+  mat0 = list(comp_postmean = matrix(0,ncol= N,nrow = 3),
+              comp_postmean2 = matrix(0,ncol= N,nrow = 3),
+              comp_postprob = matrix(0,ncol= N,nrow = 3))
+  mat0$comp_postprob[1,] = 1
+  par_l0 = list(g = fit_g0, mat = mat0)
+  fit_g0 = list(pi=c(1,0,0),sd = c(0,0.1,1))
+  mat0 = list(comp_postmean = matrix(0,ncol= P,nrow = 3),
+              comp_postmean2 = matrix(0,ncol= P,nrow = 3),
+              comp_postprob = matrix(0,ncol= P,nrow = 3))
+  mat0$comp_postprob[1,] = 1
+  par_f0 = list(g = fit_g0, mat = mat0)
+  obj0 = obj(N,P,sigmae2_v0,sigmae2 = mean(sigmae2_v0),par_f0,par_l0,objtype = "lowerbound_lik")
+  
+  return(list(rmse = RMSE,obj_val = obj_val,obj_0 = obj0))
+}
+
+sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = "shrink"){
+  T = 200
+  RMSE = rep(NA,T)
+  sign_obj = rep(NA,T)
+  for(t in 1:T){
+    g0 = rank0check(K = 1,N, P, SF, SL , signal=0,noise,mtype = mtype)
+    RMSE[t] = g0$rmse
+    sign_obj[t] = sign(g0$obj_val - g0$obj_0)
+  }
+  par(mfrow = c(2, 2))
+  par(cex = 0.6)
+  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
+  boxplot(RMSE,main = "RMSE")
+  hist(sign_obj, main = "sign of difference of obj value")
+  hist(RMSE,breaks = 50,main = "RMSE")
+  plot(sign_obj,RMSE, main = "sign of obj diff vs RMSE")
+}
+
+```
+
+we set the 200 simulations for each case.
+
+#### case 1:
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1)
+```
+
+- top-left: boxplot of RMSE
+- top-right: histogram of $\text{sign} \left\{obj(model| method = ``shrink") - obj(model|rank= 0) \right\}$
+- bottom-left: histogram of RMSE
+- bottom-right: scatter plot of sign-difference-objective-value vs RMSE.
+
+we can see that in almost half of the cases, we get rank zero estimation, but there are another half getting smaller objective function and larger RMSE value. There are two extreme cases out of 200, we get larger objective value but larger RMSE as well. 
+
+In this case, we know that rank zero is the truth, so the $RMSE = 0$ is the best prediction.
+
+This is just a simple example, and we can try more situations:
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 20, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1)
+```
+
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 20, P=30, SF = 0.5, SL = 0.5, signal = 0,noise = 1)
+```
+
+#### if the method = "fdr"
+
+the setting is similar as case 1
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = "fdr")
+```
+
+we can see that we would get rank zero estimation in most cases.
+
+### rank 1
+
+we simulate rank 1 and compare it with the rank zero solution (the setting is similar with case 1):
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 1,noise = 1)
+```
+
+use the "fdr" method
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 1,noise = 1, mtype = "fdr")
+```
+
+#### very sparse
+
+the default is "shrink" method
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 100, P=200, SF = 0.9, SL = 0.8, signal = 1,noise = 1 )
+```
+
+#### very sparse with big noise
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2)
+```
+
+```{r}
+set.seed(99)
+sim_rank0(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2,mtype = "fdr")
+```
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
