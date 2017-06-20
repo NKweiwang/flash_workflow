@@ -130,6 +130,7 @@ rank0check = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise =
   }
   
   RMSE = sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) 
+  RMSE0 = sqrt(mean((Y  -E)^2)) 
   obj_val = g1$obj_val
   # to get the rank zero objective value
   sigmae2_v0 = Y^2
@@ -145,9 +146,9 @@ rank0check = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise =
               comp_postprob = matrix(0,ncol= P,nrow = 3))
   mat0$comp_postprob[1,] = 1
   par_f0 = list(g = fit_g0, mat = mat0)
-  obj0 = obj(N,P,sigmae2_v0,sigmae2 = mean(sigmae2_v0),par_f0,par_l0,objtype = "lowerbound_lik")
+  obj0 = obj(N,P,sigmae2_v0,sigmae2 = mean(sigmae2_v0),par_f0,par_l0,objtype = "lowerbound_lik",ash_para = list(method = NULL))
   
-  return(list(rmse = RMSE,obj_val = obj_val,obj_0 = obj0))
+  return(list(rmse = RMSE,rmse0 = RMSE0,obj_val = obj_val,obj_0 = obj0))
 }
 
 sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = "fdr"){
@@ -163,65 +164,12 @@ sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 
   par(cex = 0.6)
   par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
   boxplot(RMSE,main = "RMSE")
-  hist(diff_obj, breaks = 3,main = "sign of difference of obj value")
+  hist(diff_obj, breaks = 50,main = "sign of difference of obj value")
   hist(RMSE,breaks = 50,main = "RMSE")
   plot(diff_obj,RMSE, main = "sign of obj diff vs RMSE")
   return(c(sum(diff_obj == 0),sum(diff_obj>0),sum(diff_obj<0))/T)
 }
 
-
-
-#### old code
-
-rank0check_old = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1, mtype = "shrink"){
-  data = sim_K(K,N, P, SF , SL , signal ,noise )
-  Y = data$Y
-  E = data$Error
-  if(mtype == "fdr"){
-    g1 = flashr::flash(Y,objtype = "l")
-  }else{
-    g1 = flashr::flash(Y,objtype = "l",ash_para = list(method = "shrink"))
-  }
-  
-  RMSE = sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) 
-  obj_val = g1$obj_val
-  # to get the rank zero objective value
-  sigmae2_v0 = Y^2
-  fit_g0 = list(pi=c(1,0,0),sd = c(0,0.1,1))
-  mat0 = list(comp_postmean = matrix(0,ncol= N,nrow = 3),
-              comp_postmean2 = matrix(0,ncol= N,nrow = 3),
-              comp_postprob = matrix(0,ncol= N,nrow = 3))
-  mat0$comp_postprob[1,] = 1
-  par_l0 = list(g = fit_g0, mat = mat0)
-  fit_g0 = list(pi=c(1,0,0),sd = c(0,0.1,1))
-  mat0 = list(comp_postmean = matrix(0,ncol= P,nrow = 3),
-              comp_postmean2 = matrix(0,ncol= P,nrow = 3),
-              comp_postprob = matrix(0,ncol= P,nrow = 3))
-  mat0$comp_postprob[1,] = 1
-  par_f0 = list(g = fit_g0, mat = mat0)
-  obj0 = obj(N,P,sigmae2_v0,sigmae2 = mean(sigmae2_v0),par_f0,par_l0,objtype = "lowerbound_lik")
-  
-  return(list(rmse = RMSE,obj_val = obj_val,obj_0 = obj0))
-}
-
-sim_rank0_old = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = "shrink"){
-  T = 200
-  RMSE = rep(NA,T)
-  diff_obj = rep(NA,T)
-  for(t in 1:T){
-    g0 = rank0check_old(K = 1,N, P, SF, SL , signal,noise,mtype = mtype)
-    RMSE[t] = g0$rmse
-    diff_obj[t] = (g0$obj_val - g0$obj_0)
-  }
-  par(mfrow = c(2, 2))
-  par(cex = 0.6)
-  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
-  boxplot(RMSE,main = "RMSE")
-  hist(diff_obj, breaks = 3,main = "sign of difference of obj value")
-  hist(RMSE,breaks = 50,main = "RMSE")
-  plot(diff_obj,RMSE, main = "sign of obj diff vs RMSE")
-  return(c(sum(diff_obj == 0),sum(diff_obj>0),sum(diff_obj<0))/T)
-}
 ```
 
 
@@ -233,7 +181,7 @@ we compare the old code with our new code, we can see that most of the cases a
 
 ```{r}
 set.seed(99)
-sim_rank0_old(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1)
+sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = "shrink")
 ```
 
 *fdr method with penalty*
@@ -251,7 +199,7 @@ we can see the improvement that the proportion of P(estimated structure better t
 
 ```{r}
 set.seed(99)
-sim_rank0_old(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2)
+sim_rank0(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2,mtype = "shrink")
 ```
 
 *fdr method with penalty*
