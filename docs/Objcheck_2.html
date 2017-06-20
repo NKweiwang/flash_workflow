@@ -315,7 +315,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-06-20</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 2d64a79</p>
+<p><strong>Code version:</strong> 177286a</p>
 <!-- Add your analysis here -->
 <p>In this case, we would like to try the objective function with penalty term.</p>
 <p>I would like to modify the flash code in this document.</p>
@@ -410,6 +410,7 @@ sim_rank0(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2)</code></
 <p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre><code>[1] 0.280 0.415 0.305</code></pre>
 <p>we can see that the results are improved since the proportion of P(estimated structure better than rank 0 structure) is much larger.</p>
+<p>In this case we can see that the RMSE is negative correlated with the objective function value. So it is make sense that we return <span class="math inline">\(g_l = 0, g_f = 0\)</span> if the <span class="math inline">\(LB(estimated) &lt; LB(g_l=0,g_f = 0)\)</span>.</p>
 </div>
 </div>
 <div id="session-information" class="section level2">
