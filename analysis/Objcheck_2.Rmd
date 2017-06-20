@@ -951,19 +951,20 @@ rank0check = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise =
 sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = "fdr"){
   T = 200
   RMSE = rep(NA,T)
-  sign_obj = rep(NA,T)
+  diff_obj = rep(NA,T)
   for(t in 1:T){
     g0 = rank0check(K = 1,N, P, SF, SL , signal,noise,mtype = mtype)
     RMSE[t] = g0$rmse
-    sign_obj[t] = sign(g0$obj_val - g0$obj_0)
+    diff_obj[t] = (g0$obj_val - g0$obj_0)
   }
   par(mfrow = c(2, 2))
   par(cex = 0.6)
   par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
   boxplot(RMSE,main = "RMSE")
-  hist(sign_obj, breaks = 3,main = "sign of difference of obj value")
+  hist(diff_obj, breaks = 3,main = "sign of difference of obj value")
   hist(RMSE,breaks = 50,main = "RMSE")
-  plot(sign_obj,RMSE, main = "sign of obj diff vs RMSE")
+  plot(diff_obj,RMSE, main = "sign of obj diff vs RMSE")
+  return(c(sum(diff_obj == 0),sum(diff_obj>0),diff_obj<0)/T)
 }
 
 
@@ -1004,19 +1005,20 @@ rank0check_old = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noi
 sim_rank0_old = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = "shrink"){
   T = 200
   RMSE = rep(NA,T)
-  sign_obj = rep(NA,T)
+  diff_obj = rep(NA,T)
   for(t in 1:T){
     g0 = rank0check_old(K = 1,N, P, SF, SL , signal,noise,mtype = mtype)
     RMSE[t] = g0$rmse
-    sign_obj[t] = sign(g0$obj_val - g0$obj_0)
+    diff_obj[t] = (g0$obj_val - g0$obj_0)
   }
   par(mfrow = c(2, 2))
   par(cex = 0.6)
   par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
   boxplot(RMSE,main = "RMSE")
-  hist(sign_obj, breaks = 3,main = "sign of difference of obj value")
+  hist(diff_obj, breaks = 3,main = "sign of difference of obj value")
   hist(RMSE,breaks = 50,main = "RMSE")
-  plot(sign_obj,RMSE, main = "sign of obj diff vs RMSE")
+  plot(diff_obj,RMSE, main = "sign of obj diff vs RMSE")
+  return(c(sum(diff_obj == 0),sum(diff_obj>0),diff_obj<0)/T)
 }
 ```
 
