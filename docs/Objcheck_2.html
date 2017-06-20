@@ -315,7 +315,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-06-20</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 50dcb46</p>
+<p><strong>Code version:</strong> 2d64a79</p>
 <!-- Add your analysis here -->
 <p>In this case, we would like to try the objective function with penalty term.</p>
 <p>I would like to modify the flash code in this document.</p>
@@ -341,27 +341,45 @@ shared across the workflowr files. -->
   }
   return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
 }</code></pre>
+<div id="check-the-new-obj-function" class="section level3">
+<h3>check the new obj function</h3>
 <p>we check that the new objective function with penalty term does monotonically increase.</p>
 <pre class="r"><code>set.seed(99)
-K = 1
-N = 20
-P = 30
-SF = 0.5
-SL = 0.6
-signal = 1
-noise = 1
-par(mfrow = c(2, 2))
-par(cex = 0.6)
-par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
-data = sim_K(K,N, P, SF , SL , signal ,noise )
-Y = data$Y
-E = data$Error
-g1 = flash(Y,objtype = &quot;l&quot;)
-plot(g1$obj_val_track,main = &quot;fdr method with penalized obj&quot;,type = &quot;l&quot;)
-g2 = flashr::flash(Y,objtype = &quot;l&quot;)
-plot(g2$obj_val_track,main = &quot;fdr method without penalized obj&quot;,type = &quot;l&quot;)</code></pre>
-<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+objcheck_1 = function(K=1,N = 20, P=30, SF = 0.5, SL = 0.6, signal = 1,noise = 1){
+  par(mfrow = c(3, 2))
+  par(cex = 0.6)
+  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  g1 = flash(Y,objtype = &quot;l&quot;)
+  plot(g1$obj_val_track,main = &quot;fdr method with penalized obj&quot;,type = &quot;l&quot;)
+  g2 =  flash(Y,objtype = &quot;l&quot;,ash_para = list(method = &quot;shrink&quot;))
+  plot(g2$obj_val_track,main = &quot;shrink method without penalized obj&quot;,type = &quot;l&quot;)
+  g3 =  flashr::flash(Y,objtype = &quot;l&quot;,ash_para = list(method = &quot;shrink&quot;))
+  plot(g3$obj_val_track,main = &quot;shrink method without penalized obj(old)&quot;,type = &quot;l&quot;)
+  g4 =  flashr::flash(Y,objtype = &quot;l&quot;)
+  plot(g4$obj_val_track,main = &quot;fdr method without penalized obj&quot;,type = &quot;l&quot;)
+  plot(c(g1$obj_val,g2$obj_val,g3$obj_val,g4$obj_val),main = &quot;obj value&quot;)
+  RMSE = c(sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) ,
+           sqrt(mean((Y - g2$l %*% t(g2$f) -E)^2)) ,
+           sqrt(mean((Y - g3$l %*% t(g3$f) -E)^2)) ,
+           sqrt(mean((Y - g4$l %*% t(g4$f) -E)^2)) )
+  plot(RMSE,main = &quot;RMSE&quot;)
+}</code></pre>
+<pre class="r"><code>objcheck_1(K=1,N = 20, P=30, SF = 0.5, SL = 0.6, signal = 1,noise = 1)</code></pre>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>objcheck_1(K=1,N = 200, P=300, SF = 0.8, SL = 0.6, signal = 1,noise = 1)</code></pre>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>objcheck_1(K=1,N = 200, P=300, SF = 0.9, SL = 0.8, signal = 1,noise = 1)</code></pre>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>objcheck_1(K=1,N = 200, P=300, SF = 0.5, SL = 0.9, signal = 1,noise = 3)</code></pre>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>objcheck_1(K=1,N = 100, P=200, SF = 0.8, SL = 0.9, signal = 1,noise = 3)</code></pre>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>we can see that the old version of code without penalty doesn’t have monotonically increasing objective function, but the new version code with penalty term does.</p>
+<p><em>now we have two methods (fdr, shrink), and both of them have monotonically increasing corresponding objective function in each case.</em></p>
+</div>
 <div id="try-the-same-problem-rank-0-vs-rank-1-with-fdr-method." class="section level2">
 <h2>try the same problem: rank 0 vs rank 1 with fdr method.</h2>
 <div id="case-1-rank-0" class="section level4">
@@ -369,13 +387,13 @@ plot(g2$obj_val_track,main = &quot;fdr method without penalized obj&quot;,type =
 <p>we compare the old code with our new code, we can see that most of the cases a</p>
 <p><em>shrink method without penalty</em></p>
 <pre class="r"><code>set.seed(99)
-sim_rank0_old(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1)</code></pre>
-<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre><code>[1] 0.375 0.020 0.605</code></pre>
+sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1,mtype = &quot;shrink&quot;)</code></pre>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] 0.400 0.005 0.595</code></pre>
 <p><em>fdr method with penalty</em></p>
 <pre class="r"><code>set.seed(99)
 sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1)</code></pre>
-<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre><code>[1] 0.875 0.000 0.125</code></pre>
 <p>we can see the improvement that the proportion of P(estimated structure better than rank 0 structure) is much larger.</p>
 </div>
@@ -383,13 +401,13 @@ sim_rank0(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 1)</code></
 <h4>case 2: rank 1, very sparse with large noise</h4>
 <p><em>shrink method without penalty</em></p>
 <pre class="r"><code>set.seed(99)
-sim_rank0_old(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2)</code></pre>
-<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre><code>[1] 0.100 0.465 0.435</code></pre>
+sim_rank0(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2,mtype = &quot;shrink&quot;)</code></pre>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre><code>[1] 0.100 0.455 0.445</code></pre>
 <p><em>fdr method with penalty</em></p>
 <pre class="r"><code>set.seed(99)
 sim_rank0(K=1,N = 100, P=200, SF = 0.8, SL = 0.8, signal = 1,noise = 2)</code></pre>
-<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/Objcheck_2.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre><code>[1] 0.280 0.415 0.305</code></pre>
 <p>we can see that the results are improved since the proportion of P(estimated structure better than rank 0 structure) is much larger.</p>
 </div>
