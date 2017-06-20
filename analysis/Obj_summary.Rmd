@@ -26,6 +26,31 @@ knitr::read_chunk("chunks.R")
 
 <!-- Add your analysis here -->
 
+## rank 0 vs rank 1
+
+this document is based on Matthew's suggestion:
+
+> If you simulate rank 0, and run greedy with K=1:
+>
+> - how often does the K=1 converge to a point mass at 0?
+>
+> - how often does the K=1 converge to a lower bound that is worse than the lower bound for K=0?
+>
+> Then you could do the same question for method =fdr (but with this penalized objective function).
+
+### shrink method without penalty term in objective function
+
+we find that we might need fdr method and we should use the objective funciton with penalty.[rank 0 vs rank 1](Objcheck_1.html)
+
+### check the objective function with penalty
+
+In this case, we check the objective funciton with penalty term, and it does monotonically increase. 
+
+### fdr method with penalty term in objective function
+
+we can see the improvement that the proportion of P(estimated structure better than rank 0 structure) is much larger. [rank 0 vs rank 1: fdr with penalty](Objcheck_2.html)
+
+
 ## Session information
 
 <!-- Insert the session information into the document -->
