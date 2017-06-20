@@ -315,8 +315,32 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-06-19</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> f986411</p>
+<p><strong>Code version:</strong> 083d2b3</p>
 <!-- Add your analysis here -->
+<div id="rank-0-vs-rank-1" class="section level2">
+<h2>rank 0 vs rank 1</h2>
+<p>this document is based on Matthew’s suggestion:</p>
+<blockquote>
+<p>If you simulate rank 0, and run greedy with K=1:</p>
+<ul>
+<li><p>how often does the K=1 converge to a point mass at 0?</p></li>
+<li><p>how often does the K=1 converge to a lower bound that is worse than the lower bound for K=0?</p></li>
+</ul>
+<p>Then you could do the same question for method =fdr (but with this penalized objective function).</p>
+</blockquote>
+<div id="shrink-method-without-penalty-term-in-objective-function" class="section level3">
+<h3>shrink method without penalty term in objective function</h3>
+<p>we find that we might need fdr method and we should use the objective funciton with penalty.<a href="Objcheck_1.html">rank 0 vs rank 1</a></p>
+</div>
+<div id="check-the-objective-function-with-penalty" class="section level3">
+<h3>check the objective function with penalty</h3>
+<p>In this case, we check the objective funciton with penalty term, and it does monotonically increase.</p>
+</div>
+<div id="fdr-method-with-penalty-term-in-objective-function" class="section level3">
+<h3>fdr method with penalty term in objective function</h3>
+<p>we can see the improvement that the proportion of P(estimated structure better than rank 0 structure) is much larger. <a href="Objcheck_2.html">rank 0 vs rank 1: fdr with penalty</a></p>
+</div>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
