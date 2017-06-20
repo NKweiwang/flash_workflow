@@ -964,7 +964,7 @@ sim_rank0 = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,noise = 
   hist(diff_obj, breaks = 3,main = "sign of difference of obj value")
   hist(RMSE,breaks = 50,main = "RMSE")
   plot(diff_obj,RMSE, main = "sign of obj diff vs RMSE")
-  return(c(sum(diff_obj == 0),sum(diff_obj>0),diff_obj<0)/T)
+  return(c(sum(diff_obj == 0),sum(diff_obj>0),sum(diff_obj<0))/T)
 }
 
 
@@ -1018,7 +1018,7 @@ sim_rank0_old = function(K=1,N = 100, P=200, SF = 0.5, SL = 0.5, signal = 0,nois
   hist(diff_obj, breaks = 3,main = "sign of difference of obj value")
   hist(RMSE,breaks = 50,main = "RMSE")
   plot(diff_obj,RMSE, main = "sign of obj diff vs RMSE")
-  return(c(sum(diff_obj == 0),sum(diff_obj>0),diff_obj<0)/T)
+  return(c(sum(diff_obj == 0),sum(diff_obj>0),sum(diff_obj<0))/T)
 }
 ```
 
