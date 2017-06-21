@@ -312,10 +312,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-06-19</p>
+<p><strong>Last updated:</strong> 2017-06-20</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 083d2b3</p>
+<p><strong>Code version:</strong> ac13b67</p>
 <!-- Add your analysis here -->
 <div id="rank-0-vs-rank-1" class="section level2">
 <h2>rank 0 vs rank 1</h2>
@@ -334,7 +334,28 @@ shared across the workflowr files. -->
 </div>
 <div id="check-the-objective-function-with-penalty" class="section level3">
 <h3>check the objective function with penalty</h3>
-<p>In this case, we check the objective funciton with penalty term, and it does monotonically increase.</p>
+<p>In this case, we check the objective funciton with penalty term, and it does monotonically increase. <a href="Objcheck_2.html">rank 0 vs rank 1: fdr with penalty</a></p>
+<p><strong>now we have two methods (fdr, shrink), and both of them have monotonically increasing corresponding objective function in each case.</strong></p>
+<blockquote>
+<ol style="list-style-type: lower-roman">
+<li><p>fit flash (with or without penalty)</p></li>
+<li><p>check if flash-obtained objective function exceeds the K=0 objective. (note: not the limit of the objective as g_f, g_l -&gt; 0, but the actual objective at g_f=g_l=0). If not, set result to g_f=g_l = 0. If so, keep g_f, g_l as output by flash.</p></li>
+</ol>
+<p>– Matthew’s advice.</p>
+</blockquote>
+<ul>
+<li>we have done the (i), and we found that it is reasonable to do the (ii). This is because we find that <span class="math inline">\(diff(LB(fitted) - LB(rank=0))\)</span> is negatively correlated with RMSE, which means larger obj value goes with smaller RMSE. So it makes sense we cut the obj value off at the rank 0 model.</li>
+<li><ol start="2" style="list-style-type: lower-roman">
+<li>is easy to implement.</li>
+</ol></li>
+</ul>
+<div id="questions" class="section level4">
+<h4>questions</h4>
+<ol style="list-style-type: decimal">
+<li>how to deal with <span class="math inline">\((\lambda_0 - 1) log \pi_0\)</span> when <span class="math inline">\(\pi_0 = 0\)</span>?</li>
+<li>now we only have two cases: shrink with <span class="math inline">\(\lambda_0 = 1\)</span> and fdr with <span class="math inline">\(\lambda_0 = 10\)</span>. Do we need more choice of <span class="math inline">\(\lambda_0\)</span>?</li>
+</ol>
+</div>
 </div>
 <div id="fdr-method-with-penalty-term-in-objective-function" class="section level3">
 <h3>fdr method with penalty term in objective function</h3>
@@ -356,22 +377,22 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] ashr_2.1-21     workflowr_0.4.0 rmarkdown_1.3  
+[1] workflowr_0.4.0 rmarkdown_1.3  
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.11      git2r_0.18.0      plyr_1.8.4       
- [4] iterators_1.0.8   tools_3.3.0       digest_0.6.12    
- [7] evaluate_0.10     tibble_1.2        gtable_0.2.0     
-[10] lattice_0.20-34   Matrix_1.2-8      foreach_1.4.3    
-[13] rstudioapi_0.6    yaml_2.1.14       parallel_3.3.0   
-[16] stringr_1.2.0     knitr_1.15.1      REBayes_0.73     
-[19] rprojroot_1.2     grid_3.3.0        irlba_2.1.2      
-[22] ggplot2_2.2.1     flashr_0.1.1      magrittr_1.5     
-[25] backports_1.0.5   scales_0.4.1      codetools_0.2-15 
-[28] htmltools_0.3.5   MASS_7.3-45       assertthat_0.2.0 
-[31] colorspace_1.3-2  stringi_1.1.2     Rmosek_7.1.2     
-[34] lazyeval_0.2.0    pscl_1.4.9        doParallel_1.0.10
-[37] munsell_0.4.3     truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
+ [1] Rcpp_0.12.11      knitr_1.15.1      magrittr_1.5     
+ [4] REBayes_0.73      MASS_7.3-45       munsell_0.4.3    
+ [7] doParallel_1.0.10 pscl_1.4.9        colorspace_1.3-2 
+[10] SQUAREM_2016.8-2  lattice_0.20-34   foreach_1.4.3    
+[13] plyr_1.8.4        flashr_0.1.1      ashr_2.1-21      
+[16] stringr_1.2.0     tools_3.3.0       parallel_3.3.0   
+[19] grid_3.3.0        gtable_0.2.0      irlba_2.1.2      
+[22] git2r_0.18.0      htmltools_0.3.5   iterators_1.0.8  
+[25] lazyeval_0.2.0    assertthat_0.2.0  yaml_2.1.14      
+[28] rprojroot_1.2     digest_0.6.12     tibble_1.2       
+[31] Matrix_1.2-8      ggplot2_2.2.1     codetools_0.2-15 
+[34] evaluate_0.10     stringi_1.1.2     scales_0.4.1     
+[37] Rmosek_7.1.2      backports_1.0.5   truncnorm_1.0-7  </code></pre>
 </div>
 
 <hr>
