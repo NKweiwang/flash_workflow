@@ -44,7 +44,24 @@ we find that we might need fdr method and we should use the objective funciton w
 
 ### check the objective function with penalty
 
-In this case, we check the objective funciton with penalty term, and it does monotonically increase. 
+In this case, we check the objective funciton with penalty term, and it does monotonically increase. [rank 0 vs rank 1: fdr with penalty](Objcheck_2.html)
+
+**now we have two methods (fdr, shrink), and both of them have monotonically increasing corresponding objective function in each case.**
+
+> i) fit flash (with or without penalty)
+>
+> ii) check if flash-obtained objective function exceeds the K=0 objective. (note: not the limit of the objective as g_f, g_l -> 0, but the actual objective at g_f=g_l=0). If not, set result to g_f=g_l = 0. If so, keep g_f, g_l as output by flash.
+>
+> -- Matthew's advice.
+
+- we  have done the (i), and we found that it is reasonable to do the (ii). This is because we find that $diff(LB(fitted) - LB(rank=0))$ is negatively correlated with RMSE, which means larger obj value goes with smaller RMSE. So it makes sense we cut the obj value off at the rank 0 model.
+- (ii) is easy to implement.
+
+#### questions
+
+1. how to deal with $(\lambda_0 - 1) log \pi_0$ when $\pi_0 = 0$?
+2. now we only have two cases: shrink with $\lambda_0 = 1$ and fdr with $\lambda_0 = 10$. Do we need more choice of $\lambda_0$?
+
 
 ### fdr method with penalty term in objective function
 
