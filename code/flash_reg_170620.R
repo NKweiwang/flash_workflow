@@ -659,6 +659,7 @@ initial_value = function(Y, nonnegative = FALSE,
   if(is_missing){
     # this is the initialization for the missing value
     Y[na_index_Y] = mean(Y, na.rm = TRUE)
+    # Y[na_index_Y] = 0
   }
   # the flash with plug-in missing value
   if(fix_initial){
@@ -697,6 +698,46 @@ initial_value = function(Y, nonnegative = FALSE,
               Ef = Ef, Ef2 = Ef^2,
               sigmae2_v = sigmae2_v))
 }
+
+
+#' objective function value at zero
+#'
+#' @return list of factor, loading and variance of noise matrix
+#'  \itemize{
+#'   \item{\code{obj_val}} {objective function value at zero}
+#'  }
+#' @param Y the data matrix
+#' @param sigmae2_true true value for the variance structure
+#' @param partype parameter type for the variance,
+#' "constant" for constant variance,
+#' "var_col" for nonconstant variance for column,
+#' "known" for the kown variance,
+#' "Bayes_var" for Bayes version of the nonconstant variance for row and column
+#' "loganova" is anova estiamtion for the log residual square
+#' @param fl_list is a list containing all the informations from other factors ans loadings
+#' l is loadings, f is factors, l2 and f2 are corresponding second moments.
+#' priorpost_vec is expectation of log piropost ratio
+#' clik is conditional likelihood (marginal likelihood)
+#'
+#' @details objective function value at zero, use to check the rank one estimation and rank zero estimation results.
+#'
+
+obj_zero = function(Y,N,P,sigmae2_true,fl_list,partype){
+  na_index_Y = is.na(Y)
+  is_missing = any(na_index_Y)
+  if(is_missing){
+    # this is the initialization for the missing value
+    Y[na_index_Y] = mean(Y, na.rm = TRUE)
+  }
+  El = rep(0,N)
+  Ef = rep(0,P)
+  sigmae2_v = sigmae2_v_est(Y,El,Ef,El^2,Ef^2,fl_list)
+  sigmae2 = sigma_est(sigmae2_v,sigmae2_true, NA ,partype)
+  obj_val = obj(N, P, sigmae2_v, sigmae2, par_f=NA, par_l=NA, objtype="margin_lik",ash_para = list(method = NULL))
+  return(list(obj0 = obj_val,
+              sigmae2_rank0_est = sigmae2))
+}
+
 
 #' FLASH
 #'
@@ -760,6 +801,9 @@ flash = function(Y, tol=1e-5, maxiter_r1 = 500,
   N = dim(Y)[1]
   P = dim(Y)[2]
 
+  # check the obj value at zero
+  obj0_list = obj_zero(Y,N,P,sigmae2_true,fl_list,partype)
+
   # to get the inital values
   g_initial = initial_value(Y, nonnegative,factor_value,fix_factor,initial_list_r1, fix_initial,fl_list)
   El = g_initial$El
@@ -791,6 +835,9 @@ flash = function(Y, tol=1e-5, maxiter_r1 = 500,
 
   # track the objective value
   obj_val_track = c(obj_val)
+
+  ##########
+  print(sigmae2)
 
   # we should also return when the first run get all zeros
   if(sum(El^2)==0 || sum(Ef^2)==0){
@@ -834,6 +881,10 @@ flash = function(Y, tol=1e-5, maxiter_r1 = 500,
     sigmae2 = g_update$sigmae2
     obj_val = g_update$obj_val
 
+
+    ##########
+    print(sigmae2)
+
     if(sum(El^2)==0 || sum(Ef^2)==0){
       El = rep(0,length(El))
       Ef = rep(0,length(Ef))
@@ -851,6 +902,17 @@ flash = function(Y, tol=1e-5, maxiter_r1 = 500,
   c_lik_val = C_likelihood(N,P,sigmae2_v,sigmae2)$c_lik
   # the above value is not useful, but is helpful to get the postprior value
   # since obj_val = c_lik_value + priorpost_l + priorpost_f
+
+  # add a check step
+  # if(obj_val < obj0_list$obj0){
+  #   El = rep(0,N)
+  #   Ef = rep(0,P)
+  #   return(list(l = El, f = Ef, l2 = El^2, f2 = Ef^2,
+  #               sigmae2 = obj0_list$sigmae2_rank0_est,
+  #               obj_val = obj0_list$obj0,
+  #               c_lik_val = obj0_list$obj0))
+  # }
+
   return(list(l = El, f = Ef, l2 = El2, f2 = Ef2,
               sigmae2 = sigmae2,
               obj_val = obj_val,
