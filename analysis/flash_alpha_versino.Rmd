@@ -1,0 +1,119 @@
+---
+title: "flash alpha version"
+author: "Wei"
+date: YYYY-MM-DD
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+```{r}
+source("../code/flash_reg_170620.R")
+```
+
+
+```{r}
+sim_K = function(K, N, P, SF, SL, signal,noise){
+  E = matrix(rnorm(N*P,0,noise),nrow=N)
+  Y = E
+  L_true = array(0, dim = c(N,K))
+  F_true = array(0, dim = c(P,K))
+  
+  for(k in 1:K){
+    lstart = rnorm(N, 0, signal)
+    fstart = rnorm(P, 0, signal)
+    
+    index = sample(seq(1:N),(N*SL))
+    lstart[index] = 0
+    index = sample(seq(1:P),(P*SF))
+    fstart[index] = 0
+    
+    L_true[,k] = lstart
+    F_true[,k] = fstart
+    
+    Y = Y + lstart %*% t(fstart)
+  }
+  return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
+}
+```
+
+
+```{r}
+set.seed(99)
+objcheck_1 = function(K=1,N = 20, P=30, SF = 0.5, SL = 0.6, signal = 1,noise = 1){
+  par(mfrow = c(3, 2))
+  par(cex = 0.6)
+  par(mar = c(3, 3, 0.8, 0.8), oma = c(1, 1, 1, 1))
+  data = sim_K(K,N, P, SF , SL , signal ,noise )
+  Y = data$Y
+  E = data$Error
+  g1 = flash(Y,objtype = "l")
+  plot(g1$obj_val_track,main = "fdr method with penalized obj",type = "l")
+  g2 =  flash(Y,objtype = "l",ash_para = list(method = "shrink"))
+  plot(g2$obj_val_track,main = "shrink method without penalized obj",type = "l")
+  g3 =  flashr::flash(Y,objtype = "l",ash_para = list(method = "shrink"))
+  plot(g3$obj_val_track,main = "shrink method without penalized obj(old)",type = "l")
+  g4 =  flashr::flash(Y,objtype = "l")
+  plot(g4$obj_val_track,main = "fdr method without penalized obj",type = "l")
+  plot(c(g1$obj_val,g2$obj_val,g3$obj_val,g4$obj_val),main = "obj value")
+  RMSE = c(sqrt(mean((Y - g1$l %*% t(g1$f) -E)^2)) ,
+           sqrt(mean((Y - g2$l %*% t(g2$f) -E)^2)) ,
+           sqrt(mean((Y - g3$l %*% t(g3$f) -E)^2)) ,
+           sqrt(mean((Y - g4$l %*% t(g4$f) -E)^2)) )
+  plot(RMSE,main = "RMSE")
+}
+```
+
+
+
+```{r}
+# test the obj0
+K=1;N = 200; P=300; SF = 0.5; SL = 0.6; signal = 0.1; noise = 1
+data = sim_K(K,N, P, SF , SL , signal ,noise )
+Y = data$Y
+E = data$Error
+g1 = flash(Y,objtype = "l")
+g2 = flash(Y,objtype = "m")
+
+sigmae2_v0 = Y^2
+  fit_g0 = list(pi=c(1,0,0),sd = c(0,0.1,1))
+  mat0 = list(comp_postmean = matrix(0,ncol= N,nrow = 3),
+              comp_postmean2 = matrix(0,ncol= N,nrow = 3),
+              comp_postprob = matrix(0,ncol= N,nrow = 3))
+  mat0$comp_postprob[1,] = 1
+  par_l0 = list(g = fit_g0, mat = mat0)
+  fit_g0 = list(pi=c(1,0,0),sd = c(0,0.1,1))
+  mat0 = list(comp_postmean = matrix(0,ncol= P,nrow = 3),
+              comp_postmean2 = matrix(0,ncol= P,nrow = 3),
+              comp_postprob = matrix(0,ncol= P,nrow = 3))
+  mat0$comp_postprob[1,] = 1
+  par_f0 = list(g = fit_g0, mat = mat0)
+  obj0 = obj(N,P,sigmae2_v0,sigmae2 = mean(sigmae2_v0),par_f0,par_l0,objtype = "lowerbound_lik",ash_para = list(method = NULL))
+  Fval(par_f0$mat, par_f0$g,ash_para=list(method = NULL))
+```
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
