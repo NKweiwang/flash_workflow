@@ -89,6 +89,8 @@ library(flashr2)
 
 In this case I run flash for different situation and I found the old version has smaller RMSE.
 
+I print the obj value to check if it is increase.
+
 ```{r}
 library(PMA)
 library(softImpute)
@@ -113,6 +115,12 @@ sum((as.vector(dat$L_true %*% t(dat$F_true))-0)^2)
 ```
 
 ## missing value
+
+In this case, I have two problems:
+
+1. The Obj function seems not increasing. 
+
+2. the RMSE seems a bit large for flashr2. I think the $\tau$ estimation is not that precise.
 
 ```{r}
 library(PMA)

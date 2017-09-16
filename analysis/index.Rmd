@@ -33,9 +33,6 @@ Click on this [summary of the rank0 vs rank1](Obj_summary.html) to see a simple 
 - Click on this [rank 0 vs rank 1](Objcheck_1.html) to see more details.
 - Click on this [rank 0 vs rank 1: fdr with penalty](Objcheck_2.html) to see more details.
 
+## flashr2
 
-
-### meeting summary
-
-[04-26](meetnotes.html)
-
+This is a simple test [first try](flash_beta_test.html)
