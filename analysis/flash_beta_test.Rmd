@@ -102,6 +102,9 @@ dat = sim_K(K=1,N, P, SF = 0.5, SL = 0.5, signal = 1,noise = 5)
 # b = rchisq(P,1)
 # data = sim_hd(N, P, SF = 0.5, SL = 0.5, signal = 1, a ,b,mu = 0)
 Y = dat$Y
+Y_miss = Y
+Y_miss[1:50,1:100] = NA
+Y_miss[51:100,101:200] = NA
 ```
 
 
@@ -112,6 +115,16 @@ gg1 = flashr::flash(Y)
 sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1$l %*% t(gg1$f)))^2)
 sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(g1$EL %*% t(g1$EF)))^2)
 sum((as.vector(dat$L_true %*% t(dat$F_true))-0)^2)
+```
+
+
+### for this case, when data are missing, the obj is not increase
+
+the final result is rank zero, so I am not sure it is a problem
+
+```{r}
+data.miss = set_flash_data(Y_miss)
+g1.miss = flash_r1(data.miss,verbose=TRUE)
 ```
 
 ## missing value
