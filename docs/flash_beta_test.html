@@ -332,7 +332,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-09-16</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 5448079</p>
+<p><strong>Code version:</strong> 5fcea59</p>
 <!-- Add your analysis here -->
 <div id="this-is-code-for-simulated-data" class="section level3">
 <h3>this is code for simulated data</h3>
@@ -388,6 +388,7 @@ sim_K = function(K, N, P, SF, SL, signal,noise){
 <div id="check-the-prediction-performance-this-is-something-i-dont-understand" class="section level2">
 <h2>check the prediction performance, this is something I don’t understand</h2>
 <p>In this case I run flash for different situation and I found the old version has smaller RMSE.</p>
+<p>I print the obj value to check if it is increase.</p>
 <pre class="r"><code>library(PMA)
 library(softImpute)
 set.seed(999)
@@ -433,6 +434,11 @@ sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1$l %*% t(gg1$f)))^2)</
 </div>
 <div id="missing-value" class="section level2">
 <h2>missing value</h2>
+<p>In this case, I have two problems:</p>
+<ol style="list-style-type: decimal">
+<li><p>The Obj function seems not increasing.</p></li>
+<li><p>the RMSE seems a bit large for flashr2. I think the <span class="math inline">\(\tau\)</span> estimation is not that precise.</p></li>
+</ol>
 <pre class="r"><code>library(PMA)
 library(softImpute)
 set.seed(999)
