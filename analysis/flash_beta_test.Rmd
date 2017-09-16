@@ -1,0 +1,146 @@
+---
+title: "test flashr2"
+author: "Wei"
+date: 09-12
+output: 
+  html_document:
+    code_folding: hide
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+### this is code for simulated data
+
+```{r}
+sim_hd = function(N, P, SF, SL, signal, a = rchisq(N,3),b = rchisq(P,1),mu = 0){
+  
+  E = matrix(rep(0,N*P),nrow=N)
+  sig2_true = matrix(rep(0,N*P),nrow=N)
+  for(i in 1:N){
+    for(j in 1:P){
+      sig2_true[i,j] = mu + a[i] * b[j]
+      E[i,j] = rnorm(1,0,sqrt(mu + a[i] * b[j]))
+    }
+  }
+  
+  K=1
+  lstart = rnorm(N, 0, signal)
+  
+  fstart = rnorm(P, 0, signal)
+  
+  index = sample(seq(1:N),(N*SL))
+  lstart[index] = 0
+  index = sample(seq(1:P),(P*SF))
+  fstart[index] = 0
+  
+  Y = lstart %*% t(fstart) + E
+  
+  return(list(Y = Y, L_true = lstart, F_true = fstart, Error = E,sig2_true = sig2_true))
+}
+sim_K = function(K, N, P, SF, SL, signal,noise){
+  E = matrix(rnorm(N*P,0,noise),nrow=N)
+  Y = E
+  L_true = array(0, dim = c(N,K))
+  F_true = array(0, dim = c(P,K))
+  
+  for(k in 1:K){
+    lstart = rnorm(N, 0, signal)
+    fstart = rnorm(P, 0, signal)
+    
+    index = sample(seq(1:N),(N*SL))
+    lstart[index] = 0
+    index = sample(seq(1:P),(P*SF))
+    fstart[index] = 0
+    
+    L_true[,k] = lstart
+    F_true[,k] = fstart
+    
+    Y = Y + lstart %*% t(fstart)
+  }
+  return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
+}
+```
+
+
+```{r}
+library(flashr2)
+```
+
+## check the prediction performance, this is something I don't understand
+
+In this case I run flash for different situation and I found the old version has smaller RMSE.
+
+```{r}
+library(PMA)
+library(softImpute)
+set.seed(999)
+N = 100
+P = 200
+dat = sim_K(K=1,N, P, SF = 0.5, SL = 0.5, signal = 1,noise = 5)
+# a = rchisq(N,3)
+# b = rchisq(P,1)
+# data = sim_hd(N, P, SF = 0.5, SL = 0.5, signal = 1, a ,b,mu = 0)
+Y = dat$Y
+```
+
+
+```{r}
+data = set_flash_data(Y)
+g1= flash_r1(data,verbose=TRUE)
+gg1 = flashr::flash(Y)
+sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1$l %*% t(gg1$f)))^2)
+sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(g1$EL %*% t(g1$EF)))^2)
+sum((as.vector(dat$L_true %*% t(dat$F_true))-0)^2)
+```
+
+## missing value
+
+```{r}
+library(PMA)
+library(softImpute)
+set.seed(999)
+N = 100
+P = 200
+dat = sim_K(K=1,N, P, SF = 0.5, SL = 0.5, signal = 3,noise = 5)
+# a = rchisq(N,3)
+# b = rchisq(P,1)
+# data = sim_hd(N, P, SF = 0.5, SL = 0.5, signal = 1, a ,b,mu = 0)
+Y = dat$Y
+Y_miss = Y
+Y_miss[1:50,1:100] = NA
+Y_miss[51:100,101:200] = NA
+```
+
+```{r}
+data.miss = set_flash_data(Y_miss)
+g1.miss = flash_r1(data.miss,verbose=TRUE)
+gg1.miss = flashr::flash(Y_miss)
+sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1.miss$l %*% t(gg1.miss$f)))^2)
+sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(g1.miss$EL %*% t(g1.miss$EF)))^2)
+sum((as.vector(dat$L_true %*% t(dat$F_true))-0)^2)
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
