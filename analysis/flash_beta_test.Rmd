@@ -91,7 +91,7 @@ In this case I run flash for different situation and I found the old version has
 
 I print the obj value to check if it is increase.
 
-```{r}
+```{r,message=FALSE,results=FALSE}
 library(PMA)
 library(softImpute)
 set.seed(999)
@@ -111,7 +111,7 @@ Y_miss[51:100,101:200] = NA
 ```{r}
 data = set_flash_data(Y)
 g1= flash_r1(data,verbose=TRUE)
-gg1 = flashr::flash(Y)
+gg1 = flashr::flash(Y,ash_para_l = list(method = "shrink"),ash_para_f = list(method = "shrink"))
 sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1$l %*% t(gg1$f)))^2)
 sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(g1$EL %*% t(g1$EF)))^2)
 sum((as.vector(dat$L_true %*% t(dat$F_true))-0)^2)
@@ -154,12 +154,71 @@ Y_miss[51:100,101:200] = NA
 ```{r}
 data.miss = set_flash_data(Y_miss)
 g1.miss = flash_r1(data.miss,verbose=TRUE)
-gg1.miss = flashr::flash(Y_miss)
+gg1.miss = flashr::flash(Y_miss,ash_para_l = list(method = "shrink"),ash_para_f = list(method = "shrink"))
 sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1.miss$l %*% t(gg1.miss$f)))^2)
 sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(g1.miss$EL %*% t(g1.miss$EF)))^2)
 sum((as.vector(dat$L_true %*% t(dat$F_true))-0)^2)
 ```
 
+
+## compare versions
+
+In this case, we set flash use `shrink` method and compare with the new version.
+
+```{r}
+sparse_level_l = seq(0.1,0.9,0.2)
+sparse_level_f = seq(0.1,0.9,0.2)
+signal_level = seq(1,5)
+RMSE_1 = rep(NA,5*5*5)
+RMSE_2 = rep(NA,5*5*5)
+for(i in 1:5){
+  for(j in 1:5){
+    for(k in 1:5){
+      set.seed(999)
+      N = 100
+      P = 200
+      dat = sim_K(K=1,N, P, SF = sparse_level_f[i],
+                  SL = sparse_level_l[j], 
+                  signal = signal_level[k],
+                  noise = 5)
+      Y = dat$Y
+      data = set_flash_data(Y)
+      g1= flash_r1(data,verbose=TRUE)
+      gg1 = flashr::flash(Y,ash_para_l = list(method = "shrink"),ash_para_f = list(method = "shrink"))
+      RMSE_1[25*(i-1) + 5*(j-1) + k] = 
+        sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1$l %*% t(gg1$f)))^2))/sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-0)^2))
+      RMSE_2[25*(i-1) + 5*(j-1) + k] = 
+        sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(g1$EL %*% t(g1$EF)))^2))/sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-0)^2))
+    }
+  }
+}
+
+plot(RMSE_1 - RMSE_2)
+```
+
+To check the extreme case, and I found it is because flashr doesn't output rand zero estimation where zero estimation is better. 
+
+```{r}
+i = 5
+j = 5
+k = 1
+set.seed(999)
+N = 100
+P = 200
+dat = sim_K(K=1,N, P, SF = sparse_level_f[i],
+            SL = sparse_level_l[j], 
+            signal = signal_level[k],
+            noise = 5)
+Y = dat$Y
+data = set_flash_data(Y)
+g1= flash_r1(data,verbose=TRUE)
+gg1 = flashr::flash(Y,ash_para_l = list(method = "shrink"),ash_para_f = list(method = "shrink"))
+
+  sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1$l %*% t(gg1$f)))^2))/sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-0)^2))
+
+  sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(g1$EL %*% t(g1$EF)))^2))/sqrt(mean((as.vector(dat$L_true %*% t(dat$F_true))-0)^2))
+
+```
 ## Session information
 
 <!-- Insert the session information into the document -->
