@@ -36,3 +36,4 @@ Click on this [summary of the rank0 vs rank1](Obj_summary.html) to see a simple 
 ## flashr2
 
 This is a simple test [first try](flash_beta_test.html)
+Initialization issue: [softimpute as initialization](missingimputeinitial.html)

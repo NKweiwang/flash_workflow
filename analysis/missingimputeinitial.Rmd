@@ -1,0 +1,135 @@
+---
+title: "Initialization for missing data"
+author: "Wei Wang"
+date: 09-16
+output: 
+  html_document:
+    code_folding: hide
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+```{r}
+sim_hd = function(N, P, SF, SL, signal, a = rchisq(N,3),b = rchisq(P,1),mu = 0){
+  
+  E = matrix(rep(0,N*P),nrow=N)
+  sig2_true = matrix(rep(0,N*P),nrow=N)
+  for(i in 1:N){
+    for(j in 1:P){
+      sig2_true[i,j] = mu + a[i] * b[j]
+      E[i,j] = rnorm(1,0,sqrt(mu + a[i] * b[j]))
+    }
+  }
+  
+  K=1
+  lstart = rnorm(N, 0, signal)
+  
+  fstart = rnorm(P, 0, signal)
+  
+  index = sample(seq(1:N),(N*SL))
+  lstart[index] = 0
+  index = sample(seq(1:P),(P*SF))
+  fstart[index] = 0
+  
+  Y = lstart %*% t(fstart) + E
+  
+  return(list(Y = Y, L_true = lstart, F_true = fstart, Error = E,sig2_true = sig2_true))
+}
+sim_K = function(K, N, P, SF, SL, signal,noise){
+  E = matrix(rnorm(N*P,0,noise),nrow=N)
+  Y = E
+  L_true = array(0, dim = c(N,K))
+  F_true = array(0, dim = c(P,K))
+  
+  for(k in 1:K){
+    lstart = rnorm(N, 0, signal)
+    fstart = rnorm(P, 0, signal)
+    
+    index = sample(seq(1:N),(N*SL))
+    lstart[index] = 0
+    index = sample(seq(1:P),(P*SF))
+    fstart[index] = 0
+    
+    L_true[,k] = lstart
+    F_true[,k] = fstart
+    
+    Y = Y + lstart %*% t(fstart)
+  }
+  return(list(Y = Y, L_true = L_true, F_true = F_true, Error = E))
+}
+```
+
+
+```{r}
+library(flashr2)
+```
+
+## same data set as in "flash_beta_test"
+
+```{r,message=F,warning=F}
+library(softImpute)
+set.seed(999)
+N = 100
+P = 200
+dat = sim_K(K=1,N, P, SF = 0.5, SL = 0.5, signal = 3,noise = 5)
+# a = rchisq(N,3)
+# b = rchisq(P,1)
+# data = sim_hd(N, P, SF = 0.5, SL = 0.5, signal = 1, a ,b,mu = 0)
+Y = dat$Y
+Y_miss = Y
+Y_miss[1:50,1:100] = NA
+Y_miss[51:100,101:200] = NA
+```
+
+Here I just run flash on this data sets four times and provide different result due to the unstable initial value.
+
+```{r}
+par(mfrow = c(2,2))
+for(i in 1:4){
+  data.miss = set_flash_data(Y_miss)
+  g1.miss = flash_r1(data.miss,verbose=F)
+  plot(as.vector(dat$L_true %*% t(dat$F_true)), as.vector(g1.miss$EL %*% t(g1.miss$EF)), xlab = "truth",ylab = "estimated", main = "vectorized LF")
+}
+```
+
+
+## I don't think softimpute is good initialization method (or maybe I don't understand this method very well)
+
+Here is a example of use softimpute. maybe I was not using it in the right way.
+
+Here I use default `lambda`, and we can try `type = "svd"`. I tried different combination and this method is still not stable.
+
+```{r}
+par(mfrow = c(2,2))
+for(i in 1:4){
+  gsoft = softImpute(Y_miss, rank.max = 1,type = "als")
+  sfl = (gsoft$u)
+  sff = gsoft$d * (gsoft$v)
+  plot(as.vector(dat$L_true %*% t(dat$F_true)), as.vector(sfl %*% t(sff)), xlab = "truth",ylab = "estimated", main = "vectorized LF")
+}
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
