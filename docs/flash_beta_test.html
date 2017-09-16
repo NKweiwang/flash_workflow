@@ -332,7 +332,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-09-16</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 5fcea59</p>
+<p><strong>Code version:</strong> 567364a</p>
 <!-- Add your analysis here -->
 <div id="this-is-code-for-simulated-data" class="section level3">
 <h3>this is code for simulated data</h3>
@@ -398,7 +398,10 @@ dat = sim_K(K=1,N, P, SF = 0.5, SL = 0.5, signal = 1,noise = 5)
 # a = rchisq(N,3)
 # b = rchisq(P,1)
 # data = sim_hd(N, P, SF = 0.5, SL = 0.5, signal = 1, a ,b,mu = 0)
-Y = dat$Y</code></pre>
+Y = dat$Y
+Y_miss = Y
+Y_miss[1:50,1:100] = NA
+Y_miss[51:100,101:200] = NA</code></pre>
 <pre class="r"><code>data = set_flash_data(Y)
 g1= flash_r1(data,verbose=TRUE)</code></pre>
 <pre><code>objective: -60684.0799816503</code></pre>
@@ -431,6 +434,23 @@ sum((as.vector(dat$L_true %*% t(dat$F_true))-as.vector(gg1$l %*% t(gg1$f)))^2)</
 <pre><code>[1] 6989.176</code></pre>
 <pre class="r"><code>sum((as.vector(dat$L_true %*% t(dat$F_true))-0)^2)</code></pre>
 <pre><code>[1] 5590.415</code></pre>
+<div id="for-this-case-when-data-are-missing-the-obj-is-not-increase" class="section level3">
+<h3>for this case, when data are missing, the obj is not increase</h3>
+<p>the final result is rank zero, so I am not sure it is a problem</p>
+<pre class="r"><code>data.miss = set_flash_data(Y_miss)
+g1.miss = flash_r1(data.miss,verbose=TRUE)</code></pre>
+<pre><code>objective: -55237.4533194456</code></pre>
+<pre><code>objective: -55290.6347464965</code></pre>
+<pre><code>objective: -55306.7514731873</code></pre>
+<pre><code>objective: -55314.4493458216</code></pre>
+<pre><code>objective: -55318.9891326406</code></pre>
+<pre><code>objective: -55326.1868585775</code></pre>
+<pre><code>objective: -55326.6792848203</code></pre>
+<pre><code>objective: -55326.6799161184</code></pre>
+<pre><code>performing nullcheck</code></pre>
+<pre><code>objective from deleting factor:-55325.6941300165</code></pre>
+<pre><code>objective from keeping factor:-55326.6799161184</code></pre>
+</div>
 </div>
 <div id="missing-value" class="section level2">
 <h2>missing value</h2>
