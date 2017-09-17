@@ -312,10 +312,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-09-16</p>
+<p><strong>Last updated:</strong> 2017-09-17</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 8482f70</p>
+<p><strong>Code version:</strong> 80ea700</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(flashr2)
 library(MASS)</code></pre>
@@ -323,24 +323,27 @@ library(MASS)</code></pre>
 
 set.seed(99)
 T = 1000
-lambda_3 = rep(NA,T)
-flash_rank_3= rep(1,T)
+lambda_0 = rep(NA,T)
+flash_rank_0= rep(1,T)
+flash2_rank_0= rep(1,T)
 for(t in 1:T){
   P = 300
   N = 100
   Sigma_0 = diag(rep(1,P))
   X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_0)
-  lambda_3[t] =  svd(X)$d[1]
+  lambda_0[t] =  svd(X)$d[1]
   data = set_flash_data(X)
   g1= flash_r1(data,verbose=F)
-  if(sum(g1$EL) ==0 )  {flash_rank_3[t] = 0}
+  g2 = flashr::flash(X)
+  if(sum(g1$EL) ==0 )  {flash2_rank_0[t] = 0}
+  if(sum(g2$l) ==0 )  {flash_rank_0[t] = 0}
 }
-
 
 set.seed(99)
 T = 1000
-lambda_4 = rep(NA,T)
-flash_rank_4= rep(1,T)
+lambda_1 = rep(NA,T)
+flash_rank_1= rep(1,T)
+flash2_rank_1= rep(1,T)
 for(t in 1:T){
   P = 300
   N = 100
@@ -350,37 +353,90 @@ for(t in 1:T){
   nu[index_nu] = 0
   Sigma_1 = Sigma_0 + nu %*% t(nu)
   X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
-  lambda_4[t] =  svd(X)$d[1]
+  lambda_1[t] =  svd(X)$d[1]
   data = set_flash_data(X)
   g1= flash_r1(data,verbose=F)
-  if(sum(g1$EL) ==0 )  {flash_rank_4[t] = 0}
+  g2 = flashr::flash(X)
+  if(sum(g1$EL) ==0 )  {flash2_rank_1[t] = 0}
+  if(sum(g2$l) ==0 )  {flash_rank_1[t] = 0}
 }
 
 
-lambda_4_0 = lambda_4[which(flash_rank_4 ==0)]
-lambda_4_1 = lambda_4[which(flash_rank_4 ==1)]
+lambda_1_0_0 = lambda_0[which(flash_rank_0 ==0)]
+lambda_1_0_1 = lambda_0[which(flash_rank_0 ==1)]
+lambda_2_0_0 = lambda_0[which(flash2_rank_0 ==0)]
+lambda_2_0_1 = lambda_0[which(flash2_rank_0 ==1)]
 
-library(ggplot2)
-dat = data.frame(lambda = c(lambda_3,lambda_4_0,lambda_4_1), name = c(rep(&quot;null&quot;,length(lambda_3)), rep(&quot;alt 0&quot;, length(lambda_4_0)),rep(&quot;alt 1&quot;, length(lambda_4_1)) ))
+lambda_1_1_0 = lambda_1[which(flash_rank_1 ==0)]
+lambda_1_1_1 = lambda_1[which(flash_rank_1 ==1)]
+lambda_2_1_0 = lambda_1[which(flash2_rank_1 ==0)]
+lambda_2_1_1 = lambda_1[which(flash2_rank_1 ==1)]</code></pre>
+<div id="model" class="section level2">
+<h2>model</h2>
+<p>In this case the data sets are: <span class="math display">\[H_0: X \sim N(0, \Sigma_0)\]</span> <span class="math display">\[H_1: X \sim N(0,\Sigma_1)\]</span> where <span class="math inline">\(\Sigma_0 = I\)</span> and <span class="math inline">\(\Sigma_1 = I + \nu \nu^T\)</span></p>
+<pre class="r"><code>library(ggplot2)
+dat = data.frame(lambda = c(lambda_0,lambda_1), name = c(rep(&quot;null&quot;,length(lambda_0)), rep(&quot;alt&quot;, length(lambda_1)) ))
 ggplot(dat,aes(x=lambda)) +
   geom_histogram(data=subset(dat,name == &#39;null&#39;),fill = &quot;red&quot;, alpha = 0.2) +
-  # geom_histogram(data=subset(dat,name == &#39;alt 0&#39;),fill = &quot;blue&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat,name %in% c(&#39;alt 1&#39;,&#39;alt 0&#39;)),fill = &quot;green&quot;, alpha = 0.2)</code></pre>
+  geom_histogram(data=subset(dat,name == &#39;alt&#39;),fill = &quot;green&quot;, alpha = 0.2) </code></pre>
 <pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="figure/NULLcheck.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>-red: null -green: alternative</p>
+<p><img src="figure/NULLcheck.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<ul>
+<li>red: null</li>
+<li>green: alternative</li>
+</ul>
+<div id="flashr" class="section level3">
+<h3>flashr</h3>
 <pre class="r"><code>library(ggplot2)
-dat = data.frame(lambda = c(lambda_3,lambda_4_0,lambda_4_1), name = c(rep(&quot;null&quot;,length(lambda_3)), rep(&quot;alt 0&quot;, length(lambda_4_0)),rep(&quot;alt 1&quot;, length(lambda_4_1)) ))
+dat = data.frame(lambda = c(lambda_1_0_0,lambda_1_0_1,lambda_1_1_0,lambda_1_1_1), 
+                 name = c(rep(&quot;null 0&quot;,length(lambda_1_0_0)),
+                          rep(&quot;null 1&quot;,length(lambda_1_0_1)),
+                          rep(&quot;alt 0&quot;,length(lambda_1_1_0)),
+                          rep(&quot;alt 1&quot;,length(lambda_1_1_1))))
 ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat,name == &#39;null&#39;),fill = &quot;red&quot;, alpha = 0.2) +
+  geom_histogram(data=subset(dat,name == &#39;null 0&#39;),fill = &quot;red&quot;, alpha = 0.2) +
+  geom_histogram(data=subset(dat,name == &#39;null 1&#39;),fill = &quot;black&quot;, alpha = 0.2) +
   geom_histogram(data=subset(dat,name == &#39;alt 0&#39;),fill = &quot;blue&quot;, alpha = 0.2) +
   geom_histogram(data=subset(dat,name == &#39;alt 1&#39;),fill = &quot;green&quot;, alpha = 0.2)</code></pre>
 <pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
 `stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="figure/NULLcheck.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
-<p>-red: null -green: alternative estimated as rank 1 -bule: alternative estimated as rank 0</p>
+<p><img src="figure/NULLcheck.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<ul>
+<li>red: null as rank 0</li>
+<li>black: null as rank 1</li>
+<li>blue: alternative as 0</li>
+<li>green: alternative as 1</li>
+</ul>
+</div>
+<div id="flashr2" class="section level3">
+<h3>flashr2</h3>
+<pre class="r"><code>library(ggplot2)
+dat2 = data.frame(lambda = c(lambda_2_0_0,lambda_2_0_1,lambda_2_1_0,lambda_2_1_1), 
+                 name = c(rep(&quot;null 0&quot;,length(lambda_2_0_0)),
+                          rep(&quot;null 1&quot;,length(lambda_2_0_1)),
+                          rep(&quot;alt 0&quot;,length(lambda_2_1_0)),
+                          rep(&quot;alt 1&quot;,length(lambda_2_1_1))))
+ggplot(dat,aes(x=lambda)) +
+  geom_histogram(data=subset(dat2,name == &#39;null 0&#39;),fill = &quot;red&quot;, alpha = 0.2) +
+  geom_histogram(data=subset(dat2,name == &#39;null 1&#39;),fill = &quot;black&quot;, alpha = 0.2) +
+  geom_histogram(data=subset(dat2,name == &#39;alt 0&#39;),fill = &quot;blue&quot;, alpha = 0.2) +
+  geom_histogram(data=subset(dat2,name == &#39;alt 1&#39;),fill = &quot;green&quot;, alpha = 0.2)</code></pre>
+<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
+`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+<p><img src="figure/NULLcheck.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<ul>
+<li>red: null as rank 0</li>
+<li>black: null as rank 1</li>
+<li>blue: alternative as 0</li>
+<li>green: alternative as 1</li>
+</ul>
+</div>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
@@ -396,24 +452,23 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] ggplot2_2.2.1   MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
- [5] softImpute_1.4  Matrix_1.2-11   PMA_1.0.9       impute_1.48.0  
- [9] plyr_1.8.4      flashr2_0.1-2  
+[1] ggplot2_2.2.1   MASS_7.3-47     flashr2_0.1-2   workflowr_0.4.0
+[5] rmarkdown_1.6  
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.12      git2r_0.19.0      iterators_1.0.8  
- [4] tools_3.3.0       digest_0.6.12     evaluate_0.10.1  
- [7] tibble_1.3.3      gtable_0.2.0      lattice_0.20-35  
-[10] rlang_0.1.2       foreach_1.4.3     rstudioapi_0.6   
-[13] yaml_2.1.14       parallel_3.3.0    stringr_1.2.0    
-[16] knitr_1.17        REBayes_0.85      rprojroot_1.2    
-[19] grid_3.3.0        irlba_2.2.1       flashr_0.1.1     
-[22] ashr_2.1-25       magrittr_1.5      scales_0.4.1     
-[25] backports_1.1.0   codetools_0.2-15  htmltools_0.3.6  
-[28] assertthat_0.2.0  colorspace_1.3-2  labeling_0.3     
-[31] stringi_1.1.5     Rmosek_7.1.2      lazyeval_0.2.0   
-[34] pscl_1.4.9        doParallel_1.0.10 munsell_0.4.3    
-[37] truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
+ [1] Rcpp_0.12.12      git2r_0.19.0      plyr_1.8.4       
+ [4] iterators_1.0.8   tools_3.3.0       digest_0.6.12    
+ [7] evaluate_0.10.1   tibble_1.3.3      gtable_0.2.0     
+[10] lattice_0.20-35   rlang_0.1.2       Matrix_1.2-11    
+[13] foreach_1.4.3     yaml_2.1.14       parallel_3.3.0   
+[16] stringr_1.2.0     knitr_1.17        REBayes_0.85     
+[19] rprojroot_1.2     grid_3.3.0        irlba_2.2.1      
+[22] flashr_0.1.1      ashr_2.1-25       magrittr_1.5     
+[25] backports_1.1.0   scales_0.4.1      codetools_0.2-15 
+[28] htmltools_0.3.6   assertthat_0.2.0  colorspace_1.3-2 
+[31] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
+[34] lazyeval_0.2.0    munsell_0.4.3     doParallel_1.0.10
+[37] pscl_1.4.9        truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
 </div>
 
 <hr>
