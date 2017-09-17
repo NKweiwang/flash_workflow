@@ -39,4 +39,4 @@ This is a simple test [first try](flash_beta_test.html)
 
 Initialization issue: [softimpute as initialization](missingimputeinitial.html)
 
-Click here to find the [null check for flashr2](NULLcheck.html)
+Click here to find the [null check for flashr2](NULLcheck.html) and [densen nu case](nullcheck2.html)
