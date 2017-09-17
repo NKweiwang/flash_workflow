@@ -1,7 +1,7 @@
 ---
-title: "null check for flashr2"
-author: "wei"
-date: 09-16
+title: "NUll check for flashr2"
+author: "Wei Wang"
+date: 09-17
 output: html_document
 ---
 
@@ -25,6 +25,7 @@ knitr::read_chunk("chunks.R")
 ```
 
 <!-- Add your analysis here -->
+
 
 ```{r}
 library(flashr2)
@@ -63,9 +64,9 @@ for(t in 1:T){
   P = 300
   N = 100
   Sigma_0 = diag(rep(1,P))
-  nu = rnorm(P, 0, (6)/(sqrt(P)))
-  index_nu = sample(seq(1:P),(P*0.95))
-  nu[index_nu] = 0
+  nu = rnorm(P, 0, (1)/(sqrt(P)))
+  # index_nu = sample(seq(1:P),(P*0.95))
+  # nu[index_nu] = 0
   Sigma_1 = Sigma_0 + nu %*% t(nu)
   X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
   lambda_1[t] =  svd(X)$d[1]
@@ -156,6 +157,7 @@ ggplot(dat,aes(x=lambda)) +
 * black: null as rank 1
 * blue: alternative as 0
 * green: alternative as 1
+
 
 ## Session information
 
