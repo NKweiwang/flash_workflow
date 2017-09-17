@@ -36,24 +36,27 @@ library(MASS)
 
 set.seed(99)
 T = 1000
-lambda_3 = rep(NA,T)
-flash_rank_3= rep(1,T)
+lambda_0 = rep(NA,T)
+flash_rank_0= rep(1,T)
+flash2_rank_0= rep(1,T)
 for(t in 1:T){
   P = 300
   N = 100
   Sigma_0 = diag(rep(1,P))
   X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_0)
-  lambda_3[t] =  svd(X)$d[1]
+  lambda_0[t] =  svd(X)$d[1]
   data = set_flash_data(X)
   g1= flash_r1(data,verbose=F)
-  if(sum(g1$EL) ==0 )  {flash_rank_3[t] = 0}
+  g2 = flashr::flash(X)
+  if(sum(g1$EL) ==0 )  {flash2_rank_0[t] = 0}
+  if(sum(g2$l) ==0 )  {flash_rank_0[t] = 0}
 }
-
 
 set.seed(99)
 T = 1000
-lambda_4 = rep(NA,T)
-flash_rank_4= rep(1,T)
+lambda_1 = rep(NA,T)
+flash_rank_1= rep(1,T)
+flash2_rank_1= rep(1,T)
 for(t in 1:T){
   P = 300
   N = 100
@@ -63,41 +66,92 @@ for(t in 1:T){
   nu[index_nu] = 0
   Sigma_1 = Sigma_0 + nu %*% t(nu)
   X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
-  lambda_4[t] =  svd(X)$d[1]
+  lambda_1[t] =  svd(X)$d[1]
   data = set_flash_data(X)
   g1= flash_r1(data,verbose=F)
-  if(sum(g1$EL) ==0 )  {flash_rank_4[t] = 0}
+  g2 = flashr::flash(X)
+  if(sum(g1$EL) ==0 )  {flash2_rank_1[t] = 0}
+  if(sum(g2$l) ==0 )  {flash_rank_1[t] = 0}
 }
 
 
-lambda_4_0 = lambda_4[which(flash_rank_4 ==0)]
-lambda_4_1 = lambda_4[which(flash_rank_4 ==1)]
+lambda_1_0_0 = lambda_0[which(flash_rank_0 ==0)]
+lambda_1_0_1 = lambda_0[which(flash_rank_0 ==1)]
+lambda_2_0_0 = lambda_0[which(flash2_rank_0 ==0)]
+lambda_2_0_1 = lambda_0[which(flash2_rank_0 ==1)]
 
-library(ggplot2)
-dat = data.frame(lambda = c(lambda_3,lambda_4_0,lambda_4_1), name = c(rep("null",length(lambda_3)), rep("alt 0", length(lambda_4_0)),rep("alt 1", length(lambda_4_1)) ))
-ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat,name == 'null'),fill = "red", alpha = 0.2) +
-  # geom_histogram(data=subset(dat,name == 'alt 0'),fill = "blue", alpha = 0.2) +
-  geom_histogram(data=subset(dat,name %in% c('alt 1','alt 0')),fill = "green", alpha = 0.2)
+lambda_1_1_0 = lambda_1[which(flash_rank_1 ==0)]
+lambda_1_1_1 = lambda_1[which(flash_rank_1 ==1)]
+lambda_2_1_0 = lambda_1[which(flash2_rank_1 ==0)]
+lambda_2_1_1 = lambda_1[which(flash2_rank_1 ==1)]
+
 ```
 
--red: null
--green: alternative
+
+## model
+
+In this case the data sets are:
+$$H_0: X \sim N(0, \Sigma_0)$$
+$$H_1: X \sim N(0,\Sigma_1)$$
+where $\Sigma_0 = I$ and $\Sigma_1 = I + \nu \nu^T$
 
 ```{r}
 library(ggplot2)
-dat = data.frame(lambda = c(lambda_3,lambda_4_0,lambda_4_1), name = c(rep("null",length(lambda_3)), rep("alt 0", length(lambda_4_0)),rep("alt 1", length(lambda_4_1)) ))
+dat = data.frame(lambda = c(lambda_0,lambda_1), name = c(rep("null",length(lambda_0)), rep("alt", length(lambda_1)) ))
 ggplot(dat,aes(x=lambda)) +
   geom_histogram(data=subset(dat,name == 'null'),fill = "red", alpha = 0.2) +
+  geom_histogram(data=subset(dat,name == 'alt'),fill = "green", alpha = 0.2) 
+```
+
+* red: null
+* green: alternative
+
+### flashr
+
+```{r}
+library(ggplot2)
+dat = data.frame(lambda = c(lambda_1_0_0,lambda_1_0_1,lambda_1_1_0,lambda_1_1_1), 
+                 name = c(rep("null 0",length(lambda_1_0_0)),
+                          rep("null 1",length(lambda_1_0_1)),
+                          rep("alt 0",length(lambda_1_1_0)),
+                          rep("alt 1",length(lambda_1_1_1))))
+ggplot(dat,aes(x=lambda)) +
+  geom_histogram(data=subset(dat,name == 'null 0'),fill = "red", alpha = 0.2) +
+  geom_histogram(data=subset(dat,name == 'null 1'),fill = "black", alpha = 0.2) +
   geom_histogram(data=subset(dat,name == 'alt 0'),fill = "blue", alpha = 0.2) +
   geom_histogram(data=subset(dat,name == 'alt 1'),fill = "green", alpha = 0.2)
 
 ```
 
--red: null
--green: alternative estimated as rank 1
--bule: alternative estimated as rank 0
+* red: null as rank 0
+* black: null as rank 1
+* blue: alternative as 0
+* green: alternative as 1
 
+
+
+### flashr2
+
+```{r}
+library(ggplot2)
+dat2 = data.frame(lambda = c(lambda_2_0_0,lambda_2_0_1,lambda_2_1_0,lambda_2_1_1), 
+                 name = c(rep("null 0",length(lambda_2_0_0)),
+                          rep("null 1",length(lambda_2_0_1)),
+                          rep("alt 0",length(lambda_2_1_0)),
+                          rep("alt 1",length(lambda_2_1_1))))
+ggplot(dat,aes(x=lambda)) +
+  geom_histogram(data=subset(dat2,name == 'null 0'),fill = "red", alpha = 0.2) +
+  geom_histogram(data=subset(dat2,name == 'null 1'),fill = "black", alpha = 0.2) +
+  geom_histogram(data=subset(dat2,name == 'alt 0'),fill = "blue", alpha = 0.2) +
+  geom_histogram(data=subset(dat2,name == 'alt 1'),fill = "green", alpha = 0.2)
+
+```
+
+
+* red: null as rank 0
+* black: null as rank 1
+* blue: alternative as 0
+* green: alternative as 1
 
 ## Session information
 
