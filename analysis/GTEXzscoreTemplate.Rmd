@@ -1,0 +1,124 @@
+---
+title: "Template for GTEx example on cluster"
+author: "wei"
+date: 09-29
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## Install the package
+
+1 please git clone the `flashr2` on PPS.
+
+`git clone https://github.com/stephenslab/flashr2.git`
+
+2 install `flashr2` locally
+
+`R CMD build flashr2`
+
+`R CMD INSTALL flashr2_0.2-2.tar.gz`
+
+
+## prepare the data
+
+### original data 
+
+Please read your original data as a $N \times P$ matrix in R.
+
+In this case you can create a folder the restore the data as `.rds` file
+
+```
+mkdir testflashr2
+cd testflashr2
+cp gtexEQTL_zscore.rds GTEX/testflashr2/
+```
+
+now you have the data matrix in `gtexEQTL_zscore.rds`
+
+to restore the result and track the errors, you can crest folders
+
+```
+mkdir output
+mkdir ourlog
+```
+
+## run FLASH
+
+Here I take the GTEx EQTL zscore as an example
+
+### creat a .R file
+
+```
+library(ashr)
+library(flashr2)
+load("./gtexEQTL_zscore.rds")
+Y = t(zscore)
+data = flash_set_data(Y)
+f_greedy = flash_add_greedy(data,Kmax=60)
+f_greedy_bf = flash_backfit(data,f_greedy)
+#f_greedy = flash_add_greedy(data,Kmax=60,var_type = "by_column",ash_param=list(method = "fdr"))
+#f_greedy_bf = flash_backfit(data,f_greedy,var_type = "by_column",ash_param=list(method = "fdr"))
+saveRDS(f_greedy,file = "./output/gflashvarcol.rds")
+saveRDS(f_greedy_bf,file = "./output/bflashvarcol.rds")
+```
+
+here 60 is much larger than the sample size. our method doesn't restrict $K < \min(P,N)$. But for this case, 60 is enough. We call this file as `flashwrapper.R`
+
+### creat a .sbatch file
+
+```
+#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1
+#SBATCH --time=32:00:00
+#SBATCH --partition=mstephens
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=1
+#SBATCH --mem-per-cpu=20G
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job's task ID
+cd /home/weidong/HG/flash/data/GTEX/testflashr2
+Rscript --verbose flashwrapper.R
+```
+
+you can substitute the folder path `/home/weidong/HG/flash/data/GTEX/testflashr2`. and we call this `.sbatch` file as `runflash.sbatch`
+
+## run 
+
+```
+sbatch runflash.sbatch 
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
