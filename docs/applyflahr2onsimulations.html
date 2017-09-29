@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Wei Wang" />
+
+
+<title>apply flashr2 on the paper</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 52px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+
+.section h2 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h3 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h4 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h5 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h6 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">flash workflow</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/NKweiwang/flash_workflow">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">apply flashr2 on the paper</h1>
+<h4 class="author"><em>Wei Wang</em></h4>
+<h4 class="date"><em>09-28</em></h4>
+
+</div>
+
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2017-09-28</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 89dcb85</p>
+<!-- Add your analysis here -->
+<div id="rank-1-data-set" class="section level2">
+<h2>rank 1 data set</h2>
+<div id="simulated-data" class="section level3">
+<h3>simulated data</h3>
+</div>
+<div id="sparse" class="section level3">
+<h3>sparse</h3>
+<pre class="r"><code>library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+#Data = datamaker(N,P,L_pi,L_se,0.36,c(1),c(1),1,sqrt(1))
+dim(Data$Y)</code></pre>
+<pre><code>[1] 200 300</code></pre>
+<pre class="r"><code># = flashr::flash(Data$Y)
+data = flashr2::flash_set_data(Data$Y)
+gf = flashr2::flash_r1(data,verbose=FALSE)
+
+
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+MSE_PMD = sqrt(mean(( gPMD$d *(gPMD$u %*% t(gPMD$v)) - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim &lt;- c(-0.08,0.08); ylim &lt;- c(-0.08,0.08)
+
+mat = cbind(Data$L_true,gf$EL,gPMD$u)
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;)
+df1 = data.frame(mat1)
+
+base1 &lt;- ggplot(df1, aes(x = truth, y = FLASH)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed1 = ggplot(df1, aes(x = truth, y = FLASH)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+g1 &lt;- ggplotGrob(zoomed1)
+base1 +annotation_custom(grob = g1, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>base2 &lt;- ggplot(df1, aes(x = truth, y = PMD)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed2 = ggplot(df1, aes(x = truth, y = PMD)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey() + geom_abline(intercept = 0,slope = 1)
+
+g2 &lt;- ggplotGrob(zoomed2)
+base2 +annotation_custom(grob = g2, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>plot_grid(base1, base2, zoomed1,zoomed2, labels = &quot;AUTO&quot;, ncol = 2)
+
+
+
+gsfamix_1 = readRDS(&quot;../data/simulation/rankone/highsparse/sfamix_res.rds&quot;)</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>gsvd = svd(Data$Y)
+gsfa = readRDS(&quot;../data/simulation/rankone/highsparse/sfa_res.rds&quot;)
+
+# to get the KSVD result
+# try other methods
+library(&quot;R.matlab&quot;)
+# saveRDS(Data,file = &quot;../data/simulation/rankone/mediansparse/test_1.rds&quot;)
+# write the data into matlab
+# writeMat(&quot;../data/simulation/rankone/highsparse/test_1.mat&quot;, data = Data)
+# KSVD
+res_KSVD = readMat(&quot;../data/simulation/rankone/highsparse/KSVDtest_1.mat&quot;,sparseMatrixClass=&quot;matrix&quot;)
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+# add ssvd into comparison 
+gssvd = ssvd::ssvd(Data$Y,method = &quot;method&quot;)</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense
+
+Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense
+
+Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense
+
+Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense
+
+Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense
+
+Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense
+
+Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre class="r"><code>MSE_SSVD = sqrt(mean(( gssvd$d * (gssvd$u %*% t(gssvd$v)) - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+
+library(ggplot2)
+library(grid)
+
+mat = cbind(Data$L_true,gf$EL,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(Dic),gssvd$u)
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;KSVD&quot;,&quot;SSVD&quot;)
+df1 = data.frame(mat1)
+xybound = c( -0.75, -0.05, -0.05, 0.55)
+z_size = c(-0.08,0.08,-0.08,0.08)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim &lt;- c(zoom_size[1],zoom_size[2])
+  ylim &lt;- c(zoom_size[3],zoom_size[4])
+
+  base1 &lt;- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) +
+    theme_bw()+ geom_abline(intercept = 0,slope = 1) + coord_cartesian(xlim=c(-0.65,0.5), ylim=c(-0.65,0.5))
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 &lt;- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-4.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="intermediate-sparse" class="section level3">
+<h3>intermediate sparse</h3>
+<pre class="r"><code>library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+dim(Data$Y)</code></pre>
+<pre><code>[1] 200 300</code></pre>
+<pre class="r"><code>data = flashr2::flash_set_data(Data$Y)
+gf = flashr2::flash_r1(data,verbose=FALSE)
+PMDlog = capture.output({gPMD = invisible( PMA.wrapper(Data$Y)) })
+
+
+gsfamix_1 = readRDS(&quot;../data/simulation/rankone/mediansparse/sfamix_2.rds&quot;)
+gsfamix_2 = readRDS(&quot;../data/simulation/rankone/mediansparse/sfamix_3.rds&quot;)
+gsfa = readRDS(&quot;../data/simulation/rankone/mediansparse/sfa_res.rds&quot;)
+
+# to get the KSVD result
+# try other methods
+library(&quot;R.matlab&quot;)
+# saveRDS(Data,file = &quot;../data/simulation/rankone/mediansparse/test_1.rds&quot;)
+# write the data into matlab
+# writeMat(&quot;../data/simulation/rankone/mediansparse/test_1.mat&quot;, data = Data)
+# KSVD
+res_KSVD = readMat(&quot;../data/simulation/rankone/mediansparse/KSVDtest_1.mat&quot;,sparseMatrixClass=&quot;matrix&quot;)
+Dic = res_KSVD$result[[1]]
+loading_Dic = res_KSVD$result[[2]]
+MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+
+
+# add ssvd into comparison 
+gssvd = ssvd::ssvd(Data$Y,method = &quot;method&quot;)</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
+dense</code></pre>
+<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
+error.est: dense</code></pre>
+<pre class="r"><code>library(ggplot2)
+library(grid)
+# zoom bounding box
+xlim &lt;- c(-0.1,0.1); ylim &lt;- c(-0.1,0.1)
+
+mat = cbind(Data$L_true,gf$EL,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(gsfamix_2$F),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;SSVD&quot;,&quot;KSVD&quot;)
+df1 = data.frame(mat1)
+
+base1 &lt;- ggplot(df1, aes(x = truth, y = FLASH)) +
+  geom_point()  +
+  theme_bw()+ geom_abline(intercept = 0,slope = 1)
+zoomed1 = ggplot(df1, aes(x = truth, y = FLASH)) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+g1 &lt;- ggplotGrob(zoomed1)
+pic1 = base1 +annotation_custom(grob = g1,  xmin = -0.35, xmax = 0, ymin = 0.05, ymax = 0.4)
+
+
+# mat = cbind(Data$L_true,gf$l,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(gsfamix_2$F),as.vector(Dic))
+mat = cbind(Data$L_true,gf$EL,gPMD$u,gsfa$L,as.vector(gsfamix_1$F),as.vector(gssvd$u),as.vector(Dic))
+mat = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x] * sign(cor(mat[,x],mat[,1])) })
+mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
+colnames(mat1) = c(&quot;truth&quot;,&quot;FLASH&quot;,&quot;PMD&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;SSVD&quot;,&quot;KSVD&quot;)
+df1 = data.frame(mat1)
+xybound = c(-0.42,0,0.03,0.38)
+z_size = c(-0.07,0.07,-0.07,0.07)
+zoom_plot = function(df1,i,zoom_size,bound){
+  xlim &lt;- c(zoom_size[1],zoom_size[2])
+  ylim &lt;- c(zoom_size[3],zoom_size[4])
+
+  base1 &lt;- ggplot(df1, aes(x = truth, y = df1[,i])) +
+    geom_point()  + labs(y = colnames(df1)[i]) +
+    theme_bw()+ geom_abline(intercept = 0,slope = 1) + coord_cartesian(xlim=c(-0.36,0.36), ylim=c(-0.36,0.36))
+  zoomed1 = ggplot(df1, aes(x = truth, y = df1[,i]))  + labs(y = colnames(df1)[i]) + 
+    geom_point() + coord_cartesian(xlim=xlim, ylim=ylim)+ theme_grey()+ geom_abline(intercept = 0,slope = 1)
+
+  g1 &lt;- ggplotGrob(zoomed1)
+  pic1 = base1 +annotation_custom(grob = g1,  xmin = bound[1], xmax = bound[2], ymin = bound[3], ymax = bound[4])
+  return(pic1)
+}
+
+pic_list = list() 
+for(i in 2:7){
+  pic_list[[(i - 1)]] = zoom_plot(df1,i,z_size,xybound)
+}
+plot_grid(pic_list[[1]], pic_list[[2]], 
+          pic_list[[3]], pic_list[[4]], 
+          pic_list[[6]], pic_list[[5]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
+</div>
+</div>
+<div id="rank-3-case" class="section level2">
+<h2>rank 3 case</h2>
+<pre class="r"><code>CVPMD=function(Y,c_s,K){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = 5)
+  rowindex = matrix(sample(N,N),ncol = 5)
+  
+  missing= array(0,dim = c(5,N,P))
+  foldindex = array(0,dim = c(5,5,2))
+  for(i in 1:5){
+    for(j in 1:5){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% 5
+    }
+  }
+  foldindex[which(foldindex == 0)] = 5
+  for(i in 1:5){
+    missing[i, , ] = Y
+    for(j in 1:5){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  n_s = length(c_s)
+  CVRMSE = rep(NA,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # here we only need one layer
+  for(t_s in 1:n_s){
+    rmse = rep(0,5)
+    for(i in 1:5){
+      out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)
+      misshat = out$u %*%  diag(out$d) %*% t(out$v)
+      for(j in 1:5){
+        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
+                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+      }
+      rmse[i] = sqrt(rmse[i] / (N * P/5))
+    }
+    CVRMSE[t_s] = mean(rmse)
+    if(CVRMSE[t_s] &lt; minrmse){
+      minrmse = CVRMSE[t_s]
+      opt_s = c_s[t_s]
+    }
+  }
+  
+  return(list(opt_s = opt_s ))
+}
+
+
+PMA.wrapper = function(Y,ngrids = 10,K){
+  library(PMA)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0.2,0.8,len=ngrids)
+  cvout = CVPMD(Y,c_s, K = K)
+  out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)
+  residual_PMD = Y -  out$u %*%  diag(out$d) %*% t(out$v)
+  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
+}</code></pre>
+<pre class="r"><code>set.seed(99)
+N = 150
+P = 240
+K = 3
+L_true = array(0,dim = c(N,K))
+F_true = array(0,dim = c(P,K))
+F_true[1:80,1] = rnorm(80,0,0.5)
+F_true[81:160,2] = rnorm(80,0,1)
+F_true[161:240,3] = rnorm(80,0,2)
+L_true[1:10,1] = rnorm(10,0,2)
+L_true[11:60,2] = rnorm(50,0,1)
+L_true[61:150,3] = rnorm(90,0,0.5)
+G = L_true %*% t(F_true)
+# generate Y
+E = matrix(rnorm(N*P,0,2),nrow=N)
+Y = L_true %*% t(F_true) + E
+
+
+data = flashr2::flash_set_data(Y)
+f_greedy = flashr2::flash_add_greedy(data,Kmax=10)</code></pre>
+<pre><code>fitting factor/loading 1</code></pre>
+<pre><code>fitting factor/loading 2</code></pre>
+<pre><code>fitting factor/loading 3</code></pre>
+<pre><code>fitting factor/loading 4</code></pre>
+<pre class="r"><code>g_b_flash = flashr2::flash_backfit(data,f_greedy)
+
+
+outcv = PMA.wrapper(Y,10,K = 3)</code></pre>
+<pre><code>12345678910111213141516171819
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+123456789101112131415161718
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617
+1234567891011121314151617181920
+12345678910111213141516171819
+123456789101112131415
+1234567891011121314151617181920
+1234567891011121314151617181920
+12345678910111213141516
+1234567891011121314151617181920
+1234567891011121314151617181920
+123456789101112131415
+1234567891011121314151617181920
+12345678910111213141516171819
+12345678910111213141516
+1234567891011121314151617181920
+12345678910111213141516171819
+123456789101112131415161718
+1234567891011121314151617181920
+123456789101112131415161718
+1234567891011121314151617
+1234567891011121314151617181920
+1234567891011121314151617
+123456789101112131415161718
+1234567891011121314151617181920
+123456789101112131415161718
+123456789101112131415
+1234567891011121314151617181920
+12345678910111213141516
+1234567891011121314151617
+1234567891011121314151617181920
+123456789101112131415
+12345678910111213141516
+1234567891011121314151617181920
+12345678910111213141516
+12345678910111213141516171819
+1234567891011121314151617181920
+123456789101112131415
+1234567891011121314151617181920
+1234567891011121314151617181920
+12345678910111213141516171819
+123456789101112131415161718
+1234567891011121314151617181920
+123456789101112131415
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+12345678910111213141516171819
+1234567891011121314151617181920
+1234567891011121314151617181920
+12345678910111213141516
+12345678910111213141516171819
+1234567891011121314151617181920
+12345678910111213141516
+1234567891011121314151617181920
+1234567891011121314151617181920
+123456789101112131415
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+12345678910111213141516171819
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1
+1234567891011121314151617181920
+1234567891011121314151617181920
+1234567891011121314
+123456789101112131415161718
+1234567891011121314151617181920</code></pre>
+<pre class="r"><code>library(ssvd)
+gssvd = ssvd(Y,r = 3)</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;method&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;method&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
+the first element will be used</code></pre>
+<pre class="r"><code>library(reshape2)
+melted_cormat_1 &lt;- melt(G, na.rm = TRUE)
+melted_cormat_2 &lt;- melt(g_b_flash$EL %*% t(g_b_flash$EF), na.rm = TRUE)
+melted_cormat_3 &lt;- melt(outcv$u %*% diag(outcv$d) %*% t(outcv$v), na.rm = TRUE)
+melted_cormat_4 &lt;- melt(Y, na.rm = TRUE)
+melted_cormat_5 &lt;- melt(gssvd$u %*% diag(gssvd$d) %*% t(gssvd$v), na.rm = TRUE)
+# Heatmap
+library(ggplot2)
+p1 = ggplot(data = melted_cormat_1, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = &quot;truth&quot;, y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect()) 
+
+p2 = ggplot(data = melted_cormat_2, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = &quot;FLASH&quot;,y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect())
+
+p3 = ggplot(data = melted_cormat_3, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = &quot;PMD&quot;,y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect())
+
+p4 = ggplot(data = melted_cormat_4, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-5,5), space = &quot;Lab&quot;) + labs(title = &quot;observed data&quot;,y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect())
+
+p5 = ggplot(data = melted_cormat_5, aes(Var2, Var1, fill = value))+
+ geom_tile(color = &quot;white&quot;)+
+ scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+   midpoint = 0, limit = c(-5,5), space = &quot;Lab&quot;) + labs(title = &quot;SSVD&quot;,y = &quot;sample&quot;, x = &quot;variable&quot;) +
+  theme_minimal() + theme(legend.position=&quot;none&quot;,plot.background = element_rect())
+
+
+library(cowplot)
+plot_grid(p1,p5,p3,p2, ncol = 2)</code></pre>
+<p>we notice the the flashr2 provide 4 factors in this case while flashr provides 3 factors. I think it is because we use FDR method in flashr method.</p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.12.6 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
+
+other attached packages:
+ [1] reshape2_1.4.2  ssvd_1.0        R.matlab_3.6.1  PMA_1.0.9      
+ [5] impute_1.48.0   plyr_1.8.4      cowplot_0.8.0   ggplot2_2.2.1  
+ [9] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.12      git2r_0.19.0      R.utils_2.5.0    
+ [4] R.methodsS3_1.7.1 iterators_1.0.8   tools_3.3.0      
+ [7] digest_0.6.12     evaluate_0.10.1   tibble_1.3.3     
+[10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.2      
+[13] Matrix_1.2-11     foreach_1.4.3     rstudioapi_0.6   
+[16] yaml_2.1.14       parallel_3.3.0    stringr_1.2.0    
+[19] knitr_1.17        REBayes_0.85      rprojroot_1.2    
+[22] irlba_2.2.1       flashr2_0.2-2     flashr_0.1.1     
+[25] ashr_2.1-25       magrittr_1.5      backports_1.1.0  
+[28] scales_0.4.1      codetools_0.2-15  htmltools_0.3.6  
+[31] assertthat_0.2.0  softImpute_1.4    colorspace_1.3-2 
+[34] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
+[37] lazyeval_0.2.0    munsell_0.4.3     doParallel_1.0.10
+[40] pscl_1.4.9        truncnorm_1.0-7   SQUAREM_2016.8-2 
+[43] R.oo_1.21.0      </code></pre>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
