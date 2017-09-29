@@ -329,10 +329,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-09-28</p>
+<p><strong>Last updated:</strong> 2017-09-29</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 89dcb85</p>
+<p><strong>Code version:</strong> dc45d5f</p>
 <!-- Add your analysis here -->
 <div id="rank-1-data-set" class="section level2">
 <h2>rank 1 data set</h2>
@@ -389,13 +389,12 @@ zoomed2 = ggplot(df1, aes(x = truth, y = PMD)) +
 g2 &lt;- ggplotGrob(zoomed2)
 base2 +annotation_custom(grob = g2, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)</code></pre>
 <p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>plot_grid(base1, base2, zoomed1,zoomed2, labels = &quot;AUTO&quot;, ncol = 2)
+<pre class="r"><code># plot_grid(base1, base2, zoomed1,zoomed2, labels = &quot;AUTO&quot;, ncol = 2)
 
 
 
-gsfamix_1 = readRDS(&quot;../data/simulation/rankone/highsparse/sfamix_res.rds&quot;)</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>gsvd = svd(Data$Y)
+gsfamix_1 = readRDS(&quot;../data/simulation/rankone/highsparse/sfamix_res.rds&quot;)
+gsvd = svd(Data$Y)
 gsfa = readRDS(&quot;../data/simulation/rankone/highsparse/sfa_res.rds&quot;)
 
 # to get the KSVD result
@@ -411,28 +410,8 @@ loading_Dic = res_KSVD$result[[2]]
 MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
 
 # add ssvd into comparison 
-gssvd = ssvd::ssvd(Data$Y,method = &quot;method&quot;)</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense
-
-Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense
-
-Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense
-
-Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense
-
-Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense
-
-Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense
-
-Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre class="r"><code>MSE_SSVD = sqrt(mean(( gssvd$d * (gssvd$u %*% t(gssvd$v)) - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
+gssvd = ssvd::ssvd(Data$Y,method = &quot;method&quot;)
+MSE_SSVD = sqrt(mean(( gssvd$d * (gssvd$u %*% t(gssvd$v)) - Data$L_true%*%t(Data$F_true))^2))/sqrt(mean((Data$L_true%*%t(Data$F_true))^2))
 
 
 library(ggplot2)
@@ -467,7 +446,6 @@ for(i in 2:7){
 plot_grid(pic_list[[1]], pic_list[[2]], 
           pic_list[[3]], pic_list[[4]], 
           pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-4.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="intermediate-sparse" class="section level3">
 <h3>intermediate sparse</h3>
@@ -504,40 +482,9 @@ MSE_KSVD = sqrt(mean(( Dic %*% loading_Dic - Data$L_true%*%t(Data$F_true))^2))/s
 
 
 # add ssvd into comparison 
-gssvd = ssvd::ssvd(Data$Y,method = &quot;method&quot;)</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre class="r"><code>library(ggplot2)
+gssvd = ssvd::ssvd(Data$Y,method = &quot;method&quot;)
+
+library(ggplot2)
 library(grid)
 # zoom bounding box
 xlim &lt;- c(-0.1,0.1); ylim &lt;- c(-0.1,0.1)
@@ -669,12 +616,8 @@ Y = L_true %*% t(F_true) + E
 
 
 data = flashr2::flash_set_data(Y)
-f_greedy = flashr2::flash_add_greedy(data,Kmax=10)</code></pre>
-<pre><code>fitting factor/loading 1</code></pre>
-<pre><code>fitting factor/loading 2</code></pre>
-<pre><code>fitting factor/loading 3</code></pre>
-<pre><code>fitting factor/loading 4</code></pre>
-<pre class="r"><code>g_b_flash = flashr2::flash_backfit(data,f_greedy)
+f_greedy = flashr2::flash_add_greedy(data,Kmax=10)
+g_b_flash = flashr2::flash_backfit(data,f_greedy)
 
 
 outcv = PMA.wrapper(Y,10,K = 3)</code></pre>
@@ -833,40 +776,6 @@ outcv = PMA.wrapper(Y,10,K = 3)</code></pre>
 1234567891011121314151617181920</code></pre>
 <pre class="r"><code>library(ssvd)
 gssvd = ssvd(Y,r = 3)</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;method&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;method&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
-<pre><code>Warning in if (method == &quot;theory&quot;) {: the condition has length &gt; 1 and only
-the first element will be used</code></pre>
 <pre class="r"><code>library(reshape2)
 melted_cormat_1 &lt;- melt(G, na.rm = TRUE)
 melted_cormat_2 &lt;- melt(g_b_flash$EL %*% t(g_b_flash$EF), na.rm = TRUE)
