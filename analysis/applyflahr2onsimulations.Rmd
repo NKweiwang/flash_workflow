@@ -126,7 +126,7 @@ PMA.wrapper = function(Y,ngrids = 10){
 
 ### sparse
 
-```{r}
+```{r,message=FALSE,warning=FALSE}
 library(cowplot)
 set.seed(99)
 L_se = c( 0.25, 0.5, 1, 2, 4)
@@ -173,7 +173,7 @@ zoomed2 = ggplot(df1, aes(x = truth, y = PMD)) +
 
 g2 <- ggplotGrob(zoomed2)
 base2 +annotation_custom(grob = g2, xmin = -0.6, xmax = -0.1, ymin = -0.05, ymax = 0.45)
-plot_grid(base1, base2, zoomed1,zoomed2, labels = "AUTO", ncol = 2)
+# plot_grid(base1, base2, zoomed1,zoomed2, labels = "AUTO", ncol = 2)
 
 
 
@@ -236,7 +236,7 @@ plot_grid(pic_list[[1]], pic_list[[2]],
 ### intermediate sparse
 
 
-```{r}
+```{r,message=FALSE,warning=FALSE}
 library(cowplot)
 set.seed(99)
 L_se = c( 0.25, 0.5, 1, 2, 4)
@@ -393,7 +393,7 @@ PMA.wrapper = function(Y,ngrids = 10,K){
 ```
 
 
-```{r}
+```{r,message=FALSE,warning=FALSE}
 set.seed(99)
 N = 150
 P = 240
