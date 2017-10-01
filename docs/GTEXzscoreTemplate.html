@@ -312,10 +312,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-09-29</p>
+<p><strong>Last updated:</strong> 2017-10-01</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 250a00c</p>
+<p><strong>Code version:</strong> cd9a217</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
@@ -366,11 +366,11 @@ saveRDS(f_greedy_bf,file = &quot;./output/bflashvarcol.rds&quot;)</code></pre>
 #SBATCH --output=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.out
 #SBATCH --error=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.err
 #SBATCH --array=1
-#SBATCH --time=32:00:00
+#SBATCH --time=30:00:00
 #SBATCH --partition=mstephens
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem-per-cpu=20G
+#SBATCH --mem-per-cpu=8G
 
 
 ######################
@@ -399,29 +399,26 @@ locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
-[1] grid      stats     graphics  grDevices utils     datasets  methods  
-[8] base     
+[1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] flashr2_0.2-2   softImpute_1.4  Matrix_1.2-11   flashr_0.1.1   
- [5] reshape2_1.4.2  ssvd_1.0        R.matlab_3.6.1  PMA_1.0.9      
- [9] impute_1.48.0   plyr_1.8.4      cowplot_0.8.0   ggplot2_2.2.1  
-[13] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
+[1] workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1   flashr2_0.2-3  
+[5] ashr_2.1-25    
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.12      git2r_0.19.0      R.utils_2.5.0    
- [4] R.methodsS3_1.7.1 iterators_1.0.8   tools_3.3.0      
- [7] digest_0.6.12     evaluate_0.10.1   tibble_1.3.3     
-[10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.2      
-[13] foreach_1.4.3     rstudioapi_0.6    yaml_2.1.14      
-[16] parallel_3.3.0    stringr_1.2.0     knitr_1.17       
-[19] REBayes_0.85      rprojroot_1.2     irlba_2.2.1      
-[22] ashr_2.1-25       magrittr_1.5      backports_1.1.0  
-[25] scales_0.4.1      codetools_0.2-15  htmltools_0.3.6  
-[28] assertthat_0.2.0  colorspace_1.3-2  labeling_0.3     
-[31] stringi_1.1.5     Rmosek_7.1.2      lazyeval_0.2.0   
-[34] munsell_0.4.3     doParallel_1.0.10 pscl_1.4.9       
-[37] truncnorm_1.0-7   SQUAREM_2016.8-2  R.oo_1.21.0      </code></pre>
+ [1] Rcpp_0.12.12      git2r_0.19.0      plyr_1.8.4       
+ [4] iterators_1.0.8   tools_3.3.0       digest_0.6.12    
+ [7] evaluate_0.10.1   tibble_1.3.3      gtable_0.2.0     
+[10] lattice_0.20-35   rlang_0.1.2       Matrix_1.2-11    
+[13] foreach_1.4.3     yaml_2.1.14       parallel_3.3.0   
+[16] stringr_1.2.0     knitr_1.17        REBayes_0.85     
+[19] rprojroot_1.2     grid_3.3.0        PMA_1.0.9        
+[22] magrittr_1.5      scales_0.4.1      backports_1.1.0  
+[25] codetools_0.2-15  htmltools_0.3.6   MASS_7.3-47      
+[28] assertthat_0.2.0  softImpute_1.4    colorspace_1.3-2 
+[31] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
+[34] lazyeval_0.2.0    pscl_1.4.9        doParallel_1.0.10
+[37] munsell_0.4.3     truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
 </div>
 
 <hr>
