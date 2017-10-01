@@ -93,11 +93,11 @@ here 60 is much larger than the sample size. our method doesn't restrict $K < \m
 #SBATCH --output=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.out
 #SBATCH --error=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.err
 #SBATCH --array=1
-#SBATCH --time=32:00:00
+#SBATCH --time=30:00:00
 #SBATCH --partition=mstephens
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=1
-#SBATCH --mem-per-cpu=20G
+#SBATCH --mem-per-cpu=8G
 
 
 ######################
