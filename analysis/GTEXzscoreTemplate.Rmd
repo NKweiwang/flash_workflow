@@ -117,6 +117,70 @@ you can substitute the folder path `/home/weidong/HG/flash/data/GTEX/testflashr2
 sbatch runflash.sbatch 
 ```
 
+## plot
+
+```{}
+b_flash = readRDS("../data/GTExdata/res_flashr2/bflashvarcol.rds")
+load("../data/GTExdata/gtexEQTL_zscore.rds")
+ssY = sum(zscore^2)
+K = dim(b_flash$EL)[2] -1
+pve = (sapply(seq(1,K),function(x){ sum(b_flash$EL[,x]^2 %*% t(b_flash$EF[,x]^2)) }))/ssY
+pve = pmax(round(pve,3),0.001)
+
+dat = read.table('../data/GTExColors.txt', sep = '\t', comment.char = '')
+colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
+
+L = b_flash$EL[,1:14]
+library(reshape2)
+data_L = melt(L)
+colnames(data_L) = c("tissue","loading","value")
+library(ggplot2)
+tissue_color = as.character(colordata[,2])
+data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
+data_L$loading = factor(data_L$loading,levels = 1:14 ,labels = paste("loading",1:14,"; pve:", pve[1:14]))
+
+
+ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
+  geom_bar(stat = "identity",width = 0.6) +
+  scale_fill_manual(values=tissue_color) +
+  scale_x_discrete(labels = NULL) +
+  theme_grey()+
+  theme(legend.position="right", legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
+  labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
+  facet_wrap(~loading, ncol = 2, scales = "free_y") +
+  guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
+  ggsave("flashr2GTEx1.pdf", width = 8, height = 11)
+
+# the 27th factor is zero
+L = b_flash$EL[,15:26]
+library(reshape2)
+data_L = melt(L)
+colnames(data_L) = c("tissue","loading","value")
+library(ggplot2)
+tissue_color = as.character(colordata[,2])
+data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
+data_L$loading = factor(data_L$loading,levels = 1:12 ,labels = paste("loading",15:26,"; pve:", pve[15:26]))
+
+
+ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
+  geom_bar(stat = "identity",width = 0.6) +
+  scale_fill_manual(values=tissue_color) +
+  scale_x_discrete(labels = NULL) +
+  theme_grey()+
+  theme(legend.position="right", legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
+  labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
+  facet_wrap(~loading, ncol = 2, scales = "free_y") +
+  guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
+  ggsave("flashr2GTEx2.pdf", width = 8, height = 10)
+```
+
+
+the plots are
+
+[plot1](flashr2GTEx1.pdf)
+
+[plot2](flashr2GTEx2.pdf)
+
 ## Session information
 
 <!-- Insert the session information into the document -->
