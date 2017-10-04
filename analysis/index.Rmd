@@ -49,4 +49,7 @@ Click here to check the [simulatoin result (rank one and rank three)](applyflahr
 
 Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html)
 
-Here is the template of OCV for `flashr2` on RCC [RCC OCV template](templateforOCV.Rmd)
+
+#### missing data imputation
+
+click here to check the template for [missing data imputation with OCV](templateforOCV.html)
