@@ -332,13 +332,12 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-04</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> ec9c042</p>
+<p><strong>Code version:</strong> f74c512</p>
 <!-- Add your analysis here -->
 <div id="rank-1-data-set" class="section level2">
 <h2>rank 1 data set</h2>
 <div id="simulated-data" class="section level3">
 <h3>simulated data</h3>
-<pre><code>Warning: package &#39;MASS&#39; was built under R version 3.3.2</code></pre>
 </div>
 <div id="sparse" class="section level3">
 <h3>sparse</h3>
@@ -447,13 +446,23 @@ for(i in 2:7){
 plot_grid(pic_list[[1]], pic_list[[2]], 
           pic_list[[3]], pic_list[[4]], 
           pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="the-plot-for-this-part" class="section level3">
 <h3>the plot for this part</h3>
 <p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
-<pre class="r"><code>for(i in 1:6){
-  pic_list[[i]]
-}</code></pre>
+<pre class="r"><code>pic_list[[1]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[2]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[3]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[4]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[5]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[6]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-6.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="intermediate-sparse" class="section level3">
 <h3>intermediate sparse</h3>
@@ -543,13 +552,23 @@ for(i in 2:7){
 plot_grid(pic_list[[1]], pic_list[[2]], 
           pic_list[[3]], pic_list[[4]], 
           pic_list[[6]], pic_list[[5]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="the-plot-for-this-part-1" class="section level3">
 <h3>the plot for this part</h3>
 <p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
-<pre class="r"><code>for(i in 1:6){
-  pic_list[[i]]
-}</code></pre>
+<pre class="r"><code>pic_list[[1]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[2]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[3]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[4]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[5]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-5.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pic_list[[6]]</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-6.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="rank-3-case" class="section level2">
@@ -832,6 +851,7 @@ p5 = ggplot(data = melted_cormat_5, aes(Var2, Var1, fill = value))+
 
 library(cowplot)
 plot_grid(p1,p5,p3,p2, ncol = 2)</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>we notice the the flashr2 provide 4 factors in this case while flashr provides 3 factors. I think it is because we use FDR method in flashr method.</p>
 <div id="the-plot-for-this-part-2" class="section level3">
 <h3>the plot for this part</h3>
