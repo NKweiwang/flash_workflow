@@ -233,6 +233,16 @@ plot_grid(pic_list[[1]], pic_list[[2]],
 ```
 
 
+### the plot for this part
+
+Can't apply `plot_grid` function, so in this report I plot the figures separately
+
+```{r}
+for(i in 1:6){
+  pic_list[[i]]
+}
+```
+
 ### intermediate sparse
 
 
@@ -324,6 +334,16 @@ plot_grid(pic_list[[1]], pic_list[[2]],
           pic_list[[6]], pic_list[[5]],  labels = "AUTO", ncol = 3)
 ```
 
+
+### the plot for this part
+
+Can't apply `plot_grid` function, so in this report I plot the figures separately
+
+```{r}
+for(i in 1:6){
+  pic_list[[i]]
+}
+```
 
 ## rank 3 case 
 
@@ -470,6 +490,18 @@ plot_grid(p1,p5,p3,p2, ncol = 2)
 
 
 we notice the the flashr2 provide 4 factors in this case while flashr provides 3 factors. I think it is because we use FDR method in flashr method.
+
+
+### the plot for this part
+
+Can't apply `plot_grid` function, so in this report I plot the figures separately
+
+```{r}
+p1
+p5
+p3
+p2
+```
 
 ## Session information
 
