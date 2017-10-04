@@ -332,7 +332,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-04</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> f74c512</p>
+<p><strong>Code version:</strong> c2fd89d</p>
 <!-- Add your analysis here -->
 <div id="rank-1-data-set" class="section level2">
 <h2>rank 1 data set</h2>
@@ -448,22 +448,6 @@ plot_grid(pic_list[[1]], pic_list[[2]],
           pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
 <p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
-<div id="the-plot-for-this-part" class="section level3">
-<h3>the plot for this part</h3>
-<p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
-<pre class="r"><code>pic_list[[1]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[2]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[3]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[4]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-4.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[5]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-5.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[6]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-6.png" width="672" style="display: block; margin: auto;" /></p>
-</div>
 <div id="intermediate-sparse" class="section level3">
 <h3>intermediate sparse</h3>
 <pre class="r"><code>library(cowplot)
@@ -552,23 +536,7 @@ for(i in 2:7){
 plot_grid(pic_list[[1]], pic_list[[2]], 
           pic_list[[3]], pic_list[[4]], 
           pic_list[[6]], pic_list[[5]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
-</div>
-<div id="the-plot-for-this-part-1" class="section level3">
-<h3>the plot for this part</h3>
-<p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
-<pre class="r"><code>pic_list[[1]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[2]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[3]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[4]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-4.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[5]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-5.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>pic_list[[6]]</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-5-6.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="rank-3-case" class="section level2">
@@ -653,162 +621,9 @@ data = flashr2::flash_set_data(Y)
 f_greedy = flashr2::flash_add_greedy(data,Kmax=10)
 g_b_flash = flashr2::flash_backfit(data,f_greedy)
 
-
-outcv = PMA.wrapper(Y,10,K = 3)</code></pre>
-<pre><code>12345678910111213141516171819
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-123456789101112131415161718
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617
-1234567891011121314151617181920
-12345678910111213141516171819
-123456789101112131415
-1234567891011121314151617181920
-1234567891011121314151617181920
-12345678910111213141516
-1234567891011121314151617181920
-1234567891011121314151617181920
-123456789101112131415
-1234567891011121314151617181920
-12345678910111213141516171819
-12345678910111213141516
-1234567891011121314151617181920
-12345678910111213141516171819
-123456789101112131415161718
-1234567891011121314151617181920
-123456789101112131415161718
-1234567891011121314151617
-1234567891011121314151617181920
-1234567891011121314151617
-123456789101112131415161718
-1234567891011121314151617181920
-123456789101112131415161718
-123456789101112131415
-1234567891011121314151617181920
-12345678910111213141516
-1234567891011121314151617
-1234567891011121314151617181920
-123456789101112131415
-12345678910111213141516
-1234567891011121314151617181920
-12345678910111213141516
-12345678910111213141516171819
-1234567891011121314151617181920
-123456789101112131415
-1234567891011121314151617181920
-1234567891011121314151617181920
-12345678910111213141516171819
-123456789101112131415161718
-1234567891011121314151617181920
-123456789101112131415
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-12345678910111213141516171819
-1234567891011121314151617181920
-1234567891011121314151617181920
-12345678910111213141516
-12345678910111213141516171819
-1234567891011121314151617181920
-12345678910111213141516
-1234567891011121314151617181920
-1234567891011121314151617181920
-123456789101112131415
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-12345678910111213141516171819
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1
-1234567891011121314151617181920
-1234567891011121314151617181920
-1234567891011121314
-123456789101112131415161718
-1234567891011121314151617181920</code></pre>
-<pre class="r"><code>library(ssvd)
+PMDlog = capture.output({outcv = invisible( PMA.wrapper(Y,10,K = 3) ) })
+#outcv = PMA.wrapper(Y,10,K = 3)
+library(ssvd)
 gssvd = ssvd(Y,r = 3)</code></pre>
 <pre class="r"><code>library(reshape2)
 melted_cormat_1 &lt;- melt(G, na.rm = TRUE)
@@ -851,19 +666,11 @@ p5 = ggplot(data = melted_cormat_5, aes(Var2, Var1, fill = value))+
 
 library(cowplot)
 plot_grid(p1,p5,p3,p2, ncol = 2)</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>we notice the the flashr2 provide 4 factors in this case while flashr provides 3 factors. I think it is because we use FDR method in flashr method.</p>
-<div id="the-plot-for-this-part-2" class="section level3">
+<div id="the-plot-for-this-part" class="section level3">
 <h3>the plot for this part</h3>
 <p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
-<pre class="r"><code>p1</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>p5</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>p3</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-3.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>p2</code></pre>
-<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-4.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
