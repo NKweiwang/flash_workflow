@@ -312,10 +312,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-10-01</p>
+<p><strong>Last updated:</strong> 2017-10-04</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> cd9a217</p>
+<p><strong>Code version:</strong> 6a64254</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
@@ -387,6 +387,64 @@ Rscript --verbose flashwrapper.R</code></pre>
 <h2>run</h2>
 <pre><code>sbatch runflash.sbatch </code></pre>
 </div>
+<div id="plot" class="section level2">
+<h2>plot</h2>
+<pre><code>b_flash = readRDS(&quot;../data/GTExdata/res_flashr2/bflashvarcol.rds&quot;)
+load(&quot;../data/GTExdata/gtexEQTL_zscore.rds&quot;)
+ssY = sum(zscore^2)
+K = dim(b_flash$EL)[2] -1
+pve = (sapply(seq(1,K),function(x){ sum(b_flash$EL[,x]^2 %*% t(b_flash$EF[,x]^2)) }))/ssY
+pve = pmax(round(pve,3),0.001)
+
+dat = read.table(&#39;../data/GTExColors.txt&#39;, sep = &#39;\t&#39;, comment.char = &#39;&#39;)
+colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
+
+L = b_flash$EL[,1:14]
+library(reshape2)
+data_L = melt(L)
+colnames(data_L) = c(&quot;tissue&quot;,&quot;loading&quot;,&quot;value&quot;)
+library(ggplot2)
+tissue_color = as.character(colordata[,2])
+data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
+data_L$loading = factor(data_L$loading,levels = 1:14 ,labels = paste(&quot;loading&quot;,1:14,&quot;; pve:&quot;, pve[1:14]))
+
+
+ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
+  geom_bar(stat = &quot;identity&quot;,width = 0.6) +
+  scale_fill_manual(values=tissue_color) +
+  scale_x_discrete(labels = NULL) +
+  theme_grey()+
+  theme(legend.position=&quot;right&quot;, legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
+  labs(title = &quot;GTEx data&quot;, y = &quot;loading values&quot; ,x = &quot;tissues&quot;, fill=&quot;tissue&quot;) +
+  facet_wrap(~loading, ncol = 2, scales = &quot;free_y&quot;) +
+  guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
+  ggsave(&quot;flashr2GTEx1.pdf&quot;, width = 8, height = 11)
+
+# the 27th factor is zero
+L = b_flash$EL[,15:26]
+library(reshape2)
+data_L = melt(L)
+colnames(data_L) = c(&quot;tissue&quot;,&quot;loading&quot;,&quot;value&quot;)
+library(ggplot2)
+tissue_color = as.character(colordata[,2])
+data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
+data_L$loading = factor(data_L$loading,levels = 1:12 ,labels = paste(&quot;loading&quot;,15:26,&quot;; pve:&quot;, pve[15:26]))
+
+
+ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
+  geom_bar(stat = &quot;identity&quot;,width = 0.6) +
+  scale_fill_manual(values=tissue_color) +
+  scale_x_discrete(labels = NULL) +
+  theme_grey()+
+  theme(legend.position=&quot;right&quot;, legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
+  labs(title = &quot;GTEx data&quot;, y = &quot;loading values&quot; ,x = &quot;tissues&quot;, fill=&quot;tissue&quot;) +
+  facet_wrap(~loading, ncol = 2, scales = &quot;free_y&quot;) +
+  guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
+  ggsave(&quot;flashr2GTEx2.pdf&quot;, width = 8, height = 10)</code></pre>
+<p>the plots are</p>
+<p><a href="flashr2GTEx1.pdf">plot1</a></p>
+<p><a href="flashr2GTEx2.pdf">plot2</a></p>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
@@ -399,26 +457,29 @@ locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
 
 other attached packages:
-[1] workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1   flashr2_0.2-3  
-[5] ashr_2.1-25    
+ [1] reshape2_1.4.2  ssvd_1.0        cowplot_0.8.0   MASS_7.3-47    
+ [5] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      softImpute_1.4 
+ [9] Matrix_1.2-11   R.matlab_3.6.1  workflowr_0.4.0 rmarkdown_1.6  
+[13] ggplot2_2.2.1   flashr2_0.2-3   ashr_2.1-25    
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.12      git2r_0.19.0      plyr_1.8.4       
- [4] iterators_1.0.8   tools_3.3.0       digest_0.6.12    
- [7] evaluate_0.10.1   tibble_1.3.3      gtable_0.2.0     
-[10] lattice_0.20-35   rlang_0.1.2       Matrix_1.2-11    
-[13] foreach_1.4.3     yaml_2.1.14       parallel_3.3.0   
-[16] stringr_1.2.0     knitr_1.17        REBayes_0.85     
-[19] rprojroot_1.2     grid_3.3.0        PMA_1.0.9        
-[22] magrittr_1.5      scales_0.4.1      backports_1.1.0  
-[25] codetools_0.2-15  htmltools_0.3.6   MASS_7.3-47      
-[28] assertthat_0.2.0  softImpute_1.4    colorspace_1.3-2 
-[31] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
-[34] lazyeval_0.2.0    pscl_1.4.9        doParallel_1.0.10
-[37] munsell_0.4.3     truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
+ [1] Rcpp_0.12.12      git2r_0.19.0      R.utils_2.5.0    
+ [4] R.methodsS3_1.7.1 iterators_1.0.8   tools_3.3.0      
+ [7] digest_0.6.12     evaluate_0.10.1   tibble_1.3.3     
+[10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.2      
+[13] foreach_1.4.3     rstudioapi_0.6    yaml_2.1.14      
+[16] parallel_3.3.0    stringr_1.2.0     knitr_1.17       
+[19] REBayes_0.85      rprojroot_1.2     magrittr_1.5     
+[22] scales_0.4.1      backports_1.1.0   codetools_0.2-15 
+[25] htmltools_0.3.6   assertthat_0.2.0  colorspace_1.3-2 
+[28] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
+[31] lazyeval_0.2.0    pscl_1.4.9        doParallel_1.0.10
+[34] munsell_0.4.3     truncnorm_1.0-7   SQUAREM_2016.8-2 
+[37] R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>
