@@ -329,10 +329,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-10-03</p>
+<p><strong>Last updated:</strong> 2017-10-04</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 3c59532</p>
+<p><strong>Code version:</strong> a02af3c</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -570,15 +570,32 @@ saveRDS(results,&quot;./boxplot.rds&quot;)</code></pre>
   methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;), each = N)
   df = data.frame(RMSE = rmse, Method = methods )
   p&lt;-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
-  #geom_boxplot()
-  geom_violin()+
+  geom_boxplot()+
+  # geom_violin()+
   ggtitle(title)+theme_gray() +
     theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
   p
 }
 
-#gtex_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/boxplot_gtex.rds&quot;)
-#pg = plot_res(gtex_res,&quot;GTEx data&quot;)</code></pre>
+GZ_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds&quot;)
+pg = plot_res(GZ_res,&quot;GTEx data&quot;)
+BC_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds&quot;)
+pb = plot_res(BC_res,&quot;Breast Cancer data&quot;)
+PT_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/president_box.rds&quot;)
+pp = plot_res(PT_res,&quot;Text data&quot;)
+DT_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds&quot;)
+pd = plot_res(DT_res,&quot;Tumor data&quot;)</code></pre>
+</div>
+<div id="plots" class="section level2">
+<h2>plots</h2>
+<pre class="r"><code>pg</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pb</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pp</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-3-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>pd</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-3-4.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -592,27 +609,29 @@ locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
 
 other attached packages:
- [1] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      softImpute_1.4 
- [5] Matrix_1.2-11   R.matlab_3.6.1  workflowr_0.4.0 rmarkdown_1.6  
- [9] ggplot2_2.2.1   flashr2_0.2-3   ashr_2.1-25    
+ [1] reshape2_1.4.2  ssvd_1.0        cowplot_0.8.0   MASS_7.3-47    
+ [5] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      softImpute_1.4 
+ [9] Matrix_1.2-11   R.matlab_3.6.1  workflowr_0.4.0 rmarkdown_1.6  
+[13] ggplot2_2.2.1   flashr2_0.2-3   ashr_2.1-25    
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.12      git2r_0.19.0      R.utils_2.5.0    
  [4] R.methodsS3_1.7.1 iterators_1.0.8   tools_3.3.0      
  [7] digest_0.6.12     evaluate_0.10.1   tibble_1.3.3     
 [10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.2      
-[13] foreach_1.4.3     yaml_2.1.14       parallel_3.3.0   
-[16] stringr_1.2.0     knitr_1.17        REBayes_0.85     
-[19] rprojroot_1.2     grid_3.3.0        magrittr_1.5     
+[13] foreach_1.4.3     rstudioapi_0.6    yaml_2.1.14      
+[16] parallel_3.3.0    stringr_1.2.0     knitr_1.17       
+[19] REBayes_0.85      rprojroot_1.2     magrittr_1.5     
 [22] scales_0.4.1      backports_1.1.0   codetools_0.2-15 
-[25] htmltools_0.3.6   MASS_7.3-47       assertthat_0.2.0 
-[28] colorspace_1.3-2  labeling_0.3      stringi_1.1.5    
-[31] Rmosek_7.1.2      lazyeval_0.2.0    pscl_1.4.9       
-[34] doParallel_1.0.10 munsell_0.4.3     truncnorm_1.0-7  
-[37] SQUAREM_2016.8-2  R.oo_1.21.0      </code></pre>
+[25] htmltools_0.3.6   assertthat_0.2.0  colorspace_1.3-2 
+[28] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
+[31] lazyeval_0.2.0    pscl_1.4.9        doParallel_1.0.10
+[34] munsell_0.4.3     truncnorm_1.0-7   SQUAREM_2016.8-2 
+[37] R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>
