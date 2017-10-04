@@ -233,18 +233,6 @@ plot_grid(pic_list[[1]], pic_list[[2]],
 ```
 
 
-### the plot for this part
-
-Can't apply `plot_grid` function, so in this report I plot the figures separately
-
-```{r}
-pic_list[[1]]
-pic_list[[2]]
-pic_list[[3]]
-pic_list[[4]]
-pic_list[[5]]
-pic_list[[6]]
-```
 
 ### intermediate sparse
 
@@ -338,18 +326,6 @@ plot_grid(pic_list[[1]], pic_list[[2]],
 ```
 
 
-### the plot for this part
-
-Can't apply `plot_grid` function, so in this report I plot the figures separately
-
-```{r}
-pic_list[[1]]
-pic_list[[2]]
-pic_list[[3]]
-pic_list[[4]]
-pic_list[[5]]
-pic_list[[6]]
-```
 
 ## rank 3 case 
 
@@ -442,8 +418,8 @@ data = flashr2::flash_set_data(Y)
 f_greedy = flashr2::flash_add_greedy(data,Kmax=10)
 g_b_flash = flashr2::flash_backfit(data,f_greedy)
 
-
-outcv = PMA.wrapper(Y,10,K = 3)
+PMDlog = capture.output({outcv = invisible( PMA.wrapper(Y,10,K = 3) ) })
+#outcv = PMA.wrapper(Y,10,K = 3)
 library(ssvd)
 gssvd = ssvd(Y,r = 3)
 ```
@@ -502,12 +478,6 @@ we notice the the flashr2 provide 4 factors in this case while flashr provides 3
 
 Can't apply `plot_grid` function, so in this report I plot the figures separately
 
-```{r}
-p1
-p5
-p3
-p2
-```
 
 ## Session information
 
