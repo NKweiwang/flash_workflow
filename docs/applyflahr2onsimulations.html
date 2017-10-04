@@ -329,15 +329,16 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-09-29</p>
+<p><strong>Last updated:</strong> 2017-10-04</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> dc45d5f</p>
+<p><strong>Code version:</strong> ec9c042</p>
 <!-- Add your analysis here -->
 <div id="rank-1-data-set" class="section level2">
 <h2>rank 1 data set</h2>
 <div id="simulated-data" class="section level3">
 <h3>simulated data</h3>
+<pre><code>Warning: package &#39;MASS&#39; was built under R version 3.3.2</code></pre>
 </div>
 <div id="sparse" class="section level3">
 <h3>sparse</h3>
@@ -447,6 +448,13 @@ plot_grid(pic_list[[1]], pic_list[[2]],
           pic_list[[3]], pic_list[[4]], 
           pic_list[[5]], pic_list[[6]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
 </div>
+<div id="the-plot-for-this-part" class="section level3">
+<h3>the plot for this part</h3>
+<p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
+<pre class="r"><code>for(i in 1:6){
+  pic_list[[i]]
+}</code></pre>
+</div>
 <div id="intermediate-sparse" class="section level3">
 <h3>intermediate sparse</h3>
 <pre class="r"><code>library(cowplot)
@@ -535,6 +543,13 @@ for(i in 2:7){
 plot_grid(pic_list[[1]], pic_list[[2]], 
           pic_list[[3]], pic_list[[4]], 
           pic_list[[6]], pic_list[[5]],  labels = &quot;AUTO&quot;, ncol = 3)</code></pre>
+</div>
+<div id="the-plot-for-this-part-1" class="section level3">
+<h3>the plot for this part</h3>
+<p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
+<pre class="r"><code>for(i in 1:6){
+  pic_list[[i]]
+}</code></pre>
 </div>
 </div>
 <div id="rank-3-case" class="section level2">
@@ -818,6 +833,18 @@ p5 = ggplot(data = melted_cormat_5, aes(Var2, Var1, fill = value))+
 library(cowplot)
 plot_grid(p1,p5,p3,p2, ncol = 2)</code></pre>
 <p>we notice the the flashr2 provide 4 factors in this case while flashr provides 3 factors. I think it is because we use FDR method in flashr method.</p>
+<div id="the-plot-for-this-part-2" class="section level3">
+<h3>the plot for this part</h3>
+<p>Can’t apply <code>plot_grid</code> function, so in this report I plot the figures separately</p>
+<pre class="r"><code>p1</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>p5</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>p3</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-3.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>p2</code></pre>
+<p><img src="figure/applyflahr2onsimulations.Rmd/unnamed-chunk-9-4.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -835,26 +862,25 @@ attached base packages:
 [8] base     
 
 other attached packages:
- [1] reshape2_1.4.2  ssvd_1.0        R.matlab_3.6.1  PMA_1.0.9      
- [5] impute_1.48.0   plyr_1.8.4      cowplot_0.8.0   ggplot2_2.2.1  
- [9] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
+ [1] reshape2_1.4.2  ssvd_1.0        cowplot_0.8.0   MASS_7.3-47    
+ [5] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      softImpute_1.4 
+ [9] Matrix_1.2-11   R.matlab_3.6.1  workflowr_0.4.0 rmarkdown_1.6  
+[13] ggplot2_2.2.1   flashr2_0.2-3   ashr_2.1-25    
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.12      git2r_0.19.0      R.utils_2.5.0    
  [4] R.methodsS3_1.7.1 iterators_1.0.8   tools_3.3.0      
  [7] digest_0.6.12     evaluate_0.10.1   tibble_1.3.3     
 [10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.2      
-[13] Matrix_1.2-11     foreach_1.4.3     rstudioapi_0.6   
-[16] yaml_2.1.14       parallel_3.3.0    stringr_1.2.0    
-[19] knitr_1.17        REBayes_0.85      rprojroot_1.2    
-[22] irlba_2.2.1       flashr2_0.2-2     flashr_0.1.1     
-[25] ashr_2.1-25       magrittr_1.5      backports_1.1.0  
-[28] scales_0.4.1      codetools_0.2-15  htmltools_0.3.6  
-[31] assertthat_0.2.0  softImpute_1.4    colorspace_1.3-2 
-[34] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
-[37] lazyeval_0.2.0    munsell_0.4.3     doParallel_1.0.10
-[40] pscl_1.4.9        truncnorm_1.0-7   SQUAREM_2016.8-2 
-[43] R.oo_1.21.0      </code></pre>
+[13] foreach_1.4.3     rstudioapi_0.6    yaml_2.1.14      
+[16] parallel_3.3.0    stringr_1.2.0     knitr_1.17       
+[19] REBayes_0.85      rprojroot_1.2     magrittr_1.5     
+[22] scales_0.4.1      backports_1.1.0   codetools_0.2-15 
+[25] htmltools_0.3.6   assertthat_0.2.0  colorspace_1.3-2 
+[28] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
+[31] lazyeval_0.2.0    pscl_1.4.9        doParallel_1.0.10
+[34] munsell_0.4.3     truncnorm_1.0-7   SQUAREM_2016.8-2 
+[37] R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>
