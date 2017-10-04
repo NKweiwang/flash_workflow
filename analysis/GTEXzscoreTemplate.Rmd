@@ -177,9 +177,9 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
 
 the plots are
 
-[plot1](flashr2GTEx1.pdf)
+[plot1](https://github.com/NKweiwang/flash_workflow/blob/master/analysis/flashr2GTEx1.pdf)
 
-[plot2](flashr2GTEx2.pdf)
+[plot2](https://github.com/NKweiwang/flash_workflow/blob/master/analysis/flashr2GTEx2.pdf)
 
 ## Session information
 
