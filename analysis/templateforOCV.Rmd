@@ -1,0 +1,310 @@
+---
+title: "apply flashr2 with OCV"
+author: "wei wang"
+date: 09-30
+output: 
+  html_document:
+    code_folding: hide
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## preparation
+
+1. creat a folder
+
+```
+mkdir Breastcancer
+```
+
+2. put your data into this folder
+
+here we use the file 'example.mat'. the reason we use `.mat` file is because there is a matlab package in our comparision.
+
+3. creat the wrapper function in R and matlab
+
+### wrapper function for OCV
+
+```{r}
+OCV_index=function(Y,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = k_fold)
+  rowindex = matrix(sample(N,N),ncol = k_fold)
+
+  foldindex = array(0,dim = c(k_fold,k_fold,2))
+  for(i in 1:k_fold){
+    for(j in 1:k_fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% k_fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = k_fold
+
+  return(list(foldindex = foldindex, rowindex = rowindex, colindex = colindex))
+}
+# OCVindex = OCV_index(Y,k_fold = 5)
+
+OCV_data = function(Y,OCVindex,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = OCVindex$colindex
+  rowindex = OCVindex$rowindex
+  foldindex = OCVindex$foldindex
+  missing= array(0,dim = c(k_fold,N,P))
+  for(i in 1:k_fold){
+    missing[i, , ] = Y
+    for(j in 1:k_fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  return(missing)
+}
+# OCVdata = OCV_data(Y,OCVindex,k_fold = 5)
+
+
+OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50){
+  colindex = OCVindex$colindex
+  rowindex = OCVindex$rowindex
+  foldindex = OCVindex$foldindex
+  missing = OCVdata
+  SSE = rep(0,k_fold)
+  for(i in 1:k_fold){
+    miss_hat = call_method(missing[i,,], method = method, Kmax = Kmax)
+    for(j in 1:k_fold){
+      SSE[i] = SSE[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                               miss_hat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+    }
+  }
+  RMSE = sqrt(sum(SSE)/(dim(Y)[1] * dim(Y)[2]))
+  return(RMSE)
+}
+
+call_method = function(Y_data,method,Kmax = 50){
+  if(method == "flash"){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ash_param=list(method = "fdr"),var_type = "constant")
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == "PMD"){
+    out = PMA::PMD(Y_data, K = Kmax)
+    Y_hat =  out$u %*% diag(out$d) %*% t(out$v)
+  }else if(method == "softImpute"){
+    gsoft = softImpute(Y_data, rank.max = Kmax)
+    Y_hat =  gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v)
+  }else{
+    stop("the method is not implemented yet, please check it out")
+  }
+  return(Y_hat)
+}
+
+NSF_OCV = function(OCVindex){
+  if(file.exists("NBSFAout")){
+    unlink("NBSFAout", recursive= T)
+  }
+  system("mkdir NBSFAout")
+  # write the missing index
+
+  writeMat("./NBSFAout/OCVindex.mat", OCVindex = OCVindex)
+
+  system("matlab -nosplash -nodesktop -r \"addpath(\'~/HG/flash/data/OCVmissflashr2/Breastcancer\'); run(\'missvalue.m\');exit;\" ")
+  g_nsfa = readMat("./NBSFAout/NSFAresult.mat")
+  nsfa_rmse = as.vector(g_nsfa$RMSE)
+  return(nsfa_rmse)
+}
+
+
+```
+
+Here you need change the `\"addpath(\'~/HG/flash/data/OCVmissflashr2/Breastcancer\');` to your folder which contains `missvalue.m` file. this file name is `wrapper.R`
+
+### matlab code 
+
+```{}
+addpath('~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/');
+addpath('~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/utils/');
+
+% you need to change the path and the data file (not centered)
+load ~/HG/flash/data/OCVmissflashr2/Breastcancer/example.mat;
+Ycentered=Y-repmat(mean(Y,2),1,size(Y,2));
+settings=defaultsettings();
+[settings.D,settings.N]=size(Ycentered);
+settings.iterations=100;
+% now the missing is decide by the this is the missing index.(or you can upload the missing matrix)
+
+load(fullfile(pwd,'NBSFAout/OCVindex.mat'))
+
+missindex = ones(settings.D,settings.N);
+k_fold = 5;
+foldindex = zeros(k_fold,k_fold,2);
+for k = 1:2
+    for j = 1:k_fold
+        for i = 1:k_fold
+            foldindex(i,j,k) = OCVindex.foldindex(i + k_fold*(j - 1) + k_fold * k_fold * (k - 1));
+        end
+    end
+end
+
+SSE = zeros(1,k_fold);
+for i = 1:k_fold
+    mvmask = missindex;
+    for j = 1:k_fold
+        mvmask(OCVindex.rowindex(:,foldindex(j,i,1)),OCVindex.colindex(:,foldindex(j,i,2))) = 0;
+    end
+    initialsample=init_nsfa(settings);
+    [finalsample,resultstable]=nsfa(Ycentered,mvmask,initialsample,settings);
+    Y_hat = (finalsample.G *  finalsample.X);
+    for j = 1:k_fold
+        SSE(i) = SSE(i) + ...
+            sum(sum((Ycentered(OCVindex.rowindex(:,foldindex(j,i,1)),OCVindex.colindex(:,foldindex(j,i,2)))- ...
+            Y_hat(OCVindex.rowindex(:,foldindex(j,i,1)),OCVindex.colindex(:,foldindex(j,i,2)))).^2));
+    end
+
+end
+
+RMSE = sqrt(sum(SSE)/(settings.D*settings.N));
+RMSE;
+
+save_path = fullfile(pwd,'NBSFAout/NSFAresult');
+save(save_path,'RMSE'); 
+```
+
+you need change the path as well. this file name is 'missvalue.m'
+
+### creat the run.R file to run the code
+
+In this case, we have problem in running `flashr2` on RCC. so we just try other methods first.
+
+```{}
+library(R.matlab)
+## run the code
+Y_centered = readMat("~/HG/flash/data/OCVmissflashr2/Breastcancer/example.mat")
+Y = Y_centered$Y
+# in the matlab package of NSF, the use the centered data by rows
+N = dim(Y)[1]
+P = dim(Y)[2]
+Y = Y - rowMeans(Y) %*% t(rep(1,P))
+OCVindex = OCV_index(Y,k_fold = 5)
+OCVdata = OCV_data(Y,OCVindex,k_fold = 5)
+soft_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "softImpute",Kmax = 50)
+# flashG_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50)
+pmd_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "PMD",Kmax = 50)
+nsfa_rmse = NSF_OCV(OCVindex)
+flashG_rmse = mean(c( nsfa_rmse,pmd_rmse,soft_rmse))
+
+result = c(flashG_rmse, nsfa_rmse,pmd_rmse,soft_rmse)
+saveRDS(result, "./NBSFAout/output.rds")
+
+
+```
+
+this file name is `runOCV.R`
+
+### creat folder to track the result
+
+```
+mkdir outlog
+```
+
+### creat .sbatch file
+
+```
+#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1-100
+#SBATCH --time=06:00:00
+#SBATCH --partition=broadwl
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=2000
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job's task ID
+cd /home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer
+mkdir test${SLURM_ARRAY_TASK_ID}
+cd test${SLURM_ARRAY_TASK_ID}
+Rscript --verbose /home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer/runOCV.R
+```
+
+this file is name as `OCV.sbatch`
+
+## run OCV
+
+now in your folder, you should have:
+
+```
+[weidong@midway2-login1 Breastcancer]$ ls
+OCV.sbatch  example.mat  missvalue.m  outlog  runOCV.R  wrapper.R
+```
+
+```
+sbatch OCV.sbatch
+```
+
+## to get the result
+
+```{}
+T = 100
+results = matrix(NA,ncol = 4, nrow = T)
+for(i in 1:T){
+  test_folder = paste("test", i, sep = "")
+  out_folder = "NBSFAout"
+  out_file = "output.rds"
+  file_name = file.path(test_folder,out_folder,out_file)
+  results[i,] = try(readRDS(file_name))
+}
+
+saveRDS(results,"./boxplot.rds")
+```
+
+
+## plot the result 
+
+```{r}
+plot_res = function(output,title = "data",legend_position = "none"){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  methods = rep(c("flash","NBSFA","PMD","softImpute"), each = N)
+  df = data.frame(RMSE = rmse, Method = methods )
+  p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
+  #geom_boxplot()
+  geom_violin()+
+  ggtitle(title)+theme_gray() +
+    theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
+  p
+}
+
+#gtex_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/boxplot_gtex.rds")
+#pg = plot_res(gtex_res,"GTEx data")
+```
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
