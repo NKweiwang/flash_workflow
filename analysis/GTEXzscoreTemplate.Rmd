@@ -177,9 +177,9 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
 
 the plots are
 
-<img src="flashr2GTEx1.pdf" alt="what"  width="4200" height="4200">
+<img src="flashr2GTEx1.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200">
 
-<img src="flashr2GTEx2.pdf" alt="what"  width="4200" height="4200">
+<img src="flashr2GTEx2.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200">
 
 ## Session information
 
