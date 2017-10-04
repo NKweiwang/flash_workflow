@@ -291,17 +291,32 @@ plot_res = function(output,title = "data",legend_position = "none"){
   methods = rep(c("flash","NBSFA","PMD","softImpute"), each = N)
   df = data.frame(RMSE = rmse, Method = methods )
   p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
-  #geom_boxplot()
-  geom_violin()+
+  geom_boxplot()+
+  # geom_violin()+
   ggtitle(title)+theme_gray() +
     theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
   p
 }
 
-#gtex_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/boxplot_gtex.rds")
-#pg = plot_res(gtex_res,"GTEx data")
+GZ_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds")
+pg = plot_res(GZ_res,"GTEx data")
+BC_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds")
+pb = plot_res(BC_res,"Breast Cancer data")
+PT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/president_box.rds")
+pp = plot_res(PT_res,"Text data")
+DT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds")
+pd = plot_res(DT_res,"Tumor data")
 ```
 
+
+## plots 
+
+```{r}
+pg
+pb
+pp
+pd
+```
 
 ## Session information
 
