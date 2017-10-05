@@ -312,10 +312,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-10-04</p>
+<p><strong>Last updated:</strong> 2017-10-05</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 6078768</p>
+<p><strong>Code version:</strong> 904c533</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
@@ -444,6 +444,65 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
 <p>the plots are</p>
 <p><img src="figure/flashr2GTEx1.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200"></p>
 <p><img src="figure/flashr2GTEx2.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200"></p>
+</div>
+<div id="an-example-to-run-sfa-on-rcc-or-pps" class="section level2">
+<h2>an example to run SFA on RCC or PPS</h2>
+<ol style="list-style-type: decimal">
+<li>go to the folder where the data is.</li>
+</ol>
+<div id="sfa-wrapper" class="section level3">
+<h3>sfa wrapper</h3>
+<p>this example is on PPS cluster</p>
+<pre class="r"><code>SFA.wrapper = function(X, K){
+  N = dim(X)[1]
+  P = dim(X)[2]
+
+  if(file.exists(&quot;SFAout&quot;)){
+    unlink(&quot;SFAout&quot;, recursive= T)
+  }
+  system(&quot;mkdir SFAout&quot;)
+
+  write.table(X,file=&quot;dscsfa.txt&quot;,row.names=F,col.names=F)
+  # sfa command line on cluster
+  # ~/flash/simulation/methods/sfa/src/sfa -gen ./dscsfamix.txt -g 600 -k 1 -n 200 -iter 100 -rand 999 -o ./SFAout/sfa
+
+  # sqrt(mean(( loadings %*% factor - test$L_true%*%t(test$F_true))^2))/sqrt(mean((test$L_true%*%t(test$F_true))^2))
+  system(paste(&quot;~/flash/simulation/methods/sfa/src/sfa&quot;, &quot;-gen&quot;, &quot;./dscsfa.txt&quot;, &quot;-g&quot;, N, &quot;-k&quot;, K,
+               &quot;-n&quot;, P, &quot;-iter&quot;, 100, &quot;-rand&quot;, 999, &quot;-o&quot;, &quot;./SFAout/sfa&quot;, sep=&quot; &quot;))
+
+  if(file.info(&quot;./SFAout/sfa_F.out&quot;)$size == 1){
+    return(list(L = 0, F = 0))
+  } else{
+    Fhat=read.table(&quot;./SFAout/sfa_F.out&quot;)
+    lambda=read.table(&quot;./SFAout/sfa_lambda.out&quot;)
+    Fhat=as.matrix(Fhat)
+    lambda=as.matrix(lambda)
+    return(list(L = lambda, F = Fhat))
+  }
+
+}</code></pre>
+<p>this is <code>sfawrapper.R</code></p>
+</div>
+<div id="creat-run_sfa.r-file" class="section level3">
+<h3>creat run_sfa.R file</h3>
+<pre><code>load(&quot;~/flash/dataanalysis/GTeX/EQTLzscore/gtexEQTL_zscore.rds&quot;)
+setwd(&quot;~/flash/dataanalysis/GTeX/EQTLzscore/&quot;)
+source(&quot;./sfawrapper.R&quot;)
+source(&quot;./SFAmixwrapper.R&quot;)
+Y = t(zscore)
+N = dim(Y)[1]
+P = dim(Y)[2]
+
+gsfamix = SFAmix.wrapper(Y,30)
+gsfa = SFA.wrapper(Y, 30)
+saveRDS(gsfa, file = &quot;~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds&quot;)
+saveRDS(gsfamix, file = &quot;~/flash/dataanalysis/GTeX/EQTLzscore/sfamixGTExzscore.rds&quot;)
+
+</code></pre>
+<p>and run it</p>
+<pre><code>R CMD BATCH run_sfa.R</code></pre>
+<p>SFA provide NaN result when set <code>K = 30</code> and <code>K = 26</code>. (all the <span class="math inline">\(L_i\)</span> and <span class="math inline">\(F_j\)</span> are NaN).</p>
+</div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
