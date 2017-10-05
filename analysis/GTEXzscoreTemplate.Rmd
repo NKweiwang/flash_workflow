@@ -323,6 +323,19 @@ for(k in 1:3){
 }
 ```
 
+
+### plot SFA result K = 30
+
+```{r}
+sfares = readRDS("../data/GTExdata/SFAres/sfaGTExzscore.rds")
+# the F is K by N matrix! not N by K matrix
+par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
+for(k in 1:30){
+  barplot(sfares$F[k,],main = paste("factor",k))
+}
+
+```
+
 ### plot SFAmix result
 
 ```{r}
