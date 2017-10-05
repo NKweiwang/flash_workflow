@@ -181,6 +181,74 @@ the plots are
 
 <img src="figure/flashr2GTEx2.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200">
 
+## an example to run SFA on RCC or PPS
+
+1. go to the folder where the data is.
+
+### sfa wrapper 
+
+this example is on PPS cluster
+
+```{r}
+SFA.wrapper = function(X, K){
+  N = dim(X)[1]
+  P = dim(X)[2]
+
+  if(file.exists("SFAout")){
+    unlink("SFAout", recursive= T)
+  }
+  system("mkdir SFAout")
+
+  write.table(X,file="dscsfa.txt",row.names=F,col.names=F)
+  # sfa command line on cluster
+  # ~/flash/simulation/methods/sfa/src/sfa -gen ./dscsfamix.txt -g 600 -k 1 -n 200 -iter 100 -rand 999 -o ./SFAout/sfa
+
+  # sqrt(mean(( loadings %*% factor - test$L_true%*%t(test$F_true))^2))/sqrt(mean((test$L_true%*%t(test$F_true))^2))
+  system(paste("~/flash/simulation/methods/sfa/src/sfa", "-gen", "./dscsfa.txt", "-g", N, "-k", K,
+               "-n", P, "-iter", 100, "-rand", 999, "-o", "./SFAout/sfa", sep=" "))
+
+  if(file.info("./SFAout/sfa_F.out")$size == 1){
+    return(list(L = 0, F = 0))
+  } else{
+    Fhat=read.table("./SFAout/sfa_F.out")
+    lambda=read.table("./SFAout/sfa_lambda.out")
+    Fhat=as.matrix(Fhat)
+    lambda=as.matrix(lambda)
+    return(list(L = lambda, F = Fhat))
+  }
+
+}
+```
+
+this is `sfawrapper.R`
+
+### creat run_sfa.R file
+
+```
+load("~/flash/dataanalysis/GTeX/EQTLzscore/gtexEQTL_zscore.rds")
+setwd("~/flash/dataanalysis/GTeX/EQTLzscore/")
+source("./sfawrapper.R")
+source("./SFAmixwrapper.R")
+Y = t(zscore)
+N = dim(Y)[1]
+P = dim(Y)[2]
+
+gsfamix = SFAmix.wrapper(Y,30)
+gsfa = SFA.wrapper(Y, 30)
+saveRDS(gsfa, file = "~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds")
+saveRDS(gsfamix, file = "~/flash/dataanalysis/GTeX/EQTLzscore/sfamixGTExzscore.rds")
+
+
+```
+
+and run it
+
+```
+R CMD BATCH run_sfa.R
+```
+
+SFA provide NaN result when set `K = 30` and `K = 26`. (all the $L_i$ and $F_j$ are NaN).
+
 ## Session information
 
 <!-- Insert the session information into the document -->
