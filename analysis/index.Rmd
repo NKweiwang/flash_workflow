@@ -47,8 +47,9 @@ Click here to find the [null check for flashr2](NULLcheck.html) and [densen nu c
 
 Click here to check the [simulatoin result (rank one and rank three)](applyflahr2onsimulations.html)
 
-Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html)
+#### GTEx Z-score
 
+Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html)
 
 #### missing data imputation
 
