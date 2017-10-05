@@ -24,6 +24,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
 <link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
@@ -162,6 +163,14 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 
 
@@ -299,6 +308,14 @@ div.tocify {
 
 <div class="fluid-row" id="header">
 
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">Template for GTEx example on cluster</h1>
@@ -315,7 +332,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-05</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 2078b74</p>
+<p><strong>Code version:</strong> 5e2da23</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
@@ -527,16 +544,44 @@ source(&quot;./SFAmixwrapper.R&quot;)
 Y = zscore
 N = dim(Y)[1]
 P = dim(Y)[2]
-gsfa = SFA.wrapper(Y, 26)
+gsfa = SFA.wrapper(Y, 30)
 saveRDS(gsfa, file = &quot;~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds&quot;)
 
+
+Y = t(zscore)
 gsfamix = SFAmix.wrapper(Y,30)
 saveRDS(gsfamix, file = &quot;~/flash/dataanalysis/GTeX/EQTLzscore/sfamixGTExzscore.rds&quot;)
-
 </code></pre>
 <p>and run it</p>
 <pre><code>R CMD BATCH run_sfa.R</code></pre>
-<p>SFA provide NaN result when set <code>K = 30</code> and <code>K = 26</code>. (all the <span class="math inline">\(L_i\)</span> and <span class="math inline">\(F_j\)</span> are NaN).</p>
+<div id="remark" class="section level4">
+<h4>remark</h4>
+<p>For <code>Y = t(zscore)</code>, SFA provide NaN result when set <code>K = 30</code> and <code>K = 26</code>. (all the <span class="math inline">\(L_i\)</span> and <span class="math inline">\(F_j\)</span> are NaN). So I use <code>Y = zscore</code> which works in <code>K = 30</code> and <code>K = 26</code>. In this case, I set <code>K = 30</code></p>
+<p>in this case we can get</p>
+<pre><code>&gt; gsfa = SFA.wrapper(Y, 30)
+ Setting G to be 16069
+ Setting N to be 44
+Trying to read in matrix with G=16069 and N =44
+Opening matrix ./dscsfa.txt with 16069 rows and 44 columns
+Opening matrix ./dscsfa.txt with 16069 rows and 44 columns
+read in matrix 16069 by 44
+initializing sfa...
+G = 16069
+N = 44
+K = 30
+</code></pre>
+<p>But for <code>SFAmix</code> we should use <code>Y = t(zscore)</code>.</p>
+<p>The approaches make sure we can get <span class="math inline">\((\hat{\sigma}_1^2,\cdots,\hat{\sigma}_j^2,\cdots)\)</span> is a <code>16069</code> vector.</p>
+</div>
+</div>
+<div id="plot-sfa-result" class="section level3">
+<h3>plot SFA result</h3>
+<pre class="r"><code>sfares = readRDS(&quot;../data/GTExdata/SFAres/sfaGTExzscore.rds&quot;)
+par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
+for(k in 1:30){
+  barplot(sfares$F[,k],main = paste(&quot;factor&quot;,k))
+}</code></pre>
+<p><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-4.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-5.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
