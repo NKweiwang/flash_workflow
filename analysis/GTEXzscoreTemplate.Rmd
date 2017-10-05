@@ -2,7 +2,9 @@
 title: "Template for GTEx example on cluster"
 author: "wei"
 date: 09-29
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 <!-- The file analysis/chunks.R contains chunks that define default settings
@@ -268,12 +270,13 @@ source("./SFAmixwrapper.R")
 Y = zscore
 N = dim(Y)[1]
 P = dim(Y)[2]
-gsfa = SFA.wrapper(Y, 26)
+gsfa = SFA.wrapper(Y, 30)
 saveRDS(gsfa, file = "~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds")
 
+
+Y = t(zscore)
 gsfamix = SFAmix.wrapper(Y,30)
 saveRDS(gsfamix, file = "~/flash/dataanalysis/GTeX/EQTLzscore/sfamixGTExzscore.rds")
-
 
 ```
 
@@ -283,7 +286,43 @@ and run it
 R CMD BATCH run_sfa.R
 ```
 
-SFA provide NaN result when set `K = 30` and `K = 26`. (all the $L_i$ and $F_j$ are NaN).
+#### remark 
+
+
+For `Y = t(zscore)`, SFA provide NaN result when set `K = 30` and `K = 26`. (all the $L_i$ and $F_j$ are NaN). So I use `Y = zscore` which works in `K = 30` and `K = 26`. In this case, I set `K = 30`
+
+in this case we can get 
+
+```
+> gsfa = SFA.wrapper(Y, 30)
+ Setting G to be 16069
+ Setting N to be 44
+Trying to read in matrix with G=16069 and N =44
+Opening matrix ./dscsfa.txt with 16069 rows and 44 columns
+Opening matrix ./dscsfa.txt with 16069 rows and 44 columns
+read in matrix 16069 by 44
+initializing sfa...
+G = 16069
+N = 44
+K = 30
+
+```
+
+But for `SFAmix` we should use `Y = t(zscore)`.
+
+The approaches make sure we can get $(\hat{\sigma}_1^2,\cdots,\hat{\sigma}_j^2,\cdots)$ is a `16069` vector.
+
+
+### plot SFA result
+
+```{r}
+sfares = readRDS("../data/GTExdata/SFAres/sfaGTExzscore.rds")
+par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
+for(k in 1:30){
+  barplot(sfares$F[,k],main = paste("factor",k))
+}
+
+```
 
 ## Session information
 
