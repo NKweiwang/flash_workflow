@@ -324,6 +324,18 @@ for(k in 1:30){
 
 ```
 
+### plot SFAmix result
+
+```{r}
+sfamixres = readRDS("../data/GTExdata/SFAres/sfamixGTExzscore.rds")
+dim(sfamixres$L)
+dim(sfamixres$F)
+```
+
+this is only a rank one matrix.... I need check it.
+
+
+
 ## Session information
 
 <!-- Insert the session information into the document -->
