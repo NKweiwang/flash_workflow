@@ -315,7 +315,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-05</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 904c533</p>
+<p><strong>Code version:</strong> 2078b74</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
@@ -480,6 +480,41 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
     return(list(L = lambda, F = Fhat))
   }
 
+}
+
+SFAmix.wrapper = function(X,K){
+  N = dim(X)[1]
+  P = dim(X)[2]
+  
+  write.table(X,file=&quot;dscsfamix.txt&quot;,row.names=F,col.names=F)
+  print(class(X))
+  print(dim(X))
+  
+  if(file.exists(&quot;SFAmixout&quot;)){
+    unlink(&quot;SFAmixout&quot;, recursive= T)
+  }
+  system(&quot;mkdir SFAmixout&quot;)
+  
+  # ~/mvash/mvsim/SFAmix/SFAmix --nf K --y dscrsfamix.txt --out SFAmixout --sep space
+  # this is run on the PPS cluster
+  system(paste(&quot;~/mvash/mvsim/SFAmix/SFAmix&quot;,&quot;--nf&quot;,K,&quot;--y&quot;,&quot;dscsfamix.txt&quot;,&quot;--out&quot;,
+               &quot;SFAmixout&quot;,&quot;--sep&quot;,&quot;space&quot;,sep=&quot; &quot;))
+  
+  alpha=read.table(&quot;./SFAmixout/PSI&quot;)
+  
+  if(file.info(&quot;./SFAmixout/EX&quot;)$size == 1){
+    return(list(L = 0, F = 0))
+  } else{
+    Fhat=read.table(&quot;./SFAmixout/EX&quot;)
+    lambda=read.table(&quot;./SFAmixout/LAM&quot;)
+    Psi=as.vector(alpha)
+    Fhat=as.matrix(Fhat)
+    lambda=as.matrix(lambda)
+    P=dim(lambda)[2]
+    n=dim(Fhat)[1]
+    return(list(L = Fhat, F = lambda))
+  }
+  
 }</code></pre>
 <p>this is <code>sfawrapper.R</code></p>
 </div>
@@ -489,13 +524,13 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
 setwd(&quot;~/flash/dataanalysis/GTeX/EQTLzscore/&quot;)
 source(&quot;./sfawrapper.R&quot;)
 source(&quot;./SFAmixwrapper.R&quot;)
-Y = t(zscore)
+Y = zscore
 N = dim(Y)[1]
 P = dim(Y)[2]
+gsfa = SFA.wrapper(Y, 26)
+saveRDS(gsfa, file = &quot;~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds&quot;)
 
 gsfamix = SFAmix.wrapper(Y,30)
-gsfa = SFA.wrapper(Y, 30)
-saveRDS(gsfa, file = &quot;~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds&quot;)
 saveRDS(gsfamix, file = &quot;~/flash/dataanalysis/GTeX/EQTLzscore/sfamixGTExzscore.rds&quot;)
 
 </code></pre>
