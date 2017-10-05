@@ -332,7 +332,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-05</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 03386e7</p>
+<p><strong>Code version:</strong> 57825d0</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
@@ -579,7 +579,7 @@ K = 30
 <pre class="r"><code>sfares = readRDS(&quot;../data/GTExdata/SFAres/sfaGTExzscore.rds&quot;)
 # the F is K by N matrix! not N by K matrix
 par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
-for(k in 1:30){
+for(k in 1:27){
   barplot(sfares$F[k,],main = paste(&quot;factor&quot;,k))
 }</code></pre>
 <p><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-3.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-4.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-2-5.png" width="672" style="display: block; margin: auto;" /></p>
