@@ -218,6 +218,42 @@ SFA.wrapper = function(X, K){
   }
 
 }
+
+SFAmix.wrapper = function(X,K){
+  N = dim(X)[1]
+  P = dim(X)[2]
+  
+  write.table(X,file="dscsfamix.txt",row.names=F,col.names=F)
+  print(class(X))
+  print(dim(X))
+  
+  if(file.exists("SFAmixout")){
+    unlink("SFAmixout", recursive= T)
+  }
+  system("mkdir SFAmixout")
+  
+  # ~/mvash/mvsim/SFAmix/SFAmix --nf K --y dscrsfamix.txt --out SFAmixout --sep space
+  # this is run on the PPS cluster
+  system(paste("~/mvash/mvsim/SFAmix/SFAmix","--nf",K,"--y","dscsfamix.txt","--out",
+               "SFAmixout","--sep","space",sep=" "))
+  
+  alpha=read.table("./SFAmixout/PSI")
+  
+  if(file.info("./SFAmixout/EX")$size == 1){
+    return(list(L = 0, F = 0))
+  } else{
+    Fhat=read.table("./SFAmixout/EX")
+    lambda=read.table("./SFAmixout/LAM")
+    Psi=as.vector(alpha)
+    Fhat=as.matrix(Fhat)
+    lambda=as.matrix(lambda)
+    P=dim(lambda)[2]
+    n=dim(Fhat)[1]
+    return(list(L = Fhat, F = lambda))
+  }
+  
+}
+
 ```
 
 this is `sfawrapper.R`
@@ -229,13 +265,13 @@ load("~/flash/dataanalysis/GTeX/EQTLzscore/gtexEQTL_zscore.rds")
 setwd("~/flash/dataanalysis/GTeX/EQTLzscore/")
 source("./sfawrapper.R")
 source("./SFAmixwrapper.R")
-Y = t(zscore)
+Y = zscore
 N = dim(Y)[1]
 P = dim(Y)[2]
+gsfa = SFA.wrapper(Y, 26)
+saveRDS(gsfa, file = "~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds")
 
 gsfamix = SFAmix.wrapper(Y,30)
-gsfa = SFA.wrapper(Y, 30)
-saveRDS(gsfa, file = "~/flash/dataanalysis/GTeX/EQTLzscore/sfaGTExzscore.rds")
 saveRDS(gsfamix, file = "~/flash/dataanalysis/GTeX/EQTLzscore/sfamixGTExzscore.rds")
 
 
