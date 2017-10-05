@@ -313,18 +313,6 @@ But for `SFAmix` we should use `Y = t(zscore)`.
 The approaches make sure we can get $(\hat{\sigma}_1^2,\cdots,\hat{\sigma}_j^2,\cdots)$ is a `16069` vector.
 
 
-### plot SFA result
-
-```{r}
-sfares = readRDS("../data/GTExdata/SFAres/sfaGTExzscore.rds")
-# the F is K by N matrix! not N by K matrix
-par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
-for(k in 1:30){
-  barplot(sfares$F[k,],main = paste("factor",k))
-}
-
-```
-
 ### SFA K=3
 
 ```{r}
