@@ -341,12 +341,15 @@ for(k in 1:30){
 
 If you would like to use `t(Y)` you should use `-vn` in the `sfa` command line in order to get $(\hat{\sigma}_1^2,\cdots,\hat{\sigma}_j^2,\cdots)$ is a `16069` vector
 
-```{r}
-gt10 = readRDS('../data/GTExdata/SFAres/sfaTYK_10.rds')
+you need add `-mg` to get the mean vector with length of 44
 
+```{r}
+gt10 = readRDS('../data/GTExdata/SFAres/sfaTK_10m.rds')
+mu = sapply(seq(1:44),function(x){gt10$mu[[x]]})
 par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
+barplot(mu,main = "mean vector")
 for(k in 1:10){
-  barplot(gt10$L[,k],main = paste("factor",k))
+  barplot(gt10$LF$L[,k],main = paste("factor",k))
 }
 ```
 
