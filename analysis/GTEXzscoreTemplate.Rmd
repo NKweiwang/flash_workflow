@@ -337,6 +337,16 @@ for(k in 1:30){
 ```
 
 
+### plot of SFA result with t(Y) K = 10
+
+```{r}
+gt10 = readRDS('../data/GTExdata/SFAres/sfaTYK_10.rds')
+
+par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
+for(k in 1:10){
+  barplot(gt10$L[,k],main = paste("factor",k))
+}
+```
 
 
 ### plot SFAmix result
