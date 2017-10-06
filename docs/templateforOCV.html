@@ -332,7 +332,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-06</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 6220ebb</p>
+<p><strong>Code version:</strong> 408b967</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -564,7 +564,8 @@ saveRDS(results,&quot;./boxplot.rds&quot;)</code></pre>
 </div>
 <div id="plot-the-result" class="section level2">
 <h2>plot the result</h2>
-<pre class="r"><code>plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;){
+<pre class="r"><code>library(ggplot2)
+plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;){
   rmse = as.vector(output)
   N = dim(output)[1]
   methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;), each = N)
