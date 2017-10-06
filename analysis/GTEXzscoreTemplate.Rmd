@@ -344,12 +344,17 @@ If you would like to use `t(Y)` you should use `-vn` in the `sfa` command line i
 you need add `-mg` to get the mean vector with length of 44
 
 ```{r}
+load("../data/GTExdata/gtexEQTL_zscore.rds")
 gt10 = readRDS('../data/GTExdata/SFAres/sfaTK_10m.rds')
+ssy = sum(zscore^2)
+pve = sapply(seq(1:10),function(x){sum((gt10$LF$L[,x] %*% t(gt10$LF$F[x,]))^2)})
+pve = pve/ssy
+
 mu = sapply(seq(1:44),function(x){gt10$mu[[x]]})
 par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
 barplot(mu,main = "mean vector")
 for(k in 1:10){
-  barplot(gt10$LF$L[,k],main = paste("factor",k))
+  barplot(gt10$LF$L[,k],main = paste("factor",k,"pve",round(pve[k],3)))
 }
 ```
 
