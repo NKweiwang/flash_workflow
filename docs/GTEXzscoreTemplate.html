@@ -332,7 +332,7 @@ shared across the workflowr files. -->
 <p><strong>Last updated:</strong> 2017-10-05</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 6ad4795</p>
+<p><strong>Code version:</strong> 38b5faf</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
@@ -596,11 +596,13 @@ for(k in 1:30){
 <div id="plot-of-sfa-result-with-ty-k-10" class="section level3">
 <h3>plot of SFA result with t(Y) K = 10</h3>
 <p>If you would like to use <code>t(Y)</code> you should use <code>-vn</code> in the <code>sfa</code> command line in order to get <span class="math inline">\((\hat{\sigma}_1^2,\cdots,\hat{\sigma}_j^2,\cdots)\)</span> is a <code>16069</code> vector</p>
-<pre class="r"><code>gt10 = readRDS(&#39;../data/GTExdata/SFAres/sfaTYK_10.rds&#39;)
-
+<p>you need add <code>-mg</code> to get the mean vector with length of 44</p>
+<pre class="r"><code>gt10 = readRDS(&#39;../data/GTExdata/SFAres/sfaTK_10m.rds&#39;)
+mu = sapply(seq(1:44),function(x){gt10$mu[[x]]})
 par(mfrow = c(2,3),mar=c(5.1,4.1,4.1,2.1)-1.9)
+barplot(mu,main = &quot;mean vector&quot;)
 for(k in 1:10){
-  barplot(gt10$L[,k],main = paste(&quot;factor&quot;,k))
+  barplot(gt10$LF$L[,k],main = paste(&quot;factor&quot;,k))
 }</code></pre>
 <p><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
 <div id="problem-in-k-20-and-k-30-in-this-case." class="section level4">
