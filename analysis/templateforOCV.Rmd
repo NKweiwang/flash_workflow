@@ -285,6 +285,7 @@ saveRDS(results,"./boxplot.rds")
 ## plot the result 
 
 ```{r}
+library(ggplot2)
 plot_res = function(output,title = "data",legend_position = "none"){
   rmse = as.vector(output)
   N = dim(output)[1]
