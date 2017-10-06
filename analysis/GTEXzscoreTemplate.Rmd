@@ -349,6 +349,13 @@ for(k in 1:10){
 ```
 
 
+#### problem in K = 20 and K = 30 in this case.
+
+```
+gsl: lu.c:147: ERROR: matrix is singular
+Default GSL error handler invoked.
+```
+
 ### plot SFAmix result
 
 ```{r}
