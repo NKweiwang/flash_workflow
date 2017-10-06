@@ -339,6 +339,8 @@ for(k in 1:30){
 
 ### plot of SFA result with t(Y) K = 10
 
+If you would like to use `t(Y)` you should use `-vn` in the `sfa` command line in order to get $(\hat{\sigma}_1^2,\cdots,\hat{\sigma}_j^2,\cdots)$ is a `16069` vector
+
 ```{r}
 gt10 = readRDS('../data/GTExdata/SFAres/sfaTYK_10.rds')
 
