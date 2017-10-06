@@ -298,24 +298,29 @@ plot_res = function(output,title = "data",legend_position = "none"){
   p
 }
 
-GZ_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds")
-pg = plot_res(GZ_res,"GTEx data")
-BC_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds")
-pb = plot_res(BC_res,"Breast Cancer data")
 PT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/president_box.rds")
 pp = plot_res(PT_res,"Text data")
 DT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds")
 pd = plot_res(DT_res,"Tumor data")
+GZ_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds")
+pg = plot_res(GZ_res,"GTEx data")
+BC_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds")
+pb = plot_res(BC_res,"Breast Cancer data")
+ML_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/ML100K_box.rds")
+ML_res[c(2,13,17,21,29,37,62,76,77,93,95,100),] = NA
+ML_res = matrix(as.numeric(ML_res),ncol = 4)
+pM = plot_res(ML_res,"Movie Lens data")
 ```
 
 
 ## plots 
 
 ```{r}
-pg
-pb
 pp
 pd
+pg
+pb
+pM
 ```
 
 ## Session information
