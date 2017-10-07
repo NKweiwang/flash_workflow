@@ -294,7 +294,7 @@ plot_res = function(output,title = "data",legend_position = "none"){
   p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
   geom_boxplot()+
   # geom_violin()+
-  ggtitle(title)+theme_gray() +
+  ggtitle(title) +  theme_bw()+
     theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
   p
 }
@@ -317,11 +317,7 @@ pM = plot_res(ML_res,"Movie Lens data")
 ## plots 
 
 ```{r}
-pp
-pd
-pg
-pb
-pM
+gridExtra::grid.arrange(pp,pd,pg,pb,pM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))
 ```
 
 ## Session information
