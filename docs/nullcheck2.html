@@ -312,134 +312,137 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-09-17</p>
+<p><strong>Last updated:</strong> 2017-10-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 78e3954</p>
+<p><strong>Code version:</strong> d1c18a2</p>
 <!-- Add your analysis here -->
 <pre class="r"><code>library(flashr2)
 library(MASS)</code></pre>
+<div id="model" class="section level2">
+<h2>model</h2>
+<p>In this case the data sets are: <span class="math display">\[H_0: X \sim N(0, \Sigma_0)\]</span> <span class="math display">\[H_1: X \sim N(0,\Sigma_1)\]</span> where <span class="math inline">\(\Sigma_0 = I\)</span> and <span class="math inline">\(\Sigma_1 = I + \nu \nu^T\)</span></p>
+<div id="dense-case" class="section level3">
+<h3>dense case</h3>
 <pre class="r"><code>########  spiked covariance model
 
 set.seed(99)
-T = 1000
+T = 300
 lambda_0 = rep(NA,T)
-flash_rank_0= rep(1,T)
 flash2_rank_0= rep(1,T)
 for(t in 1:T){
   P = 300
   N = 100
   Sigma_0 = diag(rep(1,P))
   X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_0)
+  X = X/sqrt(mean((X)^2))
   lambda_0[t] =  svd(X)$d[1]
-  data = set_flash_data(X)
-  g1= flash_r1(data,verbose=F)
-  g2 = flashr::flash(X,objtype = &quot;l&quot;,
-                     ash_para_l = list(nullweight = 1 ),
-                     ash_para_f = list(nullweight = 1 ))
+  data =  flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
   if(sum(g1$EL) ==0 )  {flash2_rank_0[t] = 0}
-  if(sum(g2$l) ==0 )  {flash_rank_0[t] = 0}
 }
 
 set.seed(99)
-T = 1000
 lambda_1 = rep(NA,T)
-flash_rank_1= rep(1,T)
 flash2_rank_1= rep(1,T)
 for(t in 1:T){
   P = 300
   N = 100
   Sigma_0 = diag(rep(1,P))
-  nu = rnorm(P, 0, (1)/(sqrt(P)))
+  nu = rnorm(P, 0, (2)/(sqrt(P)))
   # index_nu = sample(seq(1:P),(P*0.95))
   # nu[index_nu] = 0
   Sigma_1 = Sigma_0 + nu %*% t(nu)
   X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
+  X = X/sqrt(mean((X)^2))
   lambda_1[t] =  svd(X)$d[1]
-  data = set_flash_data(X)
-  g1= flash_r1(data,verbose=F)
-  g2 = flashr::flash(X,objtype = &quot;l&quot;,
-                     ash_para_l = list(nullweight = 1 ),
-                     ash_para_f = list(nullweight = 1 ))
+  data = flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
   if(sum(g1$EL) ==0 )  {flash2_rank_1[t] = 0}
-  if(sum(g2$l) ==0 )  {flash_rank_1[t] = 0}
 }
 
 
-lambda_1_0_0 = lambda_0[which(flash_rank_0 ==0)]
-lambda_1_0_1 = lambda_0[which(flash_rank_0 ==1)]
-lambda_2_0_0 = lambda_0[which(flash2_rank_0 ==0)]
-lambda_2_0_1 = lambda_0[which(flash2_rank_0 ==1)]
 
-lambda_1_1_0 = lambda_1[which(flash_rank_1 ==0)]
-lambda_1_1_1 = lambda_1[which(flash_rank_1 ==1)]
-lambda_2_1_0 = lambda_1[which(flash2_rank_1 ==0)]
-lambda_2_1_1 = lambda_1[which(flash2_rank_1 ==1)]</code></pre>
-<div id="model" class="section level2">
-<h2>model</h2>
-<p>In this case the data sets are: <span class="math display">\[H_0: X \sim N(0, \Sigma_0)\]</span> <span class="math display">\[H_1: X \sim N(0,\Sigma_1)\]</span> where <span class="math inline">\(\Sigma_0 = I\)</span> and <span class="math inline">\(\Sigma_1 = I + \nu \nu^T\)</span></p>
-<pre class="r"><code>library(ggplot2)
-dat = data.frame(lambda = c(lambda_0,lambda_1), name = c(rep(&quot;null&quot;,length(lambda_0)), rep(&quot;alt&quot;, length(lambda_1)) ))
-ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat,name == &#39;null&#39;),fill = &quot;red&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == &#39;alt&#39;),fill = &quot;green&quot;, alpha = 0.2) </code></pre>
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
+lambda_0_0 = lambda_0[which(flash2_rank_0 ==0)]
+lambda_0_1 = lambda_0[which(flash2_rank_0 ==1)]
+
+
+lambda_1_0 = lambda_1[which(flash2_rank_1 ==0)]
+lambda_1_1 = lambda_1[which(flash2_rank_1 ==1)]
+
+simple_roc &lt;- function(labels, scores){
+  labels &lt;- labels[order(scores, decreasing=TRUE)]
+  data.frame(TPR=cumsum(labels)/sum(labels), FPR=cumsum(!labels)/sum(!labels), labels)
+}
+
+lambda.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(lambda_0,lambda_1))
+plot(lambda.roc$FPR,lambda.roc$TPR,type = &quot;l&quot;,col = &quot;black&quot;)
+flash.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(flash2_rank_0,flash2_rank_1))
+lines(flash.roc$FPR,flash.roc$TPR,type = &quot;l&quot;,col = &quot;red&quot;)</code></pre>
+<p><img src="figure/nullcheck2.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="sparse-case" class="section level3">
+<h3>sparse case</h3>
+<pre class="r"><code>########  spiked covariance model
+
+set.seed(99)
+T = 300
+lambda_0 = rep(NA,T)
+flash2_rank_0= rep(1,T)
+for(t in 1:T){
+  P = 300
+  N = 100
+  Sigma_0 = diag(rep(1,P))
+  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_0)
+  X = X/sqrt(mean((X)^2))
+  lambda_0[t] =  svd(X)$d[1]
+  data =  flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
+  if(sum(g1$EL) ==0 )  {flash2_rank_0[t] = 0}
+}
+
+set.seed(99)
+lambda_1 = rep(NA,T)
+flash2_rank_1= rep(1,T)
+for(t in 1:T){
+  P = 300
+  N = 100
+  Sigma_0 = diag(rep(1,P))
+  nu = rnorm(P, 0, (6)/(sqrt(P)))
+  index_nu = sample(seq(1:P),(P*0.95))
+  nu[index_nu] = 0
+  Sigma_1 = Sigma_0 + nu %*% t(nu)
+  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
+  X = X/sqrt(mean((X)^2))
+  lambda_1[t] =  svd(X)$d[1]
+  data = flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
+  if(sum(g1$EL) ==0 )  {flash2_rank_1[t] = 0}
+}
+
+
+
+lambda_0_0 = lambda_0[which(flash2_rank_0 ==0)]
+lambda_0_1 = lambda_0[which(flash2_rank_0 ==1)]
+
+
+lambda_1_0 = lambda_1[which(flash2_rank_1 ==0)]
+lambda_1_1 = lambda_1[which(flash2_rank_1 ==1)]
+
+simple_roc &lt;- function(labels, scores){
+  labels &lt;- labels[order(scores, decreasing=TRUE)]
+  data.frame(TPR=cumsum(labels)/sum(labels), FPR=cumsum(!labels)/sum(!labels), labels)
+}
+
+lambda.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(lambda_0,lambda_1))
+plot(lambda.roc$FPR,lambda.roc$TPR,type = &quot;l&quot;,col = &quot;black&quot;)
+flash.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(flash2_rank_0,flash2_rank_1))
+lines(flash.roc$FPR,flash.roc$TPR,type = &quot;l&quot;,col = &quot;red&quot;)</code></pre>
 <p><img src="figure/nullcheck2.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
-<ul>
-<li>red: null</li>
-<li>green: alternative</li>
-</ul>
-<div id="flashr" class="section level3">
-<h3>flashr</h3>
-<pre class="r"><code>library(ggplot2)
-dat = data.frame(lambda = c(lambda_1_0_0,lambda_1_0_1,lambda_1_1_0,lambda_1_1_1), 
-                 name = c(rep(&quot;null 0&quot;,length(lambda_1_0_0)),
-                          rep(&quot;null 1&quot;,length(lambda_1_0_1)),
-                          rep(&quot;alt 0&quot;,length(lambda_1_1_0)),
-                          rep(&quot;alt 1&quot;,length(lambda_1_1_1))))
-ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat,name == &#39;null 0&#39;),fill = &quot;red&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == &#39;null 1&#39;),fill = &quot;black&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == &#39;alt 0&#39;),fill = &quot;blue&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == &#39;alt 1&#39;),fill = &quot;green&quot;, alpha = 0.2)</code></pre>
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="figure/nullcheck2.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
-<ul>
-<li>red: null as rank 0</li>
-<li>black: null as rank 1</li>
-<li>blue: alternative as 0</li>
-<li>green: alternative as 1</li>
-</ul>
 </div>
-<div id="flashr2" class="section level3">
-<h3>flashr2</h3>
-<pre class="r"><code>library(ggplot2)
-dat2 = data.frame(lambda = c(lambda_2_0_0,lambda_2_0_1,lambda_2_1_0,lambda_2_1_1), 
-                 name = c(rep(&quot;null 0&quot;,length(lambda_2_0_0)),
-                          rep(&quot;null 1&quot;,length(lambda_2_0_1)),
-                          rep(&quot;alt 0&quot;,length(lambda_2_1_0)),
-                          rep(&quot;alt 1&quot;,length(lambda_2_1_1))))
-ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat2,name == &#39;null 0&#39;),fill = &quot;red&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat2,name == &#39;null 1&#39;),fill = &quot;black&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat2,name == &#39;alt 0&#39;),fill = &quot;blue&quot;, alpha = 0.2) +
-  geom_histogram(data=subset(dat2,name == &#39;alt 1&#39;),fill = &quot;green&quot;, alpha = 0.2)</code></pre>
-<pre><code>`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.
-`stat_bin()` using `bins = 30`. Pick better value with `binwidth`.</code></pre>
-<p><img src="figure/nullcheck2.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
-<ul>
-<li>red: null as rank 0</li>
-<li>black: null as rank 1</li>
-<li>blue: alternative as 0</li>
-<li>green: alternative as 1</li>
-</ul>
 </div>
+<div id="likelihood-ratio" class="section level2">
+<h2>likelihood ratio</h2>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -456,24 +459,22 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] ggplot2_2.2.1   MASS_7.3-47     flashr2_0.1-2   workflowr_0.4.0
-[5] rmarkdown_1.6  
+[1] MASS_7.3-47     flashr2_0.2-3   workflowr_0.4.0 rmarkdown_1.6  
 
 loaded via a namespace (and not attached):
  [1] Rcpp_0.12.12      git2r_0.19.0      plyr_1.8.4       
  [4] iterators_1.0.8   tools_3.3.0       digest_0.6.12    
  [7] evaluate_0.10.1   tibble_1.3.3      gtable_0.2.0     
 [10] lattice_0.20-35   rlang_0.1.2       Matrix_1.2-11    
-[13] foreach_1.4.3     rstudioapi_0.6    yaml_2.1.14      
-[16] parallel_3.3.0    stringr_1.2.0     knitr_1.17       
-[19] REBayes_0.85      rprojroot_1.2     grid_3.3.0       
-[22] irlba_2.2.1       flashr_0.1.1      ashr_2.1-25      
-[25] magrittr_1.5      backports_1.1.0   scales_0.4.1     
-[28] codetools_0.2-15  htmltools_0.3.6   assertthat_0.2.0 
-[31] colorspace_1.3-2  labeling_0.3      stringi_1.1.5    
-[34] Rmosek_7.1.2      lazyeval_0.2.0    munsell_0.4.3    
-[37] doParallel_1.0.10 pscl_1.4.9        truncnorm_1.0-7  
-[40] SQUAREM_2016.8-2 </code></pre>
+[13] foreach_1.4.3     yaml_2.1.14       parallel_3.3.0   
+[16] stringr_1.2.0     knitr_1.17        REBayes_0.85     
+[19] rprojroot_1.2     grid_3.3.0        ggplot2_2.2.1    
+[22] ashr_2.1-25       magrittr_1.5      backports_1.1.0  
+[25] scales_0.4.1      codetools_0.2-15  htmltools_0.3.6  
+[28] assertthat_0.2.0  softImpute_1.4    colorspace_1.3-2 
+[31] labeling_0.3      stringi_1.1.5     Rmosek_7.1.2     
+[34] lazyeval_0.2.0    munsell_0.4.3     doParallel_1.0.10
+[37] pscl_1.4.9        truncnorm_1.0-7   SQUAREM_2016.8-2 </code></pre>
 </div>
 
 <hr>
