@@ -32,67 +32,6 @@ library(flashr2)
 library(MASS)
 ```
 
-```{r}
-########  spiked covariance model
-
-set.seed(99)
-T = 1000
-lambda_0 = rep(NA,T)
-flash_rank_0= rep(1,T)
-flash2_rank_0= rep(1,T)
-for(t in 1:T){
-  P = 300
-  N = 100
-  Sigma_0 = diag(rep(1,P))
-  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_0)
-  lambda_0[t] =  svd(X)$d[1]
-  data = set_flash_data(X)
-  g1= flash_r1(data,verbose=F)
-  g2 = flashr::flash(X,objtype = "l",
-                     ash_para_l = list(nullweight = 1 ),
-                     ash_para_f = list(nullweight = 1 ))
-  if(sum(g1$EL) ==0 )  {flash2_rank_0[t] = 0}
-  if(sum(g2$l) ==0 )  {flash_rank_0[t] = 0}
-}
-
-set.seed(99)
-T = 1000
-lambda_1 = rep(NA,T)
-flash_rank_1= rep(1,T)
-flash2_rank_1= rep(1,T)
-for(t in 1:T){
-  P = 300
-  N = 100
-  Sigma_0 = diag(rep(1,P))
-  nu = rnorm(P, 0, (1)/(sqrt(P)))
-  # index_nu = sample(seq(1:P),(P*0.95))
-  # nu[index_nu] = 0
-  Sigma_1 = Sigma_0 + nu %*% t(nu)
-  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
-  lambda_1[t] =  svd(X)$d[1]
-  data = set_flash_data(X)
-  g1= flash_r1(data,verbose=F)
-  g2 = flashr::flash(X,objtype = "l",
-                     ash_para_l = list(nullweight = 1 ),
-                     ash_para_f = list(nullweight = 1 ))
-  if(sum(g1$EL) ==0 )  {flash2_rank_1[t] = 0}
-  if(sum(g2$l) ==0 )  {flash_rank_1[t] = 0}
-}
-
-
-lambda_1_0_0 = lambda_0[which(flash_rank_0 ==0)]
-lambda_1_0_1 = lambda_0[which(flash_rank_0 ==1)]
-lambda_2_0_0 = lambda_0[which(flash2_rank_0 ==0)]
-lambda_2_0_1 = lambda_0[which(flash2_rank_0 ==1)]
-
-lambda_1_1_0 = lambda_1[which(flash_rank_1 ==0)]
-lambda_1_1_1 = lambda_1[which(flash_rank_1 ==1)]
-lambda_2_1_0 = lambda_1[which(flash2_rank_1 ==0)]
-lambda_2_1_1 = lambda_1[which(flash2_rank_1 ==1)]
-
-```
-
-
 ## model
 
 In this case the data sets are:
@@ -100,63 +39,132 @@ $$H_0: X \sim N(0, \Sigma_0)$$
 $$H_1: X \sim N(0,\Sigma_1)$$
 where $\Sigma_0 = I$ and $\Sigma_1 = I + \nu \nu^T$
 
-```{r}
-library(ggplot2)
-dat = data.frame(lambda = c(lambda_0,lambda_1), name = c(rep("null",length(lambda_0)), rep("alt", length(lambda_1)) ))
-ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat,name == 'null'),fill = "red", alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == 'alt'),fill = "green", alpha = 0.2) 
-```
 
-* red: null
-* green: alternative
 
-### flashr
+### dense case 
 
 ```{r}
-library(ggplot2)
-dat = data.frame(lambda = c(lambda_1_0_0,lambda_1_0_1,lambda_1_1_0,lambda_1_1_1), 
-                 name = c(rep("null 0",length(lambda_1_0_0)),
-                          rep("null 1",length(lambda_1_0_1)),
-                          rep("alt 0",length(lambda_1_1_0)),
-                          rep("alt 1",length(lambda_1_1_1))))
-ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat,name == 'null 0'),fill = "red", alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == 'null 1'),fill = "black", alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == 'alt 0'),fill = "blue", alpha = 0.2) +
-  geom_histogram(data=subset(dat,name == 'alt 1'),fill = "green", alpha = 0.2)
+########  spiked covariance model
 
+set.seed(99)
+T = 300
+lambda_0 = rep(NA,T)
+flash2_rank_0= rep(1,T)
+for(t in 1:T){
+  P = 300
+  N = 100
+  Sigma_0 = diag(rep(1,P))
+  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_0)
+  X = X/sqrt(mean((X)^2))
+  lambda_0[t] =  svd(X)$d[1]
+  data =  flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
+  if(sum(g1$EL) ==0 )  {flash2_rank_0[t] = 0}
+}
+
+set.seed(99)
+lambda_1 = rep(NA,T)
+flash2_rank_1= rep(1,T)
+for(t in 1:T){
+  P = 300
+  N = 100
+  Sigma_0 = diag(rep(1,P))
+  nu = rnorm(P, 0, (2)/(sqrt(P)))
+  # index_nu = sample(seq(1:P),(P*0.95))
+  # nu[index_nu] = 0
+  Sigma_1 = Sigma_0 + nu %*% t(nu)
+  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
+  X = X/sqrt(mean((X)^2))
+  lambda_1[t] =  svd(X)$d[1]
+  data = flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
+  if(sum(g1$EL) ==0 )  {flash2_rank_1[t] = 0}
+}
+
+
+
+lambda_0_0 = lambda_0[which(flash2_rank_0 ==0)]
+lambda_0_1 = lambda_0[which(flash2_rank_0 ==1)]
+
+
+lambda_1_0 = lambda_1[which(flash2_rank_1 ==0)]
+lambda_1_1 = lambda_1[which(flash2_rank_1 ==1)]
+
+simple_roc <- function(labels, scores){
+  labels <- labels[order(scores, decreasing=TRUE)]
+  data.frame(TPR=cumsum(labels)/sum(labels), FPR=cumsum(!labels)/sum(!labels), labels)
+}
+
+lambda.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(lambda_0,lambda_1))
+plot(lambda.roc$FPR,lambda.roc$TPR,type = "l",col = "black")
+flash.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(flash2_rank_0,flash2_rank_1))
+lines(flash.roc$FPR,flash.roc$TPR,type = "l",col = "red")
 ```
 
-* red: null as rank 0
-* black: null as rank 1
-* blue: alternative as 0
-* green: alternative as 1
 
 
-
-### flashr2
+### sparse case
 
 ```{r}
-library(ggplot2)
-dat2 = data.frame(lambda = c(lambda_2_0_0,lambda_2_0_1,lambda_2_1_0,lambda_2_1_1), 
-                 name = c(rep("null 0",length(lambda_2_0_0)),
-                          rep("null 1",length(lambda_2_0_1)),
-                          rep("alt 0",length(lambda_2_1_0)),
-                          rep("alt 1",length(lambda_2_1_1))))
-ggplot(dat,aes(x=lambda)) +
-  geom_histogram(data=subset(dat2,name == 'null 0'),fill = "red", alpha = 0.2) +
-  geom_histogram(data=subset(dat2,name == 'null 1'),fill = "black", alpha = 0.2) +
-  geom_histogram(data=subset(dat2,name == 'alt 0'),fill = "blue", alpha = 0.2) +
-  geom_histogram(data=subset(dat2,name == 'alt 1'),fill = "green", alpha = 0.2)
+########  spiked covariance model
 
+set.seed(99)
+T = 300
+lambda_0 = rep(NA,T)
+flash2_rank_0= rep(1,T)
+for(t in 1:T){
+  P = 300
+  N = 100
+  Sigma_0 = diag(rep(1,P))
+  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_0)
+  X = X/sqrt(mean((X)^2))
+  lambda_0[t] =  svd(X)$d[1]
+  data =  flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
+  if(sum(g1$EL) ==0 )  {flash2_rank_0[t] = 0}
+}
+
+set.seed(99)
+lambda_1 = rep(NA,T)
+flash2_rank_1= rep(1,T)
+for(t in 1:T){
+  P = 300
+  N = 100
+  Sigma_0 = diag(rep(1,P))
+  nu = rnorm(P, 0, (6)/(sqrt(P)))
+  index_nu = sample(seq(1:P),(P*0.95))
+  nu[index_nu] = 0
+  Sigma_1 = Sigma_0 + nu %*% t(nu)
+  X = mvrnorm(n = N,mu = rep(0,P), Sigma = Sigma_1)
+  X = X/sqrt(mean((X)^2))
+  lambda_1[t] =  svd(X)$d[1]
+  data = flashr2::flash_set_data(X)
+  g1= flashr2::flash_r1(data,verbose=F)
+  if(sum(g1$EL) ==0 )  {flash2_rank_1[t] = 0}
+}
+
+
+
+lambda_0_0 = lambda_0[which(flash2_rank_0 ==0)]
+lambda_0_1 = lambda_0[which(flash2_rank_0 ==1)]
+
+
+lambda_1_0 = lambda_1[which(flash2_rank_1 ==0)]
+lambda_1_1 = lambda_1[which(flash2_rank_1 ==1)]
+
+simple_roc <- function(labels, scores){
+  labels <- labels[order(scores, decreasing=TRUE)]
+  data.frame(TPR=cumsum(labels)/sum(labels), FPR=cumsum(!labels)/sum(!labels), labels)
+}
+
+lambda.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(lambda_0,lambda_1))
+plot(lambda.roc$FPR,lambda.roc$TPR,type = "l",col = "black")
+flash.roc = simple_roc(labels = c(rep(0,T),rep(1,T)),scores = c(flash2_rank_0,flash2_rank_1))
+lines(flash.roc$FPR,flash.roc$TPR,type = "l",col = "red")
 ```
 
 
-* red: null as rank 0
-* black: null as rank 1
-* blue: alternative as 0
-* green: alternative as 1
+## likelihood ratio
 
 
 ## Session information
