@@ -1,0 +1,81 @@
+---
+title: "compare the options for missing value MSE"
+author: "Wei"
+date: 2017-12-04
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## Movie Lens data
+
+### FDR without null check vs default setting
+
+```{r}
+library(ggplot2)
+plot_res = function(output,title = "data",legend_position = "none"){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  methods = rep(c("flash_fdr","flash","NBSFA_fdr","NBSFA","PMD_fdr","PMD","softImpute_fdr","softImpute"), each = N)
+  df = data.frame(RMSE = rmse, Method = methods )
+  p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
+  geom_boxplot()+
+  # geom_violin()+
+  ggtitle(title) +  theme_bw()+
+    theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
+  p
+}
+data1 = readRDS("../data/cmpOptions/ML100K/FDRnocheck_box.rds")
+data2 = readRDS("../data/cmpOptions/ML100K/box_defaultseeting.rds")
+data1 = matrix(as.numeric(data1),ncol = 4)
+data2 = matrix(as.numeric(data2),ncol = 4)
+pM = plot_res(cbind(data1[,1],data2[,1],
+                    data1[,2],data2[,2],
+                    data1[,3],data2[,3],
+                    data1[,4],data2[,4]),"Movie Lens data different settings")
+pM
+```
+
+We run the experiments twice. `flash_fdr` `NSFA_fdr` `PMD_fdr` and `softImpute_fdr` stand for the results from the simulation data set with FDR method and without Nullcheck in FLASH method. And `flash` `NSFA` `PMD` and `softImpute` represent the results from simulation data set with default setting (shrink, normal with Nullcheck) in FLASH.
+
+
+## GTEx EQTL Z-score
+
+### FDR without null check vs default setting
+
+```{r}
+data1 = readRDS("../data/cmpOptions/GETxZscore/FDRnocheck_box.rds")
+data2 = readRDS("../data/cmpOptions/GETxZscore/DefaultSetting_box.rds")
+data1 = matrix(as.numeric(data1),ncol = 4)
+data2 = matrix(as.numeric(data2),ncol = 4)
+pG = plot_res(cbind(data1[,1],data2[,1],
+                    data1[,2],data2[,2],
+                    data1[,3],data2[,3],
+                    data1[,4],data2[,4]),"GTEx z-score different settings")
+pG
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
