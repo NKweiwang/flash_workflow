@@ -1,0 +1,51 @@
+---
+title: "GSEA for flash factors"
+author: "Wei"
+date: 10-2017
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+
+## try the 3rd factor
+
+Here, we should preare the list of the gene names.
+
+```{r}
+res = readRDS("../data/GTEX/bflashvarcol.rds")
+load("../data/GTEX/gtexEQTL_zscore.rds")
+sorted_f3 = sort(res$EF[,3],index.return = T)
+negative_index = sorted_f3$ix[which(sorted_f3$x<0)]
+negative_name = row.names(zscore)[negative_index]
+new_names = sapply(negative_name, function(x){(strsplit(x,"\\.")[[1]])[1]})
+# write.table(new_names,file = "../data/GTEX/f_3_neg.txt",row.names = F,col.names = F)
+```
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
+
+
