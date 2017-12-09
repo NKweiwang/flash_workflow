@@ -47,6 +47,8 @@ Click here to find the [null check for flashr2](NULLcheck.html) and [densen nu c
 
 Click here to check the [simulatoin result (rank one and rank three)](applyflahr2onsimulations.html)
 
+Click here to check the [RMSE for the rank one example in the paper](MSErank1sim.html)
+
 #### GTEx Z-score
 
 Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html)
@@ -55,4 +57,4 @@ Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html
 
 click here to check the template for [missing data imputation with OCV](templateforOCV.html)
 
-click here to check the comparison of different options for FLASH [different shrink options](compareOptionsOCV.Rmd)
+click here to check the comparison of different options for FLASH [different shrink options](compareOptionsOCV.html)

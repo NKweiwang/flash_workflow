@@ -1,0 +1,171 @@
+---
+title: "MSE for rank_1 simulation"
+author: "wei wang"
+date: 17-12-09
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+
+
+```{}
+flash.wrapper = function(Y_data){
+  # missindex is a matirx with 3 column here: i j x
+  # Y has miss value already
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  data =  flashr2::flash_set_data(Y)
+  g_flash = flashr2::flash_r1(data,verbose=F)
+  Y_hat = g_flash$EL %*% t(g_flash$EF)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+
+#here I use SVD instead of KSVD.
+SVD.wrapper = function(Y_data){
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  gsvd = svd(Y)
+  Y_hat = gsvd$d[1] * (gsvd$u[,1] %*% t(gsvd$v[,1]))
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+SSVD.wrapper = function(Y_data){
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  gssvd = ssvd::ssvd(Y,method = "method")
+  Y_hat = gssvd$d * (gssvd$u %*% t(gssvd$v))
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+```
+
+
+```{}
+library(PMA)
+library(flashr2)
+library(ssvd)
+source("~/HG/flash/data/simulations/rankone/MSE/Rfunction.R")
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+# Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+RMSE = rep(NA,6)
+RMSE[1] = PMA.wrapper(Y_data)
+RMSE[2] = flash.wrapper(Y_data)
+RMSE[3] = SFA.wrapper(Y_data, K = 1)
+RMSE[4] = SFAmix.wrapper(Y_data,K = 1)
+RMSE[5] = SVD.wrapper(Y_data)
+RMSE[6] = SSVD.wrapper(Y_data)
+saveRDS(result, "./output.rds")
+```
+
+
+$$RMSE =\frac{ \sqrt{(Y-\hat{Y} - E )^2}}{\sqrt{(Y - E )^2}}$$
+
+## batch file 
+
+```
+#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/simulations/rankone/MSE/median/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/simulations/rankone/MSE/median/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1-100
+#SBATCH --time=02:00:00
+#SBATCH --partition=mstephens
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=2000
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job's task ID
+cd /home/weidong/HG/flash/data/simulations/rankone/MSE/median
+mkdir test${SLURM_ARRAY_TASK_ID}
+cd test${SLURM_ARRAY_TASK_ID}
+Rscript --verbose /home/weidong/HG/flash/data/simulations/rankone/MSE/median/run.R
+```
+
+
+## run
+
+```
+sbatch Jobs.sbatch
+```
+
+## plot the result
+
+```
+T = 100
+results = matrix(NA,ncol = 6, nrow = T)
+for(i in 1:T){
+  test_folder = paste("test", i, sep = "")
+  # out_folder = "NBSFAout"
+  out_file = "output.rds"
+  file_name = file.path(test_folder,out_file)
+  results[i,] = try(readRDS(file_name))
+}
+```
+
+
+## RMSE sparse case 100 simulations
+ 
+```{r}
+sparse_res = readRDS("../data/simulation/rankone/RMSE/result_sparse.rds")
+colnames(sparse_res) = c("PMD","flash","SFA","SFAmix","SVD","SSVD")
+boxplot(sparse_res,main = "sparse case")
+```
+
+## RMSE intermediate sparse case 100 simulations
+ 
+```{r}
+sparse_res = readRDS("../data/simulation/rankone/RMSE/result_itermediate.rds")
+colnames(sparse_res) = c("PMD","flash","SFA","SFAmix","SVD","SSVD")
+boxplot(sparse_res,main = "intermediate sparse case")
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
