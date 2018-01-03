@@ -1,0 +1,176 @@
+---
+title: "compare the different versions of ebnm methods"
+author: "Wei"
+date: 2018-01-02
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## for the simulated data
+
+```{r,echo=FALSE}
+library("ebnm")
+library("ashr")
+library("MASS")
+betaO=function(P,betapi,betasigma,propt){
+  idx=rmultinom(P,size=1,prob=betapi)
+  K=length(betapi)
+  s=array(0,dim=c(K,K))
+  diag(s)=betasigma
+  bnorm=mvrnorm(P,rep(0,K),s)
+  betaO=apply(bnorm*t(idx),1,sum)
+  betaO=betaO*rbinom(P,1,propt)
+  return(betaO)
+}
+
+datamaker = function(N,P,l_pi,l_se,l_sp,f_pi,f_se,f_sp,sigmae){
+  # here I would like to fix the sparsity of L and F which is simple
+  # if we need to do futher experiment
+  L_true = betaO(N,l_pi,l_se,l_sp)
+  F_true = betaO(P,f_pi,f_se,f_sp)
+  E = matrix(rnorm(N*P,0,sigmae),ncol = P)
+  Y = L_true %*% t(F_true) + E
+  return(list(Y = Y,L_true = L_true,F_true = F_true,E = E))
+}
+
+```
+
+### sparse loding (simulated data)
+
+we can see there is tiny difference between `flash_r1` and `flash_add_greedy`.
+The difference between the `ebnm_pn` and `ebnm_ash` are tiny based on the RMSE ratio.
+
+```{r}
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+library(flashr2)
+data = flash_set_data(Data$Y)
+f_greedy_pn = flash_add_greedy(data,Kmax=10,ebnm_fn = ebnm_pn)
+f_greedy_ash = flash_add_greedy(data,Kmax=10,ebnm_fn = ebnm_ash)
+# here flashr2 provide 2 factors but 2nd factor is all zero.
+f_pn = flash_r1(data, ebnm_fn = ebnm_pn)
+f_ash = flash_r1(data, ebnm_fn = ebnm_ash)
+par(mfrow = c(2, 2)) 
+plot(f_pn$EL,f_greedy_pn$EL[,1],main = "r1 vs greedy (pn)")
+plot(f_pn$EL-f_greedy_pn$EL[,1],main = "difference r1 vs greedy")
+# there is tiny difference between greedy algorithm and rank one fucntion
+plot(f_ash$EL,f_greedy_ash$EL[,1],main = "r1 vs greedy (ash)")
+plot(f_ash$EL+f_greedy_ash$EL[,1],main = "difference r1 vs greedy")
+# compare the ash and pn methods
+par(mfrow = c(1, 1)) 
+plot(f_ash$EL,f_pn$EL,main = "pn vs ash (EL)")
+Y_hat_pn = f_pn$EL %*% t(f_pn$EF)
+RMSE_pn = sqrt(mean(( Data$Y - Y_hat_pn - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+Y_hat_ash = f_ash$EL %*% t(f_ash$EF)
+RMSE_ash = sqrt(mean(( Data$Y - Y_hat_ash - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+c(RMSE_pn,RMSE_ash)
+```
+
+Here we can see that the `ebnm_pn` is slightly better than `ebnm_ash`.
+
+We try repeat this experiment 100 times
+
+```{r}
+Sim_RMSE = function(N,P,l_pi,l_se,l_sp,f_pi,f_se,f_sp,sigmae){
+  Data = datamaker(N,P,l_pi,l_se,l_sp,f_pi,f_se,f_sp,sigmae)
+  data = flash_set_data(Data$Y)
+  f_pn = flash_r1(data, ebnm_fn = ebnm_pn)
+  f_ash = flash_r1(data, ebnm_fn = ebnm_ash)
+  Y_hat_pn = f_pn$EL %*% t(f_pn$EF)
+  RMSE_pn = sqrt(mean(( Data$Y - Y_hat_pn - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+  Y_hat_ash = f_ash$EL %*% t(f_ash$EF)
+  RMSE_ash = sqrt(mean(( Data$Y - Y_hat_ash - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+  return(c(RMSE_pn,RMSE_ash))
+}
+```
+
+```{r}
+T = 100
+RMSE = array(NA,dim = c(T,2))
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+for(i in 1:T){
+  RMSE[i,] = Sim_RMSE(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+}
+colnames(RMSE) = c("pn","ash")
+par(mfrow = c(1, 2)) 
+boxplot(RMSE,main = "pn vs ash")
+boxplot(RMSE[,1] - RMSE[,2],main = "difference")
+```
+
+
+### intermediate sparse loding (simulated data)
+
+The difference between the `ebnm_pn` and `ebnm_ash` are also tiny based on the RMSE ratio.
+
+```{r}
+library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+data = flash_set_data(Data$Y)
+f_pn = flash_r1(data, ebnm_fn = ebnm_pn)
+f_ash = flash_r1(data, ebnm_fn = ebnm_ash)
+Y_hat_pn = f_pn$EL %*% t(f_pn$EF)
+RMSE_pn = sqrt(mean(( Data$Y - Y_hat_pn - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+Y_hat_ash = f_ash$EL %*% t(f_ash$EF)
+RMSE_ash = sqrt(mean(( Data$Y - Y_hat_ash - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+c(RMSE_pn,RMSE_ash)
+```
+
+Here we can see that the `ebnm_pn` is slightly worse than `ebnm_ash`.
+
+```{r}
+T = 100
+RMSE = array(NA,dim = c(T,2))
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+for(i in 1:T){
+  RMSE[i,] = Sim_RMSE(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+}
+colnames(RMSE) = c("pn","ash")
+par(mfrow = c(1, 2)) 
+boxplot(RMSE,main = "pn vs ash")
+boxplot(RMSE[,1] - RMSE[,2],main = "difference")
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
