@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="Wei" />
+
+<meta name="date" content="2018-01-02" />
+
+<title>compare the different versions of ebnm methods</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 52px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+
+.section h2 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h3 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h4 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h5 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h6 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">flash workflow</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="about.html">About</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/NKweiwang/flash_workflow">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">compare the different versions of ebnm methods</h1>
+<h4 class="author"><em>Wei</em></h4>
+<h4 class="date"><em>2018-01-02</em></h4>
+
+</div>
+
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2018-01-03</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 30629dc</p>
+<!-- Add your analysis here -->
+<div id="for-the-simulated-data" class="section level2">
+<h2>for the simulated data</h2>
+<div id="sparse-loding-simulated-data" class="section level3">
+<h3>sparse loding (simulated data)</h3>
+<p>we can see there is tiny difference between <code>flash_r1</code> and <code>flash_add_greedy</code>. The difference between the <code>ebnm_pn</code> and <code>ebnm_ash</code> are tiny based on the RMSE ratio.</p>
+<pre class="r"><code>set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+library(flashr2)
+data = flash_set_data(Data$Y)
+f_greedy_pn = flash_add_greedy(data,Kmax=10,ebnm_fn = ebnm_pn)</code></pre>
+<pre><code>fitting factor/loading 1</code></pre>
+<pre><code>fitting factor/loading 2</code></pre>
+<pre class="r"><code>f_greedy_ash = flash_add_greedy(data,Kmax=10,ebnm_fn = ebnm_ash)</code></pre>
+<pre><code>fitting factor/loading 1
+fitting factor/loading 2</code></pre>
+<pre class="r"><code># here flashr2 provide 2 factors but 2nd factor is all zero.
+f_pn = flash_r1(data, ebnm_fn = ebnm_pn)
+f_ash = flash_r1(data, ebnm_fn = ebnm_ash)
+par(mfrow = c(2, 2)) 
+plot(f_pn$EL,f_greedy_pn$EL[,1],main = &quot;r1 vs greedy (pn)&quot;)
+plot(f_pn$EL-f_greedy_pn$EL[,1],main = &quot;difference r1 vs greedy&quot;)
+# there is tiny difference between greedy algorithm and rank one fucntion
+plot(f_ash$EL,f_greedy_ash$EL[,1],main = &quot;r1 vs greedy (ash)&quot;)
+plot(f_ash$EL+f_greedy_ash$EL[,1],main = &quot;difference r1 vs greedy&quot;)</code></pre>
+<p><img src="figure/compare_ash_ebmn.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code># compare the ash and pn methods
+par(mfrow = c(1, 1)) 
+plot(f_ash$EL,f_pn$EL,main = &quot;pn vs ash (EL)&quot;)</code></pre>
+<p><img src="figure/compare_ash_ebmn.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>Y_hat_pn = f_pn$EL %*% t(f_pn$EF)
+RMSE_pn = sqrt(mean(( Data$Y - Y_hat_pn - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+Y_hat_ash = f_ash$EL %*% t(f_ash$EF)
+RMSE_ash = sqrt(mean(( Data$Y - Y_hat_ash - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+c(RMSE_pn,RMSE_ash)</code></pre>
+<pre><code>[1] 0.2084337 0.2086121</code></pre>
+<p>Here we can see that the <code>ebnm_pn</code> is slightly better than <code>ebnm_ash</code>.</p>
+<p>We try repeat this experiment 100 times</p>
+<pre class="r"><code>Sim_RMSE = function(N,P,l_pi,l_se,l_sp,f_pi,f_se,f_sp,sigmae){
+  Data = datamaker(N,P,l_pi,l_se,l_sp,f_pi,f_se,f_sp,sigmae)
+  data = flash_set_data(Data$Y)
+  f_pn = flash_r1(data, ebnm_fn = ebnm_pn)
+  f_ash = flash_r1(data, ebnm_fn = ebnm_ash)
+  Y_hat_pn = f_pn$EL %*% t(f_pn$EF)
+  RMSE_pn = sqrt(mean(( Data$Y - Y_hat_pn - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+  Y_hat_ash = f_ash$EL %*% t(f_ash$EF)
+  RMSE_ash = sqrt(mean(( Data$Y - Y_hat_ash - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+  return(c(RMSE_pn,RMSE_ash))
+}</code></pre>
+<pre class="r"><code>T = 100
+RMSE = array(NA,dim = c(T,2))
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+for(i in 1:T){
+  RMSE[i,] = Sim_RMSE(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+}
+colnames(RMSE) = c(&quot;pn&quot;,&quot;ash&quot;)
+par(mfrow = c(1, 2)) 
+boxplot(RMSE,main = &quot;pn vs ash&quot;)
+boxplot(RMSE[,1] - RMSE[,2],main = &quot;difference&quot;)</code></pre>
+<p><img src="figure/compare_ash_ebmn.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="intermediate-sparse-loding-simulated-data" class="section level3">
+<h3>intermediate sparse loding (simulated data)</h3>
+<p>The difference between the <code>ebnm_pn</code> and <code>ebnm_ash</code> are also tiny based on the RMSE ratio.</p>
+<pre class="r"><code>library(cowplot)
+set.seed(99)
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+data = flash_set_data(Data$Y)
+f_pn = flash_r1(data, ebnm_fn = ebnm_pn)
+f_ash = flash_r1(data, ebnm_fn = ebnm_ash)
+Y_hat_pn = f_pn$EL %*% t(f_pn$EF)
+RMSE_pn = sqrt(mean(( Data$Y - Y_hat_pn - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+Y_hat_ash = f_ash$EL %*% t(f_ash$EF)
+RMSE_ash = sqrt(mean(( Data$Y - Y_hat_ash - Data$E )^2 ))/sqrt(mean(( Data$Y - Data$E )^2 ))
+c(RMSE_pn,RMSE_ash)</code></pre>
+<pre><code>[1] 0.3607005 0.3595091</code></pre>
+<p>Here we can see that the <code>ebnm_pn</code> is slightly worse than <code>ebnm_ash</code>.</p>
+<pre class="r"><code>T = 100
+RMSE = array(NA,dim = c(T,2))
+L_se = c( 0.25, 0.5, 1, 2, 4)
+L_pi = c(1, 1,1,1,1)
+L_pi = L_pi / sum(L_pi)
+N = 200
+P = 300
+for(i in 1:T){
+  RMSE[i,] = Sim_RMSE(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+}
+colnames(RMSE) = c(&quot;pn&quot;,&quot;ash&quot;)
+par(mfrow = c(1, 2)) 
+boxplot(RMSE,main = &quot;pn vs ash&quot;)
+boxplot(RMSE[,1] - RMSE[,2],main = &quot;difference&quot;)</code></pre>
+<p><img src="figure/compare_ash_ebmn.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.13.2 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] cowplot_0.8.0   ggplot2_2.2.1   flashr2_0.3-3   ashr_2.2-3     
+[5] ebnm_0.1-7      MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.14      plyr_1.8.4        git2r_0.19.0     
+ [4] iterators_1.0.9   tools_3.3.0       digest_0.6.12    
+ [7] tibble_1.3.3      evaluate_0.10.1   memoise_1.1.0    
+[10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.2      
+[13] Matrix_1.2-11     foreach_1.4.4     rstudioapi_0.6   
+[16] curl_2.8.1        yaml_2.1.14       parallel_3.3.0   
+[19] withr_2.0.0       stringr_1.2.0     httr_1.3.0       
+[22] knitr_1.17        REBayes_0.85      devtools_1.13.3  
+[25] rprojroot_1.2     grid_3.3.0        R6_2.2.2         
+[28] magrittr_1.5      backports_1.1.0   scales_0.4.1     
+[31] codetools_0.2-15  htmltools_0.3.6   assertthat_0.2.0 
+[34] softImpute_1.4    colorspace_1.3-2  stringi_1.1.5    
+[37] Rmosek_7.1.2      lazyeval_0.2.0    doParallel_1.0.11
+[40] pscl_1.5.2        munsell_0.4.3     truncnorm_1.0-7  
+[43] SQUAREM_2017.10-1</code></pre>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
