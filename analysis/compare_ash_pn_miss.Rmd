@@ -1,0 +1,179 @@
+---
+title: "compare the different versions of ebnm methods on missing data"
+author: "Wei"
+date: 2018-01-02
+output: 
+  html_document:
+    code_folding: hide
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+```{r}
+OCV_index=function(Y,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = k_fold)
+  rowindex = matrix(sample(N,N),ncol = k_fold)
+
+  foldindex = array(0,dim = c(k_fold,k_fold,2))
+  for(i in 1:k_fold){
+    for(j in 1:k_fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% k_fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = k_fold
+
+  return(list(foldindex = foldindex, rowindex = rowindex, colindex = colindex))
+}
+# OCVindex = OCV_index(Y,k_fold = 5)
+
+OCV_data = function(Y,OCVindex,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = OCVindex$colindex
+  rowindex = OCVindex$rowindex
+  foldindex = OCVindex$foldindex
+  missing= array(0,dim = c(k_fold,N,P))
+  for(i in 1:k_fold){
+    missing[i, , ] = Y
+    for(j in 1:k_fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  return(missing)
+}
+# OCVdata = OCV_data(Y,OCVindex,k_fold = 5)
+
+
+OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50){
+  colindex = OCVindex$colindex
+  rowindex = OCVindex$rowindex
+  foldindex = OCVindex$foldindex
+  missing = OCVdata
+  SSE = rep(0,k_fold)
+  for(i in 1:k_fold){
+    miss_hat = call_method(missing[i,,], method = method, Kmax = Kmax)
+    for(j in 1:k_fold){
+      SSE[i] = SSE[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                               miss_hat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+    }
+  }
+  RMSE = sqrt(sum(SSE)/(dim(Y)[1] * dim(Y)[2]))
+  return(RMSE)
+}
+
+call_method = function(Y_data,method,Kmax = 50){
+  if(method == "ebnm_pn"){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_pn,verbose = F)
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == "ebnm_ash"){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_ash,verbose = F)
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else{
+    stop("the method is not implemented yet, please check it out")
+  }
+  return(Y_hat)
+}
+```
+
+
+## denoise tumor data example in our paper 
+
+```{r}
+set.seed(99)
+library(denoiseR)
+data(tumors)
+
+Y = tumors[, -ncol(tumors)]
+Y = as.matrix(Y)
+N = dim(Y)[1]
+P = dim(Y)[2]
+
+OCVindex = OCV_index(Y,k_fold = 5)
+OCVdata = OCV_data(Y,OCVindex,k_fold = 5)
+f_pn = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "ebnm_pn",Kmax = 20)
+# flashG_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50)
+f_ash = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "ebnm_ash",Kmax = 20)
+
+```
+
+Check the RMSE for the missing value
+
+```{r}
+c(f_ash,f_pn)
+```
+
+## Breast cancer data example in our paper 
+
+```{r}
+set.seed(99)
+library(R.matlab)
+## run the code
+Y_centered = readMat("../../ash-sfa/Rcode/postmean/flash_simulation/missingvalue/Breastcancer/example.mat")
+Y = Y_centered$Y
+# in the matlab package of NSF, the use the centered data by rows
+N = dim(Y)[1]
+P = dim(Y)[2]
+Y = Y - rowMeans(Y) %*% t(rep(1,P))
+OCVindex = OCV_index(Y,k_fold = 5)
+OCVdata = OCV_data(Y,OCVindex,k_fold = 5)
+f_pn = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "ebnm_pn",Kmax = 50)
+# flashG_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50)
+f_ash = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "ebnm_ash",Kmax = 50)
+```
+
+Check the RMSE for the missing value
+
+```{r}
+c(f_ash,f_pn)
+```
+
+
+
+### MovieLens data
+
+```{}
+set.seed(11)
+library(Matrix)
+ml100K_data = readRDS("../../ash-sfa/Rcode/postmean/flash_simulation/missingvalue/ML100K/biscale_data.rds")
+MLMatrix <- sparseMatrix(i = ml100K_data[,1],
+                         j = ml100K_data[,2],
+                         x = ml100K_data[,3],dims = c(943,1682))
+# turn this sparse matrix into matrix in r
+Y = as.matrix(MLMatrix)
+Y[which(Y == 0)] = NA
+OCVindex = OCV_index(Y,k_fold = 10)
+OCVdata = OCV_data(Y,OCVindex,k_fold = 10)
+f_pn = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = "ebnm_pn",Kmax = 10)
+# flashG_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50)
+f_ash = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = "ebnm_ash",Kmax = 10)
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
