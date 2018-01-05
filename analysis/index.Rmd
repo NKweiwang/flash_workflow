@@ -58,3 +58,12 @@ Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html
 click here to check the template for [missing data imputation with OCV](templateforOCV.html)
 
 click here to check the comparison of different options for FLASH [different shrink options](compareOptionsOCV.html)
+
+### different options for EBNM
+
+#### simulation examples in our paper
+
+Click here to check the [simulated examples](compare_ash_ebmn.html)
+
+Click here to check the [missing data examples (first simple comparison)](compare_ash_pn_miss.html)
+
