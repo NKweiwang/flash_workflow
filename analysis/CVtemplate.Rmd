@@ -2,7 +2,9 @@
 title: "template for CV in RCC"
 author: "Wei"
 date: 10-03
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 <!-- The file analysis/chunks.R contains chunks that define default settings
@@ -93,7 +95,8 @@ PMD_wrapper = function(Y, missindex, rank_max){
 
 ```
 
-```{r}
+
+```
 library(R.matlab)
 # call the R functions
 source("~/HG/flash/data/CVmissflashr2/template/Rfunction.R")
