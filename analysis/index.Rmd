@@ -55,7 +55,7 @@ Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html
 
 #### missing data imputation
 
-click here to check the template for [missing data imputation with OCV](templateforOCV.html)
+click here to check the template for [missing data imputation with OCV](templateforOCV.html) and [CV template](CVtemplate.html)
 
 click here to check the comparison of different options for FLASH [different shrink options](compareOptionsOCV.html)
 

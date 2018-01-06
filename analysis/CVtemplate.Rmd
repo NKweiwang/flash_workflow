@@ -1,0 +1,214 @@
+---
+title: "template for CV in RCC"
+author: "Wei"
+date: 10-03
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## preparation
+
+1. creat a file by `mkdir Breastcancer` and put the data file into this folder. in this case, we use matlab function as well, so we use `.mat` file for the data.
+
+2. creat a folder to track the code `mkdir outlog`
+
+## wrapper file
+
+### R functions
+
+```{r}
+miss_gen = function(Y, percent = 0.2){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = sample(P,(P*percent))
+  rowindex = sample(N,(N*percent))
+  missindex = list(colindex = colindex, rowindex = rowindex)
+  return(missindex)
+}
+
+# methods
+flashG_wrapper = function(Y, missindex, rank_max,type = "constant"){
+  # delete the value in the missing position
+  Y_miss = Y
+  Y_miss[missindex$rowindex, missindex$colindex] = NA
+  data = flashr2::flash_set_data(Y_miss)
+  g_flash = flashr2::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = "fdr"),var_type = type)
+  misshat_flash = g_flash$EL %*% t(g_flash$EF)
+  rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_flash[missindex$rowindex, missindex$colindex])^2))
+  return(rmse)
+}
+
+flashB_wrapper = function(Y, missindex, rank_max,type = "constant"){
+  # delete the value in the missing position
+  Y_miss = Y
+  Y_miss[missindex$rowindex, missindex$colindex] = NA
+  data = flashr2::flash_set_data(Y_miss)
+  g_flash = flashr2::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = "fdr"),var_type = type)
+  b_flash = flash_backfit(data,g_flash)
+  misshat_flash = b_flash$EL %*% t(b_flash$EF)
+  rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_flash[missindex$rowindex, missindex$colindex])^2))
+  return(rmse)
+}
+
+softImpute_wrapper = function(Y, missindex, rank_max){
+  # delete the value in the missing position
+  Y_miss = Y
+  Y_miss[missindex$rowindex, missindex$colindex] = NA
+  gsoft = softImpute::softImpute(Y_miss, rank.max = rank_max, lambda = 30)
+  misshat_soft =  gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v)
+  rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_soft[missindex$rowindex, missindex$colindex])^2))
+  return(rmse)
+}
+
+PMD_wrapper = function(Y, missindex, rank_max){
+  # delete the value in the missing position
+  Y_miss = Y
+  Y_miss[missindex$rowindex, missindex$colindex] = NA
+  out = PMA::PMD(Y_miss, K = rank_max)
+  misshat_PMD =  out$u %*% diag(out$d) %*% t(out$v)
+  rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_PMD[missindex$rowindex, missindex$colindex])^2))
+  return(rmse)
+}
+
+
+```
+
+```{r}
+library(R.matlab)
+# call the R functions
+source("~/HG/flash/data/CVmissflashr2/template/Rfunction.R")
+# read the data
+# you need to change the path for different data
+Y_data = R.matlab::readMat("~/HG/flash/data/CVmissflashr2/Breastcancer/example.mat")
+Y = Y_data$Y
+N = dim(Y)[1]
+P = dim(Y)[2]
+Y = Y - rowMeans(Y) %*% t(rep(1,P))
+result = c()
+missindex = miss_gen(Y, percent = 0.1)
+# creat a folder for the output and matlab in the folder we make
+if(file.exists("NBSFAout")){
+  unlink("NBSFAout", recursive= T)
+}
+system("mkdir NBSFAout")
+# write the missing index
+writeMat("./NBSFAout/missindex.mat", missindex = missindex)
+
+flashG_rmse = flashG_wrapper(Y, missindex, rank_max = 50)
+pmd_rmse  = PMD_wrapper(Y, missindex, rank_max= 50 )
+soft_rmse = softImpute_wrapper(Y, missindex, rank_max = 50)
+# then call the matlab estiamtion 
+# this for the folder of the data
+system("matlab -nosplash -nodesktop -r \"addpath(\'~/HG/flash/data/CVmissflashr2/template\'); run(\'missvalue.m\');exit;\" ")
+g_nsfa = readMat("./NBSFAout/NSFAresult.mat")
+nsfa_rmse = as.vector(g_nsfa$rmse.NSFA)
+
+result = c(flashG_rmse, nsfa_rmse,pmd_rmse,soft_rmse)
+
+saveRDS(result, "./NBSFAout/output.rds")
+
+```
+
+### matlab code
+
+```
+addpath('~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/');
+addpath('~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/utils/');
+
+% you need to change the path and the data file (not centered)
+load ../example.mat;
+Ycentered=Y-repmat(mean(Y,2),1,size(Y,2));
+settings=defaultsettings();
+[settings.D,settings.N]=size(Ycentered);
+settings.iterations=100;
+% now the missing is decide by the this is the missing index.(or you can upload the missing matrix)
+
+file_path = fullfile(pwd,'NBSFAout/missindex.mat');
+load(file_path);
+mvmask = ones(settings.D,settings.N);
+mvmask(missindex.rowindex,missindex.colindex) = 0;
+
+initialsample=init_nsfa(settings);
+[finalsample,resultstable]=nsfa(Ycentered,mvmask,initialsample,settings);
+Y_hat = (finalsample.G *  finalsample.X);
+
+sse_NSFA = sum(sum((Ycentered(missindex.rowindex,missindex.colindex) - Y_hat(missindex.rowindex,missindex.colindex)).^2));
+mse_NSFA = sse_NSFA/(length(missindex.rowindex)*length(missindex.colindex))
+rmse_NSFA = sqrt(mse_NSFA)
+
+save_path = fullfile(pwd,'NBSFAout/NSFAresult');
+save(save_path,'rmse_NSFA'); 
+```
+
+## batch file 
+
+```
+#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=/home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.err
+#SBATCH --array=1-100
+#SBATCH --time=06:00:00
+#SBATCH --partition=broadwl
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=6000
+
+
+######################
+# Begin work section #
+######################
+
+# Print this sub-job's task ID
+cd /home/weidong/HG/flash/data/CVmissflashr2/Breastcancer
+mkdir test${SLURM_ARRAY_TASK_ID}
+cd test${SLURM_ARRAY_TASK_ID}
+Rscript --verbose /home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/runR.R
+```
+
+
+## run
+
+```
+sbatch Jobs.sbatch
+```
+
+## plot the result
+
+```
+T = 100
+results = matrix(NA,ncol = 4, nrow = T)
+for(i in 1:T){
+  test_folder = paste("test", i, sep = "")
+  out_folder = "NBSFAout"
+  out_file = "output.rds"
+  file_name = file.path(test_folder,out_folder,out_file)
+  results[i,] = try(readRDS(file_name))
+}
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
