@@ -329,10 +329,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-10-06</p>
+<p><strong>Last updated:</strong> 2018-01-10</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 48ecf7e</p>
+<p><strong>Code version:</strong> eb602ff</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -551,7 +551,7 @@ OCV.sbatch  example.mat  missvalue.m  outlog  runOCV.R  wrapper.R</code></pre>
 <div id="to-get-the-result" class="section level2">
 <h2>to get the result</h2>
 <pre><code>T = 100
-results = matrix(NA,ncol = 4, nrow = T)
+results = matrix(NA,ncol = 22, nrow = T)
 for(i in 1:T){
   test_folder = paste(&quot;test&quot;, i, sep = &quot;&quot;)
   out_folder = &quot;NBSFAout&quot;
@@ -597,45 +597,154 @@ pM = plot_res(ML_res,&quot;Movie Lens data&quot;)</code></pre>
 <pre><code>Warning: Removed 48 rows containing non-finite values (stat_boxplot).</code></pre>
 <p><img src="figure/templateforOCV.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
+<div id="code-for-the-tuning-parameters-from-ocv-only-change-one-parameter" class="section level2">
+<h2>code for the tuning parameters from OCV only change one parameter</h2>
+<p>try this one later…..</p>
+<pre class="r"><code>CVPMD_softImpute=function(Y,c_s,K,fold = 10, method = &quot;PMD&quot;,N_sim = 10){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = fold)
+  rowindex = matrix(sample(N,N),ncol = fold)
+  
+  missing= array(0,dim = c(fold,N,P))
+  foldindex = array(0,dim = c(fold,fold,2))
+  for(i in 1:fold){
+    for(j in 1:fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = fold
+  for(i in 1:fold){
+    missing[i, , ] = Y
+    for(j in 1:fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  # c_s is the candicate of shrinkage parameter
+  n_s = length(c_s)
+  # rmse for each grids
+  CVRMSE = rep(0,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # for each candidate, we run it N_sim times
+  for(t_s in 1:n_s){
+    # for each grid
+    for(iter in 1:N_sim){
+      # each time we set the rmse to zeros
+      rmse = rep(0,fold)
+      for(i in 1:fold){
+        if(method == &quot;PMD&quot;){
+          out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)
+          # out = PMD(missing[i,,], K = K)
+        }else{
+          out = softImpute(Y, rank.max = K,lambda = c_s[t_s]) 
+        }
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+        for(j in 1:fold){
+          rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
+                                     misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+        }
+      } #get the result for one run
+      print(sqrt(sum(rmse)/(N*P)))
+      CVRMSE[t_s] = CVRMSE[t_s] + sqrt(sum(rmse)/(N*P))
+    }
+    if(CVRMSE[t_s] &lt; minrmse){
+      minrmse = CVRMSE[t_s]
+      opt_s = c_s[t_s]
+    }
+  }
+  CVRMSE = CVRMSE/N_sim
+  return(list(opt_s = opt_s, output = CVRMSE))
+}
+
+PMA.wrapper = function(Y,ngrids = 10,K,fold = 10){
+  library(PMA)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0.2,0.99,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;PMD&quot;)
+  out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)
+  residual_PMD = Y -  out$u %*%  diag(out$d) %*% t(out$v)
+  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
+}
+
+softImpute.wrapper = function(Y,ngrids = 10,K,fold = 10){
+  library(softImpute)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0,10,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;softImpute&quot;)
+  out = softImpute(Y, rank.max = K,lambda = cvout$opt_s) 
+  residual_softImpute = Y -  out$u %*%  diag(out$d) %*% t(out$v)
+  return(list(d = out$d, u = out$u, v = out$v, residual = residual_softImpute))
+}</code></pre>
+<div id="new-reuslt" class="section level4">
+<h4>new reuslt</h4>
+<pre class="r"><code>library(ggplot2)
+plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  pmd_c = sapply(seq(1,10),function(x){paste(&quot;PMD&quot;,x)})
+  softImpute_c = sapply(seq(1,10),function(x){paste(&quot;SF&quot;,x)})
+  methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,pmd_c,softImpute_c), each = N)
+  df = data.frame(RMSE = rmse, Method = methods )
+  p&lt;-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
+  geom_boxplot()+
+  # geom_violin()+
+  ggtitle(title) +  theme_bw()+
+    theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
+  p
+}</code></pre>
+<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/denoiseTumor_box.rds&quot;)
+pt = plot_res(PT_res,&quot;Tumor data&quot;)
+pt</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/TEXT_prsdt_box.rds&quot;)
+pp = plot_res(PT_res,&quot;Text data&quot;)
+pp</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <!-- Insert the session information into the document -->
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.12.6 (unknown)
+Running under: OS X 10.13.2 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
-[1] parallel  stats     graphics  grDevices utils     datasets  methods  
-[8] base     
+[1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] workflowr_0.4.0   rmarkdown_1.6     doParallel_1.0.10 iterators_1.0.8  
-[5] foreach_1.4.3     caret_6.0-76      ggplot2_2.2.1     lattice_0.20-35  
+ [1] devtools_1.13.3 reshape2_1.4.2  flashr2_0.4-0   softImpute_1.4 
+ [5] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      denoiseR_1.0   
+ [9] Matrix_1.2-11   R.matlab_3.6.1  cowplot_0.8.0   ggplot2_2.2.1  
+[13] ashr_2.2-3      ebnm_0.1-7      MASS_7.3-47     workflowr_0.4.0
+[17] rmarkdown_1.6  
 
 loaded via a namespace (and not attached):
- [1] softImpute_1.4     PMA_1.0.9          reshape2_1.4.2    
- [4] ashr_2.1-25        splines_3.3.0      Rmosek_7.1.2      
- [7] colorspace_1.3-2   htmltools_0.3.6    stats4_3.3.0      
-[10] yaml_2.1.14        mgcv_1.8-18        rlang_0.1.2       
-[13] R.oo_1.21.0        ModelMetrics_1.1.0 nloptr_1.0.4      
-[16] R.utils_2.5.0      REBayes_0.85       plyr_1.8.4        
-[19] stringr_1.2.0      MatrixModels_0.4-1 munsell_0.4.3     
-[22] gtable_0.2.0       R.matlab_3.6.1     R.methodsS3_1.7.1 
-[25] codetools_0.2-15   evaluate_0.10.1    labeling_0.3      
-[28] knitr_1.17         SparseM_1.77       pscl_1.4.9        
-[31] quantreg_5.33      pbkrtest_0.4-7     Rcpp_0.12.12      
-[34] scales_0.4.1       backports_1.1.0    truncnorm_1.0-7   
-[37] lme4_1.1-13        gridExtra_2.3      digest_0.6.12     
-[40] stringi_1.1.5      flashr2_0.2-3      grid_3.3.0        
-[43] rprojroot_1.2      tools_3.3.0        magrittr_1.5      
-[46] lazyeval_0.2.0     tibble_1.3.3       car_2.1-5         
-[49] MASS_7.3-47        Matrix_1.2-11      SQUAREM_2016.8-2  
-[52] assertthat_0.2.0   minqa_1.2.4        nnet_7.3-12       
-[55] nlme_3.1-131       git2r_0.19.0      </code></pre>
+ [1] lattice_0.20-35      Rmosek_7.1.2         colorspace_1.3-2    
+ [4] htmltools_0.3.6      yaml_2.1.14          rlang_0.1.2         
+ [7] R.oo_1.21.0          withr_2.0.0          R.utils_2.5.0       
+[10] REBayes_0.85         foreach_1.4.4        stringr_1.2.0       
+[13] munsell_0.4.3        gtable_0.2.0         R.methodsS3_1.7.1   
+[16] codetools_0.2-15     leaps_3.0            memoise_1.1.0       
+[19] evaluate_0.10.1      labeling_0.3         knitr_1.17          
+[22] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
+[25] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
+[28] flashClust_1.01-2    scales_0.4.1         backports_1.1.0     
+[31] scatterplot3d_0.3-40 truncnorm_1.0-7      gridExtra_2.3       
+[34] digest_0.6.12        stringi_1.1.5        grid_3.3.0          
+[37] rprojroot_1.2        tools_3.3.0          magrittr_1.5        
+[40] lazyeval_0.2.0       tibble_1.3.3         cluster_2.0.6       
+[43] FactoMineR_1.36      SQUAREM_2017.10-1    assertthat_0.2.0    
+[46] httr_1.3.0           rstudioapi_0.6       iterators_1.0.9     
+[49] R6_2.2.2             git2r_0.19.0        </code></pre>
 </div>
 
 <hr>
