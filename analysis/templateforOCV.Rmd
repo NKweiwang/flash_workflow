@@ -435,6 +435,9 @@ pt
 PT_res = readRDS("../data/missingvalue/box_res_grids_sf_pmd/TEXT_prsdt_box.rds")
 pp = plot_res(PT_res,"Text data")
 pp
+PT_res = readRDS("../data/missingvalue/box_res_grids_sf_pmd/BreastCancer_box.rds")
+pb = plot_res(PT_res,"Text data")
+pb
 ```
 
 ## Session information
