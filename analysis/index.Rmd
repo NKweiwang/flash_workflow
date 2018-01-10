@@ -53,6 +53,8 @@ Click here to check the [RMSE for the rank one example in the paper](MSErank1sim
 
 Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html)
 
+compare with PCA result[compare with SVD](PCAresult.html)
+
 #### missing data imputation
 
 click here to check the template for [missing data imputation with OCV](templateforOCV.html) and [CV template](CVtemplate.html)

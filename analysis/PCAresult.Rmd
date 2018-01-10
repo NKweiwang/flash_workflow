@@ -1,0 +1,82 @@
+---
+title: "PCA(SVD) result"
+author: "Wei"
+date: 2018-01-10
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+```{r}
+plot_GTEXres = function(L,pve){
+  library(reshape2)
+  data_L = melt(L)
+  colnames(data_L) = c("tissue","loading","value")
+  library(ggplot2)
+  tissue_color = as.character(colordata[,2])
+  data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
+  data_L$loading = factor(data_L$loading,levels = 1:14 ,labels = paste("loading",1:14,"; pve:", pve[1:14]))
+  
+  ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
+    geom_bar(stat = "identity",width = 0.6) +
+    scale_fill_manual(values=tissue_color) +
+    scale_x_discrete(labels = NULL) +
+    theme_grey()+
+    theme(legend.position="right", legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
+    labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
+    facet_wrap(~loading, ncol = 2, scales = "free_y") +
+    guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
+}
+b_flash = readRDS("../data/GTExdata/res_flashr2/bflashvarcol.rds")
+load("../data/GTExdata/gtexEQTL_zscore.rds")
+ssY = sum(zscore^2)
+K = dim(b_flash$EL)[2] -1
+pve = (sapply(seq(1,K),function(x){ sum(b_flash$EL[,x]^2 %*% t(b_flash$EF[,x]^2)) }))/ssY
+pve = pmax(round(pve,3),0.001)
+
+dat = read.table('../data/GTExColors.txt', sep = '\t', comment.char = '')
+colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
+```
+
+```{r}
+L = b_flash$EL[,1:8]
+plot_GTEXres(L,pve)
+L = b_flash$EL[,9:16]
+plot_GTEXres(L,pve)
+
+gsvd = svd(zscore)
+pve = (sapply(seq(1,K),function(x){ sum((gsvd$d[x] * gsvd$u[,x] %*% t(gsvd$v[,x]))^2) }))/ssY
+pve = pmax(round(pve,3),0.001)
+L = gsvd$v[,1:8]
+plot_GTEXres(L,pve)
+L = gsvd$v[,9:16]
+plot_GTEXres(L,pve)
+
+
+
+```
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
