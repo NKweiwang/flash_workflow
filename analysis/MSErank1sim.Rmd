@@ -153,7 +153,11 @@ for(i in 1:T){
 ```{r}
 sparse_res = readRDS("../data/simulation/rankone/RMSE/result_sparse.rds")
 colnames(sparse_res) = c("PMD","flash","SFA","SFAmix","SVD","SSVD")
+sparse_diff = sparse_res - sparse_res[,2]
+
 boxplot(sparse_res,main = "sparse case")
+boxplot(sparse_diff,main = "sparse case (difference)")
+abline(a = 0,b = 0,col= "red")
 ```
 
 ## RMSE intermediate sparse case 100 simulations
@@ -161,7 +165,10 @@ boxplot(sparse_res,main = "sparse case")
 ```{r}
 sparse_res = readRDS("../data/simulation/rankone/RMSE/result_itermediate.rds")
 colnames(sparse_res) = c("PMD","flash","SFA","SFAmix","SVD","SSVD")
+sparse_diff = sparse_res - sparse_res[,2]
 boxplot(sparse_res,main = "intermediate sparse case")
+boxplot(sparse_diff,main = "sparse case (difference)")
+abline(a = 0,b = 0,col= "red")
 ```
 
 ## Session information
