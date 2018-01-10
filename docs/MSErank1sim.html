@@ -312,10 +312,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2017-12-09</p>
+<p><strong>Last updated:</strong> 2018-01-10</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 5055f23</p>
+<p><strong>Code version:</strong> fcb28a4</p>
 <!-- Add your analysis here -->
 <pre><code>flash.wrapper = function(Y_data){
   # missindex is a matirx with 3 column here: i j x
@@ -424,15 +424,24 @@ for(i in 1:T){
 <h2>RMSE sparse case 100 simulations</h2>
 <pre class="r"><code>sparse_res = readRDS(&quot;../data/simulation/rankone/RMSE/result_sparse.rds&quot;)
 colnames(sparse_res) = c(&quot;PMD&quot;,&quot;flash&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;SVD&quot;,&quot;SSVD&quot;)
+sparse_diff = sparse_res - sparse_res[,2]
+
 boxplot(sparse_res,main = &quot;sparse case&quot;)</code></pre>
 <p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>boxplot(sparse_diff,main = &quot;sparse case (difference)&quot;)
+abline(a = 0,b = 0,col= &quot;red&quot;)</code></pre>
+<p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-1-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="rmse-intermediate-sparse-case-100-simulations" class="section level2">
 <h2>RMSE intermediate sparse case 100 simulations</h2>
 <pre class="r"><code>sparse_res = readRDS(&quot;../data/simulation/rankone/RMSE/result_itermediate.rds&quot;)
 colnames(sparse_res) = c(&quot;PMD&quot;,&quot;flash&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;SVD&quot;,&quot;SSVD&quot;)
+sparse_diff = sparse_res - sparse_res[,2]
 boxplot(sparse_res,main = &quot;intermediate sparse case&quot;)</code></pre>
 <p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>boxplot(sparse_diff,main = &quot;sparse case (difference)&quot;)
+abline(a = 0,b = 0,col= &quot;red&quot;)</code></pre>
+<p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -440,7 +449,7 @@ boxplot(sparse_res,main = &quot;intermediate sparse case&quot;)</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.12.6 (unknown)
+Running under: OS X 10.13.2 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -449,23 +458,29 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] MASS_7.3-47     flashr2_0.2-3   workflowr_0.4.0 rmarkdown_1.6  
+ [1] flashr2_0.4-0   softImpute_1.4  PMA_1.0.9       impute_1.48.0  
+ [5] plyr_1.8.4      denoiseR_1.0    Matrix_1.2-11   R.matlab_3.6.1 
+ [9] cowplot_0.8.0   ggplot2_2.2.1   ashr_2.2-3      ebnm_0.1-7     
+[13] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.12      git2r_0.19.0      plyr_1.8.4       
- [4] iterators_1.0.8   tools_3.3.0       ssvd_1.0         
- [7] digest_0.6.12     evaluate_0.10.1   tibble_1.3.3     
-[10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.2      
-[13] Matrix_1.2-11     foreach_1.4.3     rstudioapi_0.6   
-[16] yaml_2.1.14       parallel_3.3.0    stringr_1.2.0    
-[19] knitr_1.17        REBayes_0.85      rprojroot_1.2    
-[22] grid_3.3.0        ggplot2_2.2.1     ashr_2.1-25      
-[25] magrittr_1.5      backports_1.1.0   scales_0.4.1     
-[28] codetools_0.2-15  htmltools_0.3.6   assertthat_0.2.0 
-[31] softImpute_1.4    colorspace_1.3-2  stringi_1.1.5    
-[34] Rmosek_7.1.2      lazyeval_0.2.0    munsell_0.4.3    
-[37] doParallel_1.0.10 pscl_1.4.9        truncnorm_1.0-7  
-[40] SQUAREM_2016.8-2 </code></pre>
+ [1] lattice_0.20-35      Rmosek_7.1.2         colorspace_1.3-2    
+ [4] htmltools_0.3.6      yaml_2.1.14          rlang_0.1.2         
+ [7] R.oo_1.21.0          withr_2.0.0          R.utils_2.5.0       
+[10] REBayes_0.85         foreach_1.4.4        stringr_1.2.0       
+[13] munsell_0.4.3        gtable_0.2.0         R.methodsS3_1.7.1   
+[16] devtools_1.13.3      codetools_0.2-15     leaps_3.0           
+[19] memoise_1.1.0        evaluate_0.10.1      knitr_1.17          
+[22] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
+[25] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
+[28] flashClust_1.01-2    scales_0.4.1         backports_1.1.0     
+[31] scatterplot3d_0.3-40 truncnorm_1.0-7      gridExtra_2.3       
+[34] digest_0.6.12        stringi_1.1.5        grid_3.3.0          
+[37] rprojroot_1.2        tools_3.3.0          magrittr_1.5        
+[40] lazyeval_0.2.0       tibble_1.3.3         cluster_2.0.6       
+[43] FactoMineR_1.36      SQUAREM_2017.10-1    assertthat_0.2.0    
+[46] httr_1.3.0           rstudioapi_0.6       iterators_1.0.9     
+[49] R6_2.2.2             git2r_0.19.0        </code></pre>
 </div>
 
 <hr>
