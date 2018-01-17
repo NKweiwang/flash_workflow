@@ -329,10 +329,12 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-10</p>
+<pre><code>Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone &#39;default/
+America/Chicago&#39;</code></pre>
+<p><strong>Last updated:</strong> 2018-01-17</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 40efdb1</p>
+<p><strong>Code version:</strong> 7d80782</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -349,7 +351,88 @@ shared across the workflowr files. -->
 </ol>
 <div id="wrapper-function-for-ocv" class="section level3">
 <h3>wrapper function for OCV</h3>
-<pre class="r"><code>OCV_index=function(Y,k_fold = 5){
+<pre class="r"><code>CVPMD_softImpute=function(Y,c_s,K,fold = 10, method = &quot;PMD&quot;){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = fold)
+  rowindex = matrix(sample(N,N),ncol = fold)
+
+  missing= array(0,dim = c(fold,N,P))
+  foldindex = array(0,dim = c(fold,fold,2))
+  for(i in 1:fold){
+    for(j in 1:fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = fold
+  for(i in 1:fold){
+    missing[i, , ] = Y
+    for(j in 1:fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+    missing[i,,which(colSums(missing[i,,],na.rm = T) ==0)] = Y[,which(colSums(missing[i,,],na.rm = T) ==0)]
+  }
+  # c_s is the candicate of shrinkage parameter
+  n_s = length(c_s)
+  # rmse for each grids
+  CVRMSE = rep(0,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # for each candidate, we run it N_sim times
+  for(t_s in 1:n_s){
+    # for each grid
+    # each time we set the rmse to zeros
+    rmse = rep(0,fold)
+    for(i in 1:fold){
+      if(method == &quot;PMD&quot;){
+        res_log = capture.output({out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)})
+      }else{
+        out = softImpute(missing[i,,], rank.max = K,lambda = c_s[t_s])
+      }
+      if(length(out$d)==1){
+        misshat = (out$d) * out$u %*% t(out$v)
+      }else{
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+      }
+      for(j in 1:fold){
+        # for each fold j
+        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2,na.rm = TRUE)
+      }
+    } #get the result for one run
+    CVRMSE[t_s] = CVRMSE[t_s] + sqrt(sum(rmse)/(N*P))
+    if(CVRMSE[t_s] &lt; minrmse){
+      minrmse = CVRMSE[t_s]
+      opt_s = c_s[t_s]
+    }
+  }
+  return(list(opt_s = opt_s, output = CVRMSE))
+}
+
+
+PMA.wrapper = function(Y,ngrids = 10,K,fold = 10){
+  library(PMA)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0.3,0.8,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;PMD&quot;)
+  res_log = capture.output({out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)})
+  return(list(d = out$d, u = out$u, v = out$v))
+}
+
+softImpute.wrapper = function(Y,ngrids = 10,K,fold = 10){
+  library(softImpute)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0,100,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;softImpute&quot;)
+  out = softImpute(Y, rank.max = K,lambda = cvout$opt_s)
+  return(list(d = out$d, u = out$u, v = out$v))
+}
+
+
+OCV_index=function(Y,k_fold = 5){
   N = dim(Y)[1]
   P = dim(Y)[2]
   colindex = matrix(sample(P,P),ncol = k_fold)
@@ -380,6 +463,7 @@ OCV_data = function(Y,OCVindex,k_fold = 5){
     for(j in 1:k_fold){
       missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
     }
+    missing[i,,which(colSums(missing[i,,],na.rm = T) ==0)] = Y[,which(colSums(missing[i,,],na.rm = T) ==0)]
   }
   return(missing)
 }
@@ -396,7 +480,7 @@ OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = &quot;flash&quot;,Kmax
     miss_hat = call_method(missing[i,,], method = method, Kmax = Kmax)
     for(j in 1:k_fold){
       SSE[i] = SSE[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
-                               miss_hat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+                               miss_hat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2,na.rm = TRUE)
     }
   }
   RMSE = sqrt(sum(SSE)/(dim(Y)[1] * dim(Y)[2]))
@@ -406,16 +490,45 @@ OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = &quot;flash&quot;,Kmax
 call_method = function(Y_data,method,Kmax = 50){
   if(method == &quot;flash&quot;){
     data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ash_param=list(method = &quot;fdr&quot;),var_type = &quot;constant&quot;)
+    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = &quot;constant&quot;)
+    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == &quot;flash_wn&quot;){
+    data = flashr2::flash_set_data(Y_data)
+    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = &quot;constant&quot;,nullcheck=FALSE)
+    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,nullcheck=FALSE)
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == &quot;flash_bf&quot;){
+    data = flashr2::flash_set_data(Y_data)
+    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = &quot;constant&quot;)
+    # f = flashr2::flash_backfit(data,f_greedy,var_type = &quot;constant&quot;)
+    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax)
+    f = flashr2::flash_backfit(data,f_greedy)
+    Y_hat = f$EL %*% t(f$EF)
   }else if(method == &quot;PMD&quot;){
-    out = PMA::PMD(Y_data, K = Kmax)
-    Y_hat =  out$u %*% diag(out$d) %*% t(out$v)
+    res_log = capture.output({out = PMA.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10)})
+    if(length(out$d)==1){
+      Y_hat =  (out$d) * out$u %*% t(out$v)
+    }else{
+      Y_hat =  out$u %*% diag(out$d) %*% t(out$v)
+    }
+  }else if(method == &#39;PN&#39;){
+    library(ebnm)
+    library(flashr2)
+    data = flashr2::flash_set_data(Y_data)
+    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_pn,var_type = &quot;constant&quot;)
+    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_pn)
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == &quot;softImpute&quot;){
-    gsoft = softImpute(Y_data, rank.max = Kmax)
-    Y_hat =  gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v)
+    gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
+    if(length(gsoft$d)==1){
+      Y_hat =  try((gsoft$d) * gsoft$u %*% t(gsoft$v))
+    }else{
+      Y_hat =  try(gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v))
+    }
   }else{
-    stop(&quot;the method is not implemented yet, please check it out&quot;)
+    # stop(&quot;the method is not implemented yet, please check it out&quot;)
+    Y_hat = matrix(0,ncol = dim(Y_data)[2],nrow = dim(Y_data)[1])
   }
   return(Y_hat)
 }
@@ -429,7 +542,7 @@ NSF_OCV = function(OCVindex){
 
   writeMat(&quot;./NBSFAout/OCVindex.mat&quot;, OCVindex = OCVindex)
 
-  system(&quot;matlab -nosplash -nodesktop -r \&quot;addpath(\&#39;~/HG/flash/data/OCVmissflashr2/Breastcancer\&#39;); run(\&#39;missvalue.m\&#39;);exit;\&quot; &quot;)
+  system(&quot;matlab -nosplash -nodesktop -r \&quot;addpath(\&#39;../\&#39;); run(\&#39;missvalue.m\&#39;);exit;\&quot; &quot;)
   g_nsfa = readMat(&quot;./NBSFAout/NSFAresult.mat&quot;)
   nsfa_rmse = as.vector(g_nsfa$RMSE)
   return(nsfa_rmse)
@@ -438,21 +551,24 @@ NSF_OCV = function(OCVindex){
 </div>
 <div id="matlab-code" class="section level3">
 <h3>matlab code</h3>
-<pre><code>addpath(&#39;~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/&#39;);
+<pre><code>ddpath(&#39;~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/&#39;);
 addpath(&#39;~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/utils/&#39;);
 
 % you need to change the path and the data file (not centered)
-load ~/HG/flash/data/OCVmissflashr2/Breastcancer/example.mat;
-Ycentered=Y-repmat(mean(Y,2),1,size(Y,2));
+load ../Ydata.mat;
+Ycentered=Y;
 settings=defaultsettings();
 [settings.D,settings.N]=size(Ycentered);
 settings.iterations=100;
 % now the missing is decide by the this is the missing index.(or you can upload the missing matrix)
 
-load(fullfile(pwd,&#39;NBSFAout/OCVindex.mat&#39;))
+file_path = fullfile(pwd,&#39;NBSFAout/OCVindex.mat&#39;);
+load(file_path);
 
-missindex = ones(settings.D,settings.N);
-k_fold = 5;
+% missindex = ones(settings.D,settings.N); this is not missing index this
+% is observed index.
+missindex = (~isnan(Y));
+k_fold = 10;
 foldindex = zeros(k_fold,k_fold,2);
 for k = 1:2
     for j = 1:k_fold
@@ -468,47 +584,50 @@ for i = 1:k_fold
     for j = 1:k_fold
         mvmask(OCVindex.rowindex(:,foldindex(j,i,1)),OCVindex.colindex(:,foldindex(j,i,2))) = 0;
     end
+    mvmask(:,sum(mvmask) == 0) = (missindex(:,sum(mvmask) == 0));
     initialsample=init_nsfa(settings);
     [finalsample,resultstable]=nsfa(Ycentered,mvmask,initialsample,settings);
     Y_hat = (finalsample.G *  finalsample.X);
     for j = 1:k_fold
         SSE(i) = SSE(i) + ...
-            sum(sum((Ycentered(OCVindex.rowindex(:,foldindex(j,i,1)),OCVindex.colindex(:,foldindex(j,i,2)))- ...
+            sum(nansum((Ycentered(OCVindex.rowindex(:,foldindex(j,i,1)),OCVindex.colindex(:,foldindex(j,i,2)))- ...
             Y_hat(OCVindex.rowindex(:,foldindex(j,i,1)),OCVindex.colindex(:,foldindex(j,i,2)))).^2));
     end
 
 end
 
-RMSE = sqrt(sum(SSE)/(settings.D*settings.N));
+RMSE = sqrt(sum(SSE)/(100000));
 RMSE;
 
 save_path = fullfile(pwd,&#39;NBSFAout/NSFAresult&#39;);
-save(save_path,&#39;RMSE&#39;); </code></pre>
+save(save_path,&#39;RMSE&#39;);</code></pre>
 <p>you need change the path as well. this file name is ‘missvalue.m’</p>
 </div>
 <div id="creat-the-run.r-file-to-run-the-code" class="section level3">
 <h3>creat the run.R file to run the code</h3>
 <p>In this case, we have problem in running <code>flashr2</code> on RCC. so we just try other methods first.</p>
-<pre><code>library(R.matlab)
+<pre><code>source(&quot;../wrapper.R&quot;)
+library(R.matlab)
 ## run the code
-Y_centered = readMat(&quot;~/HG/flash/data/OCVmissflashr2/Breastcancer/example.mat&quot;)
+Y_centered = readMat(&quot;../example.mat&quot;)
 Y = Y_centered$Y
 # in the matlab package of NSF, the use the centered data by rows
 N = dim(Y)[1]
 P = dim(Y)[2]
 Y = Y - rowMeans(Y) %*% t(rep(1,P))
-OCVindex = OCV_index(Y,k_fold = 5)
-OCVdata = OCV_data(Y,OCVindex,k_fold = 5)
-soft_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = &quot;softImpute&quot;,Kmax = 50)
-# flashG_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = &quot;flash&quot;,Kmax = 50)
-pmd_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 5,method = &quot;PMD&quot;,Kmax = 50)
+OCVindex = OCV_index(Y,k_fold = 10)
+OCVdata = OCV_data(Y,OCVindex,k_fold = 10)
+
+PN_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = &quot;PN&quot;,Kmax = 40)
+flashG_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = &quot;flash&quot;,Kmax = 40)
+flashGwn_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = &quot;flash_wn&quot;,Kmax = 40)
+flashB_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = &quot;flash_bf&quot;,Kmax = 40)
+pmd_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = &quot;PMD&quot;,Kmax = 40)
+soft_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = &quot;softImpute&quot;,Kmax = 40)
 nsfa_rmse = NSF_OCV(OCVindex)
-flashG_rmse = mean(c( nsfa_rmse,pmd_rmse,soft_rmse))
 
-result = c(flashG_rmse, nsfa_rmse,pmd_rmse,soft_rmse)
-saveRDS(result, &quot;./NBSFAout/output.rds&quot;)
-
-</code></pre>
+result = c(PN_rmse,flashG_rmse,flashGwn_rmse,flashB_rmse,nsfa_rmse,pmd_rmse,soft_rmse)
+saveRDS(result, &quot;./NBSFAout/output.rds&quot;)</code></pre>
 <p>this file name is <code>runOCV.R</code></p>
 </div>
 <div id="creat-folder-to-track-the-result" class="section level3">
@@ -520,24 +639,25 @@ saveRDS(result, &quot;./NBSFAout/output.rds&quot;)
 <pre><code>#!/bin/bash
 
 #SBATCH --job-name=arrayJob
-#SBATCH --output=/home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.out
-#SBATCH --error=/home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.err
-#SBATCH --array=1-100
-#SBATCH --time=06:00:00
-#SBATCH --partition=broadwl
+#SBATCH --output=./outlog/arrayJob_%A_%a.out
+#SBATCH --error=./outlog/arrayJob_%A_%a.err
+#SBATCH --array=1-20
+#SBATCH --time=26:00:00
+#SBATCH --partition=mstephens
 #SBATCH --ntasks=1
-#SBATCH --mem-per-cpu=2000
-
+#SBATCH --mem-per-cpu=8000
 
 ######################
 # Begin work section #
 ######################
 
 # Print this sub-job&#39;s task ID
-cd /home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer
+module load R
+module load matlab
+
 mkdir test${SLURM_ARRAY_TASK_ID}
 cd test${SLURM_ARRAY_TASK_ID}
-Rscript --verbose /home/weidong/HG/flash/data/OCVmissflashr2/Breastcancer/runOCV.R</code></pre>
+Rscript --verbose ../runOCV.R</code></pre>
 <p>this file is name as <code>OCV.sbatch</code></p>
 </div>
 </div>
@@ -550,8 +670,8 @@ OCV.sbatch  example.mat  missvalue.m  outlog  runOCV.R  wrapper.R</code></pre>
 </div>
 <div id="to-get-the-result" class="section level2">
 <h2>to get the result</h2>
-<pre><code>T = 100
-results = matrix(NA,ncol = 22, nrow = T)
+<pre><code>T = 20
+results = matrix(NA,ncol = 7, nrow = T)
 for(i in 1:T){
   test_folder = paste(&quot;test&quot;, i, sep = &quot;&quot;)
   out_folder = &quot;NBSFAout&quot;
@@ -565,10 +685,11 @@ saveRDS(results,&quot;./boxplot.rds&quot;)</code></pre>
 <div id="plot-the-result" class="section level2">
 <h2>plot the result</h2>
 <pre class="r"><code>library(ggplot2)
-plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;){
+plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;, x_label){
   rmse = as.vector(output)
   N = dim(output)[1]
-  methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;), each = N)
+  # methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;), each = N)
+  methods = rep(x_label, each = N)
   df = data.frame(RMSE = rmse, Method = methods )
   p&lt;-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
   geom_boxplot()+
@@ -577,19 +698,19 @@ plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none
     theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
   p
 }
-
+x_label = c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;)
 PT_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/president_box.rds&quot;)
-pp = plot_res(PT_res,&quot;Text data&quot;)
+pp = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
 DT_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds&quot;)
-pd = plot_res(DT_res,&quot;Tumor data&quot;)
+pd = plot_res(DT_res,&quot;Tumor data&quot;,x_label = x_label)
 GZ_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds&quot;)
-pg = plot_res(GZ_res,&quot;GTEx data&quot;)
+pg = plot_res(GZ_res,&quot;GTEx data&quot;,x_label = x_label)
 BC_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds&quot;)
-pb = plot_res(BC_res,&quot;Breast Cancer data&quot;)
+pb = plot_res(BC_res,&quot;Breast Cancer data&quot;,x_label = x_label)
 ML_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/ML100K_box.rds&quot;)
 ML_res[c(2,13,17,21,29,37,62,76,77,93,95,100),] = NA
 ML_res = matrix(as.numeric(ML_res),ncol = 4)
-pM = plot_res(ML_res,&quot;Movie Lens data&quot;)</code></pre>
+pM = plot_res(ML_res,&quot;Movie Lens data&quot;,x_label = x_label)</code></pre>
 </div>
 <div id="plots" class="section level2">
 <h2>plots</h2>
@@ -597,117 +718,53 @@ pM = plot_res(ML_res,&quot;Movie Lens data&quot;)</code></pre>
 <pre><code>Warning: Removed 48 rows containing non-finite values (stat_boxplot).</code></pre>
 <p><img src="figure/templateforOCV.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
-<div id="code-for-the-tuning-parameters-from-ocv-only-change-one-parameter" class="section level2">
-<h2>code for the tuning parameters from OCV only change one parameter</h2>
-<p>try this one later…..</p>
-<pre class="r"><code>CVPMD_softImpute=function(Y,c_s,K,fold = 10, method = &quot;PMD&quot;,N_sim = 10){
-  N = dim(Y)[1]
-  P = dim(Y)[2]
-  colindex = matrix(sample(P,P),ncol = fold)
-  rowindex = matrix(sample(N,N),ncol = fold)
-  
-  missing= array(0,dim = c(fold,N,P))
-  foldindex = array(0,dim = c(fold,fold,2))
-  for(i in 1:fold){
-    for(j in 1:fold){
-      foldindex[i,j,1] = i
-      foldindex[i,j,2] = (i+j) %% fold
-    }
-  }
-  foldindex[which(foldindex == 0)] = fold
-  for(i in 1:fold){
-    missing[i, , ] = Y
-    for(j in 1:fold){
-      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
-    }
-  }
-  # c_s is the candicate of shrinkage parameter
-  n_s = length(c_s)
-  # rmse for each grids
-  CVRMSE = rep(0,n_s)
-  minrmse = Inf
-  opt_s = 0
-  # for each candidate, we run it N_sim times
-  for(t_s in 1:n_s){
-    # for each grid
-    for(iter in 1:N_sim){
-      # each time we set the rmse to zeros
-      rmse = rep(0,fold)
-      for(i in 1:fold){
-        if(method == &quot;PMD&quot;){
-          out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)
-          # out = PMD(missing[i,,], K = K)
-        }else{
-          out = softImpute(Y, rank.max = K,lambda = c_s[t_s]) 
-        }
-        misshat = out$u %*%  diag(out$d) %*% t(out$v)
-        for(j in 1:fold){
-          rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
-                                     misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
-        }
-      } #get the result for one run
-      print(sqrt(sum(rmse)/(N*P)))
-      CVRMSE[t_s] = CVRMSE[t_s] + sqrt(sum(rmse)/(N*P))
-    }
-    if(CVRMSE[t_s] &lt; minrmse){
-      minrmse = CVRMSE[t_s]
-      opt_s = c_s[t_s]
-    }
-  }
-  CVRMSE = CVRMSE/N_sim
-  return(list(opt_s = opt_s, output = CVRMSE))
-}
-
-PMA.wrapper = function(Y,ngrids = 10,K,fold = 10){
-  library(PMA)
-  N = dim(Y)[1]
-  P = dim(Y)[2]
-  c_s = seq(0.2,0.99,len=ngrids)
-  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;PMD&quot;)
-  out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)
-  residual_PMD = Y -  out$u %*%  diag(out$d) %*% t(out$v)
-  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
-}
-
-softImpute.wrapper = function(Y,ngrids = 10,K,fold = 10){
-  library(softImpute)
-  N = dim(Y)[1]
-  P = dim(Y)[2]
-  c_s = seq(0,10,len=ngrids)
-  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;softImpute&quot;)
-  out = softImpute(Y, rank.max = K,lambda = cvout$opt_s) 
-  residual_softImpute = Y -  out$u %*%  diag(out$d) %*% t(out$v)
-  return(list(d = out$d, u = out$u, v = out$v, residual = residual_softImpute))
-}</code></pre>
-<div id="new-reuslt" class="section level4">
-<h4>new reuslt</h4>
-<pre class="r"><code>library(ggplot2)
-plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;){
-  rmse = as.vector(output)
-  N = dim(output)[1]
-  pmd_c = sapply(seq(1,10),function(x){paste(&quot;PMD&quot;,x)})
-  softImpute_c = sapply(seq(1,10),function(x){paste(&quot;SF&quot;,x)})
-  methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,pmd_c,softImpute_c), each = N)
-  df = data.frame(RMSE = rmse, Method = methods )
-  p&lt;-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
-  geom_boxplot()+
-  # geom_violin()+
-  ggtitle(title) +  theme_bw()+
-    theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
-  p
-}</code></pre>
-<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/denoiseTumor_box.rds&quot;)
-pt = plot_res(PT_res,&quot;Tumor data&quot;)
+<div id="results-for-different-tuning-parameters" class="section level2">
+<h2>results for different tuning parameters</h2>
+<pre class="r"><code>pmd_c = sapply(seq(1,10),function(x){paste(&quot;PMD&quot;,x)})
+softImpute_c = sapply(seq(1,10),function(x){paste(&quot;SF&quot;,x)})
+x_label= c(&quot;flash&quot;,&quot;NBSFA&quot;,pmd_c,softImpute_c)
+PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/denoiseTumor_box.rds&quot;)
+pt = plot_res(PT_res,&quot;Tumor data&quot;,x_label = x_label)
 pt</code></pre>
-<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/TEXT_prsdt_box.rds&quot;)
-pp = plot_res(PT_res,&quot;Text data&quot;)
+pp = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
 pp</code></pre>
-<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-6-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/BreastCancer_box.rds&quot;)
-pb = plot_res(PT_res,&quot;Text data&quot;)
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-4-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="use-ocv-choose-the-tuning-parameters" class="section level2">
+<h2>use OCV choose the tuning parameters</h2>
+<div id="breast-cancer-data" class="section level3">
+<h3>Breast Cancer data</h3>
+<p>we use 10 grids for <code>softImpute</code> and <code>PMD</code></p>
+<pre class="r"><code>PB_res = readRDS(&quot;../data/missingvalue/testingcode/box_Breast.rds&quot;)
+x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
+pb = plot_res(PB_res,&quot;Breast Cancer data&quot;,x_label = x_label)
 pb</code></pre>
-<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-6-3.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>we take the ‘flashB’ away to compare the rest.</p>
+<pre class="r"><code>x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
+pb = plot_res(PB_res[,-4],&quot;Breast Cancer data&quot;,x_label = x_label)
+pb</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="denoiser-tumor-data" class="section level3">
+<h3>denoiseR Tumor data</h3>
+<p>we use 10 grids for <code>softImpute</code> and <code>PMD</code></p>
+<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/testingcode/box_denoiseTumor.rds&quot;)
+x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
+pt = plot_res(PT_res,&quot;Tumor data&quot;,x_label = x_label)
+pt</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="text-data" class="section level3">
+<h3>text data</h3>
+<p>in this data, we add <code>zero</code> as use zero values as imputation to compare with other methods.</p>
+<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/testingcode/box_president.rds&quot;)
+x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;,&quot;zero&quot;)
+pt = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
+pt</code></pre>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
@@ -725,30 +782,27 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] devtools_1.13.3 reshape2_1.4.2  flashr2_0.4-0   softImpute_1.4 
- [5] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      denoiseR_1.0   
- [9] Matrix_1.2-11   R.matlab_3.6.1  cowplot_0.8.0   ggplot2_2.2.1  
-[13] ashr_2.2-3      ebnm_0.1-7      MASS_7.3-47     workflowr_0.4.0
-[17] rmarkdown_1.6  
+ [1] workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1   ashr_2.2-3     
+ [5] flashr2_0.4-0   denoiseR_1.0    ebnm_0.1-7      PMA_1.0.9      
+ [9] impute_1.48.0   plyr_1.8.4      softImpute_1.4  Matrix_1.2-11  
+[13] R.matlab_3.6.1 
 
 loaded via a namespace (and not attached):
- [1] lattice_0.20-35      Rmosek_7.1.2         colorspace_1.3-2    
- [4] htmltools_0.3.6      yaml_2.1.14          rlang_0.1.2         
- [7] R.oo_1.21.0          withr_2.0.0          R.utils_2.5.0       
-[10] REBayes_0.85         foreach_1.4.4        stringr_1.2.0       
-[13] munsell_0.4.3        gtable_0.2.0         R.methodsS3_1.7.1   
-[16] codetools_0.2-15     leaps_3.0            memoise_1.1.0       
-[19] evaluate_0.10.1      labeling_0.3         knitr_1.17          
-[22] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
-[25] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
-[28] flashClust_1.01-2    scales_0.4.1         backports_1.1.0     
-[31] scatterplot3d_0.3-40 truncnorm_1.0-7      gridExtra_2.3       
-[34] digest_0.6.12        stringi_1.1.5        grid_3.3.0          
-[37] rprojroot_1.2        tools_3.3.0          magrittr_1.5        
-[40] lazyeval_0.2.0       tibble_1.3.3         cluster_2.0.6       
-[43] FactoMineR_1.36      SQUAREM_2017.10-1    assertthat_0.2.0    
-[46] httr_1.3.0           rstudioapi_0.6       iterators_1.0.9     
-[49] R6_2.2.2             git2r_0.19.0        </code></pre>
+ [1] Rcpp_0.12.14         git2r_0.19.0         R.methodsS3_1.7.1   
+ [4] R.utils_2.5.0        iterators_1.0.9      tools_3.3.0         
+ [7] digest_0.6.12        evaluate_0.10.1      tibble_1.3.3        
+[10] gtable_0.2.0         lattice_0.20-35      rlang_0.1.2         
+[13] foreach_1.4.4        yaml_2.1.14          parallel_3.3.0      
+[16] gridExtra_2.3        stringr_1.2.0        knitr_1.17          
+[19] cluster_2.0.6        REBayes_0.85         rprojroot_1.2       
+[22] flashClust_1.01-2    grid_3.3.0           scatterplot3d_0.3-40
+[25] irlba_2.2.1          magrittr_1.5         FactoMineR_1.36     
+[28] backports_1.1.0      htmltools_0.3.6      scales_0.4.1        
+[31] codetools_0.2-15     MASS_7.3-47          leaps_3.0           
+[34] assertthat_0.2.0     colorspace_1.3-2     labeling_0.3        
+[37] stringi_1.1.5        Rmosek_7.1.2         lazyeval_0.2.0      
+[40] pscl_1.5.2           doParallel_1.0.11    munsell_0.4.3       
+[43] truncnorm_1.0-7      SQUAREM_2017.10-1    R.oo_1.21.0         </code></pre>
 </div>
 
 <hr>
