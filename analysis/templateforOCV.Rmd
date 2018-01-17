@@ -455,6 +455,13 @@ pp
 
 ## use OCV choose the tuning parameters
 
+labels | null check | backfitting | greedy | ebnm_ash | ebnm_pn 
+------ | ---------- | ----------- | ------ | -------- | ------
+flashG | yes| |yes | yes |
+flashGwn | | | yes|yes |
+flashB | yes| yes| | yes|
+PN | yes | | yes| |yes
+
 ### Breast Cancer data
 
 we use 10 grids for `softImpute` and `PMD`
