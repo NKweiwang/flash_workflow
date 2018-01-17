@@ -329,12 +329,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<pre><code>Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone &#39;default/
-America/Chicago&#39;</code></pre>
 <p><strong>Last updated:</strong> 2018-01-17</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 7d80782</p>
+<p><strong>Code version:</strong> 86042bc</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -734,6 +732,52 @@ pp</code></pre>
 </div>
 <div id="use-ocv-choose-the-tuning-parameters" class="section level2">
 <h2>use OCV choose the tuning parameters</h2>
+<table>
+<thead>
+<tr class="header">
+<th>labels</th>
+<th>null check</th>
+<th>backfitting</th>
+<th>greedy</th>
+<th>ebnm_ash</th>
+<th>ebnm_pn</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>flashG</td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>flashGwn</td>
+<td></td>
+<td></td>
+<td>yes</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>flashB</td>
+<td>yes</td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PN</td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
 <div id="breast-cancer-data" class="section level3">
 <h3>Breast Cancer data</h3>
 <p>we use 10 grids for <code>softImpute</code> and <code>PMD</code></p>
