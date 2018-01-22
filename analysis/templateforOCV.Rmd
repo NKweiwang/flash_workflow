@@ -184,20 +184,21 @@ OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50){
 call_method = function(Y_data,method,Kmax = 50){
   if(method == "flash"){
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = "constant")
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == "flash_wn"){
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = "constant",nullcheck=FALSE)
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,nullcheck=FALSE)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,nullcheck=FALSE)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == "flash_gb"){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
+    f = flashr2::flash_backfit(data,f_greedy)
+    Y_hat = f$EL %*% t(f$EF)
   }else if(method == "flash_bf"){
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = "constant")
-    # f = flashr2::flash_backfit(data,f_greedy,var_type = "constant")
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax)
-    f = flashr2::flash_backfit(data,f_greedy)
+    f_data = flashr2::flash_add_factors_from_data(data,K = Kmax)
+    f = flashr2::flash_backfit(data,f_data)
     Y_hat = f$EL %*% t(f$EF)
   }else if(method == "PMD"){
     res_log = capture.output({out = PMA.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10)})
@@ -210,9 +211,14 @@ call_method = function(Y_data,method,Kmax = 50){
     library(ebnm)
     library(flashr2)
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_pn,var_type = "constant")
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_pn)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,ebnm_fn = ebnm_pn)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == 'PMD_d'){
+    out = PMA::PMD(Y_data, K = Kmax)
+    Y_hat =  out$u %*% diag(out$d) %*% t(out$v)
+  }else if(method == 'softImpute_d'){
+    gsoft = softImpute::softImpute(Y_data, rank.max = Kmax)
+    Y_hat =  gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v)
   }else if(method == "softImpute"){
     gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
     if(length(gsoft$d)==1){
@@ -220,6 +226,14 @@ call_method = function(Y_data,method,Kmax = 50){
     }else{
       Y_hat =  try(gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v))
     }
+  }else if(method == "SF_flash"){
+    gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
+    LL = gsoft$u %*% diag(gsoft$d)
+    FF = gsoft$v
+    data = flashr2::flash_set_data(Y_data)
+    f_data = flashr2::flash_add_lf(data, LL=LL, FF=FF)
+    f = flashr2::flash_backfit(data,f_data)
+    Y_hat = f$EL %*% t(f$EF)
   }else{
     # stop("the method is not implemented yet, please check it out")
     Y_hat = matrix(0,ncol = dim(Y_data)[2],nrow = dim(Y_data)[1])
