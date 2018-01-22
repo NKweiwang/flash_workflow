@@ -329,10 +329,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-17</p>
+<p><strong>Last updated:</strong> 2018-01-22</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 86042bc</p>
+<p><strong>Code version:</strong> 0063c77</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -488,20 +488,21 @@ OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = &quot;flash&quot;,Kmax
 call_method = function(Y_data,method,Kmax = 50){
   if(method == &quot;flash&quot;){
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = &quot;constant&quot;)
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == &quot;flash_wn&quot;){
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = &quot;constant&quot;,nullcheck=FALSE)
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,nullcheck=FALSE)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,nullcheck=FALSE)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == &quot;flash_gb&quot;){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
+    f = flashr2::flash_backfit(data,f_greedy)
+    Y_hat = f$EL %*% t(f$EF)
   }else if(method == &quot;flash_bf&quot;){
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,var_type = &quot;constant&quot;)
-    # f = flashr2::flash_backfit(data,f_greedy,var_type = &quot;constant&quot;)
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax)
-    f = flashr2::flash_backfit(data,f_greedy)
+    f_data = flashr2::flash_add_factors_from_data(data,K = Kmax)
+    f = flashr2::flash_backfit(data,f_data)
     Y_hat = f$EL %*% t(f$EF)
   }else if(method == &quot;PMD&quot;){
     res_log = capture.output({out = PMA.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10)})
@@ -514,9 +515,14 @@ call_method = function(Y_data,method,Kmax = 50){
     library(ebnm)
     library(flashr2)
     data = flashr2::flash_set_data(Y_data)
-    # f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_pn,var_type = &quot;constant&quot;)
-    f_greedy = flashr2::flash_add_greedy(data,Kmax=Kmax,ebnm_fn = ebnm_pn)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,ebnm_fn = ebnm_pn)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == &#39;PMD_d&#39;){
+    out = PMA::PMD(Y_data, K = Kmax)
+    Y_hat =  out$u %*% diag(out$d) %*% t(out$v)
+  }else if(method == &#39;softImpute_d&#39;){
+    gsoft = softImpute::softImpute(Y_data, rank.max = Kmax)
+    Y_hat =  gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v)
   }else if(method == &quot;softImpute&quot;){
     gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
     if(length(gsoft$d)==1){
@@ -524,6 +530,14 @@ call_method = function(Y_data,method,Kmax = 50){
     }else{
       Y_hat =  try(gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v))
     }
+  }else if(method == &quot;SF_flash&quot;){
+    gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
+    LL = gsoft$u %*% diag(gsoft$d)
+    FF = gsoft$v
+    data = flashr2::flash_set_data(Y_data)
+    f_data = flashr2::flash_add_lf(data, LL=LL, FF=FF)
+    f = flashr2::flash_backfit(data,f_data)
+    Y_hat = f$EL %*% t(f$EF)
   }else{
     # stop(&quot;the method is not implemented yet, please check it out&quot;)
     Y_hat = matrix(0,ncol = dim(Y_data)[2],nrow = dim(Y_data)[1])
@@ -823,30 +837,33 @@ locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
 
 attached base packages:
-[1] stats     graphics  grDevices utils     datasets  methods   base     
+[1] grid      stats     graphics  grDevices utils     datasets  methods  
+[8] base     
 
 other attached packages:
- [1] workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1   ashr_2.2-3     
- [5] flashr2_0.4-0   denoiseR_1.0    ebnm_0.1-7      PMA_1.0.9      
- [9] impute_1.48.0   plyr_1.8.4      softImpute_1.4  Matrix_1.2-11  
-[13] R.matlab_3.6.1 
+ [1] workflowr_0.4.0 rmarkdown_1.6   dscr_0.1.1      flashr2_0.4-0  
+ [5] R.matlab_3.6.1  PMA_1.0.9       impute_1.48.0   plyr_1.8.4     
+ [9] cowplot_0.8.0   ggplot2_2.2.1   MASS_7.3-47    
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.14         git2r_0.19.0         R.methodsS3_1.7.1   
- [4] R.utils_2.5.0        iterators_1.0.9      tools_3.3.0         
- [7] digest_0.6.12        evaluate_0.10.1      tibble_1.3.3        
-[10] gtable_0.2.0         lattice_0.20-35      rlang_0.1.2         
-[13] foreach_1.4.4        yaml_2.1.14          parallel_3.3.0      
-[16] gridExtra_2.3        stringr_1.2.0        knitr_1.17          
-[19] cluster_2.0.6        REBayes_0.85         rprojroot_1.2       
-[22] flashClust_1.01-2    grid_3.3.0           scatterplot3d_0.3-40
-[25] irlba_2.2.1          magrittr_1.5         FactoMineR_1.36     
-[28] backports_1.1.0      htmltools_0.3.6      scales_0.4.1        
-[31] codetools_0.2-15     MASS_7.3-47          leaps_3.0           
-[34] assertthat_0.2.0     colorspace_1.3-2     labeling_0.3        
-[37] stringi_1.1.5        Rmosek_7.1.2         lazyeval_0.2.0      
-[40] pscl_1.5.2           doParallel_1.0.11    munsell_0.4.3       
-[43] truncnorm_1.0-7      SQUAREM_2017.10-1    R.oo_1.21.0         </code></pre>
+ [1] softImpute_1.4    ashr_2.2-3        reshape2_1.4.3   
+ [4] lattice_0.20-35   Rmosek_7.1.2      colorspace_1.3-2 
+ [7] htmltools_0.3.6   yaml_2.1.16       rlang_0.1.6      
+[10] R.oo_1.21.0       withr_2.1.1       R.utils_2.5.0    
+[13] REBayes_0.85      ssvd_1.0          foreach_1.4.4    
+[16] stringr_1.2.0     munsell_0.4.3     gtable_0.2.0     
+[19] R.methodsS3_1.7.1 devtools_1.13.3   codetools_0.2-15 
+[22] memoise_1.1.0     evaluate_0.10.1   labeling_0.3     
+[25] knitr_1.18        doParallel_1.0.11 pscl_1.5.2       
+[28] httpuv_1.3.5      parallel_3.3.0    curl_2.8.1       
+[31] highr_0.6         Rcpp_0.12.14      xtable_1.8-2     
+[34] backports_1.1.2   scales_0.4.1      truncnorm_1.0-7  
+[37] mime_0.5          gridExtra_2.3     flashr_0.1.1     
+[40] digest_0.6.13     stringi_1.1.6     shiny_1.0.5      
+[43] rprojroot_1.2     tools_3.3.0       magrittr_1.5     
+[46] lazyeval_0.2.0    tibble_1.3.4      Matrix_1.2-11    
+[49] SQUAREM_2017.10-1 assertthat_0.2.0  httr_1.3.0       
+[52] iterators_1.0.9   R6_2.2.2          git2r_0.19.0     </code></pre>
 </div>
 
 <hr>
