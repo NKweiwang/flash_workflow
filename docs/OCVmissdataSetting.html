@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="wei wang" />
+
+<meta name="date" content="2018-01-25" />
+
+<title>Some useful information of OCV for missing data</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 52px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+
+.section h2 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h3 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h4 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h5 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h6 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">flash workflowr project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="setup.html">Setup</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/NKweiwang/flash_workflow">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">Some useful information of OCV for missing data</h1>
+<h4 class="author"><em>wei wang</em></h4>
+<h4 class="date"><em>2018-01-25</em></h4>
+
+</div>
+
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2018-01-25</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 1b8a705</p>
+<!-- Add your analysis here -->
+<div id="settings-for-the-5-data-sets-in-our-paper." class="section level2">
+<h2>settings for the 5 data sets in our paper.</h2>
+</div>
+<div id="other-experiments-during-the-test" class="section level2">
+<h2>other experiments during the test</h2>
+<pre class="r"><code>library(ggplot2)
+plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;, x_label){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  # methods = rep(c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;), each = N)
+  methods = rep(x_label, each = N)
+  df = data.frame(RMSE = rmse, Method = methods )
+  p&lt;-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
+  geom_boxplot()+
+  # geom_violin()+
+  ggtitle(title) +  theme_bw()+
+    theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
+  p
+}
+x_label = c(&quot;flash&quot;,&quot;NBSFA&quot;,&quot;PMD&quot;,&quot;softImpute&quot;)
+PT_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/president_box.rds&quot;)
+pp = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
+DT_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds&quot;)
+pd = plot_res(DT_res,&quot;Tumor data&quot;,x_label = x_label)
+GZ_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds&quot;)
+pg = plot_res(GZ_res,&quot;GTEx data&quot;,x_label = x_label)
+BC_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds&quot;)
+pb = plot_res(BC_res,&quot;Breast Cancer data&quot;,x_label = x_label)
+ML_res = readRDS(&quot;../data/missingvalue/OCVtemplate/RCCres/ML100K_box.rds&quot;)
+ML_res[c(2,13,17,21,29,37,62,76,77,93,95,100),] = NA
+ML_res = matrix(as.numeric(ML_res),ncol = 4)
+pM = plot_res(ML_res,&quot;Movie Lens data&quot;,x_label = x_label)</code></pre>
+</div>
+<div id="plots" class="section level2">
+<h2>plots</h2>
+<pre class="r"><code>gridExtra::grid.arrange(pp,pd,pg,pb,pM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))</code></pre>
+<pre><code>Warning: Removed 48 rows containing non-finite values (stat_boxplot).</code></pre>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="results-for-different-tuning-parameters" class="section level2">
+<h2>results for different tuning parameters</h2>
+<pre class="r"><code>pmd_c = sapply(seq(1,10),function(x){paste(&quot;PMD&quot;,x)})
+softImpute_c = sapply(seq(1,10),function(x){paste(&quot;SF&quot;,x)})
+x_label= c(&quot;flash&quot;,&quot;NBSFA&quot;,pmd_c,softImpute_c)
+PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/denoiseTumor_box.rds&quot;)
+pt = plot_res(PT_res,&quot;Tumor data&quot;,x_label = x_label)
+pt</code></pre>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/TEXT_prsdt_box.rds&quot;)
+pp = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
+pp</code></pre>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-3-2.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="use-ocv-choose-the-tuning-parameters" class="section level2">
+<h2>use OCV choose the tuning parameters</h2>
+<table>
+<thead>
+<tr class="header">
+<th>labels</th>
+<th>null check</th>
+<th>backfitting</th>
+<th>greedy</th>
+<th>ebnm_ash</th>
+<th>ebnm_pn</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>flashG</td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>flashGwn</td>
+<td></td>
+<td></td>
+<td>yes</td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>flashB</td>
+<td>yes</td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>PN</td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+<td></td>
+<td>yes</td>
+</tr>
+</tbody>
+</table>
+<div id="breast-cancer-data" class="section level3">
+<h3>Breast Cancer data</h3>
+<p>we use 10 grids for <code>softImpute</code> and <code>PMD</code></p>
+<pre class="r"><code>PB_res = readRDS(&quot;../data/missingvalue/testingcode/box_Breast.rds&quot;)
+x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
+pb = plot_res(PB_res,&quot;Breast Cancer data&quot;,x_label = x_label)
+pb</code></pre>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p>we take the ‘flashB’ away to compare the rest.</p>
+<pre class="r"><code>x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
+pb = plot_res(PB_res[,-4],&quot;Breast Cancer data&quot;,x_label = x_label)
+pb</code></pre>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-5-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="denoiser-tumor-data" class="section level3">
+<h3>denoiseR Tumor data</h3>
+<p>we use 10 grids for <code>softImpute</code> and <code>PMD</code></p>
+<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/testingcode/box_denoiseTumor.rds&quot;)
+x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
+pt = plot_res(PT_res,&quot;Tumor data&quot;,x_label = x_label)
+pt</code></pre>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="text-data" class="section level3">
+<h3>text data</h3>
+<p>in this data, we add <code>zero</code> as use zero values as imputation to compare with other methods.</p>
+<pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/testingcode/box_president.rds&quot;)
+x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;,&quot;zero&quot;)
+pt = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
+pt</code></pre>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.13.2 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6   reshape2_1.4.3 
+ [5] ebnm_0.1-7      softImpute_1.4  Matrix_1.2-11   ssvd_1.0       
+ [9] flashr2_0.4-0   PMA_1.0.9       impute_1.48.0   plyr_1.8.4     
+[13] ggplot2_2.2.1  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.14      git2r_0.19.0      iterators_1.0.9  
+ [4] tools_3.3.0       digest_0.6.13     evaluate_0.10.1  
+ [7] tibble_1.3.4      gtable_0.2.0      lattice_0.20-35  
+[10] rlang_0.1.6       foreach_1.4.4     rstudioapi_0.6   
+[13] yaml_2.1.16       parallel_3.3.0    gridExtra_2.3    
+[16] stringr_1.2.0     knitr_1.18        REBayes_0.85     
+[19] rprojroot_1.2     grid_3.3.0        flashr_0.1.1     
+[22] ashr_2.2-3        magrittr_1.5      backports_1.1.2  
+[25] scales_0.4.1      codetools_0.2-15  htmltools_0.3.6  
+[28] assertthat_0.2.0  colorspace_1.3-2  labeling_0.3     
+[31] stringi_1.1.6     Rmosek_7.1.2      lazyeval_0.2.0   
+[34] pscl_1.5.2        doParallel_1.0.11 munsell_0.4.3    
+[37] truncnorm_1.0-7   SQUAREM_2017.10-1</code></pre>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
