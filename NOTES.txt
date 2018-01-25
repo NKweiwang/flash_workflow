@@ -1,0 +1,8 @@
+To-do items, comments & suggestions for improving reproducibility
+Compiled by Peter Carbonetto
+January 25, 2018
+
+* TO DO: In README, briefly describe computing environment(s) where
+  code has been tested. (i.e., summarize the sessionInfo at the bottom
+  of the webpages.)
+
