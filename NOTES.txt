@@ -6,3 +6,8 @@ January 25, 2018
   code has been tested. (i.e., summarize the sessionInfo at the bottom
   of the webpages.)
 
+* TO DO: Add reference in README to manuscript when you have made it
+  available (e.g., on arXiv).
+
+* TO DO: In the "license" R Markdown file, add any additional license
+  or distribution info about the data.

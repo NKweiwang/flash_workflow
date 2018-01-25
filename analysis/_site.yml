@@ -1,14 +1,14 @@
-name: flash workflow
+name: flash workflowr project
 output_dir: "../docs"
 include: [".nojekyll"]
 exclude: ["include"]
 navbar:
-  title: flash workflow
+  title: flash workflowr project
   left:
     - text: "Home"
       href: index.html
-    - text: "About"
-      href: about.html
+    - text: "Setup"
+      href: setup.html
     - text: "License"
       href: license.html
   right:

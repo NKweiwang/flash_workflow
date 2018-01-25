@@ -35,4 +35,3 @@ at the University of Chicago.
 
 Thanks to [Matthew Stephens](http://stephenslab.uchicago.edu) for his
 support and mentorship.
-
