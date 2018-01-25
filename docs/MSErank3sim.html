@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+<meta name="author" content="wei wang" />
+
+
+<title>MSE for rank_1 simulation</title>
+
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/spacelab.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
+<link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+  height: auto;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 52px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+
+.section h2 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h3 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h4 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h5 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+.section h6 {
+  padding-top: 57px;
+  margin-top: -57px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+
+<div class="container-fluid main-container">
+
+<!-- tabsets -->
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+</script>
+
+<!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
+
+
+
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">flash workflowr project</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        <li>
+  <a href="index.html">Home</a>
+</li>
+<li>
+  <a href="setup.html">Setup</a>
+</li>
+<li>
+  <a href="license.html">License</a>
+</li>
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="https://github.com/NKweiwang/flash_workflow">
+    <span class="fa fa-github"></span>
+     
+  </a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
+
+
+<h1 class="title toc-ignore">MSE for rank_1 simulation</h1>
+<h4 class="author"><em>wei wang</em></h4>
+<h4 class="date"><em>18-01-23</em></h4>
+
+</div>
+
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<p><strong>Last updated:</strong> 2018-01-25</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 8c0d4dd</p>
+<!-- Add your analysis here -->
+<p>This file is just generate the RRMSE plot of rank 3 data.</p>
+<pre class="r"><code># the example in our paper using sigma = 2
+DataMaker = function(sigma = 2){
+  N = 150
+  P = 240
+  K = 3
+  L_true = array(0,dim = c(N,K))
+  F_true = array(0,dim = c(P,K))
+  F_true[1:80,1] = rnorm(80,0,0.5)
+  F_true[81:160,2] = rnorm(80,0,1)
+  F_true[161:240,3] = rnorm(80,0,2)
+  L_true[1:10,1] = rnorm(10,0,2)
+  L_true[11:60,2] = rnorm(50,0,1)
+  L_true[61:150,3] = rnorm(90,0,0.5)
+  G = L_true %*% t(F_true)
+  # generate Y
+  E = matrix(rnorm(N*P,0,sigma),nrow=N)
+  Y = L_true %*% t(F_true) + E
+  return(list(Y = Y, L_true = L_true, F_true = F_true, E = E))
+}
+
+CVPMD_softImpute=function(Y,c_s,K,fold = 10, method = &quot;PMD&quot;){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = fold)
+  rowindex = matrix(sample(N,N),ncol = fold)
+
+  missing= array(0,dim = c(fold,N,P))
+  foldindex = array(0,dim = c(fold,fold,2))
+  for(i in 1:fold){
+    for(j in 1:fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = fold
+  for(i in 1:fold){
+    missing[i, , ] = Y
+    for(j in 1:fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+    missing[i,,which(colSums(missing[i,,],na.rm = T) ==0)] = Y[,which(colSums(missing[i,,],na.rm = T) ==0)]
+  }
+  # c_s is the candicate of shrinkage parameter
+  n_s = length(c_s)
+  # rmse for each grids
+  CVRMSE = rep(0,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # for each candidate, we run it N_sim times
+  for(t_s in 1:n_s){
+    # for each grid
+    # each time we set the rmse to zeros
+    rmse = rep(0,fold)
+    for(i in 1:fold){
+      if(method == &quot;PMD&quot;){
+        res_log = capture.output({out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)})
+      }else{
+        out = softImpute(missing[i,,], rank.max = K,lambda = c_s[t_s])
+      }
+      if(length(out$d)==1){
+        misshat = (out$d) * out$u %*% t(out$v)
+      }else{
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+      }
+      for(j in 1:fold){
+        # for each fold j
+        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2,na.rm = TRUE)
+      }
+    } #get the result for one run
+    CVRMSE[t_s] = CVRMSE[t_s] + sqrt(sum(rmse)/(N*P))
+    if(CVRMSE[t_s] &lt; minrmse){
+      minrmse = CVRMSE[t_s]
+      opt_s = c_s[t_s]
+    }
+  }
+  return(list(opt_s = opt_s, output = CVRMSE))
+}
+
+PMA.wrapper = function(Y_data, ngrids = 10, K=3, fold = 10){
+  library(PMA)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0.1,0.9,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;PMD&quot;)
+  res_log = capture.output({out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)})
+  Y_hat = out$u %*% diag(out$d) %*%  t(out$v)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+
+softImpute.wrapper = function(Y_data, ngrids = 10, K = 3, fold = 10){
+  library(softImpute)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0,100,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = &quot;softImpute&quot;)
+  out = softImpute(Y, rank.max = K,lambda = cvout$opt_s)
+  if(length(out$d)==1){
+    Y_hat = (out$d) * out$u %*% t(out$v)
+  }else{
+    Y_hat = out$u %*%  diag(out$d) %*% t(out$v)
+  }
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+SVD.wrapper = function(Y_data,K = 3){
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  gsvd = svd(Y,nu = 3,nv = 3)
+  Y_hat = (gsvd$u[,1:K] %*% diag(gsvd$d[1:K]) %*% t(gsvd$v[,1:K]))
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+SSVD.wrapper = function(Y_data,K = 3){
+  library(ssvd)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  gssvd = ssvd::ssvd(Y,method = &quot;method&quot;,r = K)
+  Y_hat = (gssvd$u %*% diag(gssvd$d) %*% t(gssvd$v))
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+PN.wrapper = function(Y_data,K = 3){
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  library(ebnm)
+  library(flashr2)
+  data =  flashr2::flash_set_data(Y)
+  g_flash = flashr2::flash_add_greedy(data,verbose=F,var_type = &quot;constant&quot;,ebnm_fn = ebnm_pn, K = K)
+  Y_hat = g_flash$EL %*% t(g_flash$EF)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+flash.wrapper = function(Y_data, K = 3){
+  # missindex is a matirx with 3 column here: i j x
+  # Y has miss value already
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  data =  flashr2::flash_set_data(Y)
+  g_flash = flashr2::flash_add_greedy(data,verbose=F,var_type = &quot;constant&quot;, K = K)
+  Y_hat = g_flash$EL %*% t(g_flash$EF)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}</code></pre>
+<p>creat <code>run.R</code> file as follows:</p>
+<pre><code>library(PMA)
+library(flashr2)
+library(ssvd)
+library(softImpute)
+Y_data = DataMaker()
+RMSE = rep(NA,6)
+RMSE[1] = PMA.wrapper(Y_data)
+RMSE[2] = flash.wrapper(Y_data)
+RMSE[3] = PN.wrapper(Y_data)
+RMSE[4] = SVD.wrapper(Y_data)
+RMSE[5] = SSVD.wrapper(Y_data)
+RMSE[6] = softImpute.wrapper(Y_data)
+saveRDS(RMSE, &quot;./output.rds&quot;)</code></pre>
+<pre><code>#!/bin/bash
+
+#SBATCH --job-name=arrayJob
+#SBATCH --output=./outlog/arrayJob_%A_%a.out
+#SBATCH --error=./outlog/arrayJob_%A_%a.err
+#SBATCH --array=1-100
+#SBATCH --time=02:00:00
+#SBATCH --partition=broadwl
+#SBATCH --ntasks=1
+#SBATCH --mem-per-cpu=2000
+
+
+######################
+# Begin work section #
+######################
+
+module load R
+
+# Print this sub-job&#39;s task ID
+mkdir test${SLURM_ARRAY_TASK_ID}
+cd test${SLURM_ARRAY_TASK_ID}
+Rscript --verbose ../run.R</code></pre>
+<p>name the above file as <code>Jobs.sbatch</code></p>
+<pre><code>sbatch Jobs.sbatch</code></pre>
+<div id="get-the-result" class="section level2">
+<h2>get the result</h2>
+<pre><code>T = 100
+results = matrix(NA,ncol = 6, nrow = T)
+for(i in 1:T){
+  test_folder = paste(&quot;test&quot;, i, sep = &quot;&quot;)
+  out_file = &quot;output.rds&quot;
+  file_name = file.path(test_folder,out_file)
+  results[i,] = try(readRDS(file_name))
+}
+
+saveRDS(results,&quot;./RES_rrmse.rds&quot;)</code></pre>
+</div>
+<div id="plot-the-result" class="section level2">
+<h2>plot the result</h2>
+<pre class="r"><code>plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;, methods_name){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  methods = rep(methods_name, each = N)
+  df = data.frame(RRMSE_diff = rmse, Method = methods )
+  p&lt;-ggplot(df, aes(x=Method, y=RRMSE_diff, color=Method)) +
+  geom_boxplot()+
+  # geom_violin()+
+  ggtitle(title) +  theme_bw()+
+    theme(legend.position= legend_position, legend.text=element_text(size=10),
+          plot.title = element_text(size = 18, face = &quot;bold&quot;),
+          axis.text.y = element_text(size =15), 
+          axis.text.x = element_text(size =15,angle = 45, hjust = 1))
+  p
+}
+library(ggplot2)</code></pre>
+<pre class="r"><code>sparse_res = readRDS(&quot;../data/simulation/rankthree/boxplot.rds&quot;)
+colnames(sparse_res) = c(&quot;PMD.cv1&quot;,&quot;flash&quot;,&quot;flash.pn&quot;,&quot;SVD&quot;,&quot;SSVD&quot;,&quot;SI.cv&quot;)
+sparse_diff = sparse_res - sparse_res[,2]
+# p3 = plot_res(sparse_diff,&quot;Difference from FLASH result (0% zeros)&quot;)
+methods_name = colnames(sparse_diff)
+p3 = plot_res(sparse_diff,title = &quot;Rank 3 example&quot;,methods_name = methods_name)</code></pre>
+<pre class="r"><code>p3</code></pre>
+<p><img src="figure/MSErank3sim.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
+</div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.13.2 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+ [1] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6   reshape2_1.4.3 
+ [5] ebnm_0.1-7      softImpute_1.4  Matrix_1.2-11   ssvd_1.0       
+ [9] flashr2_0.4-0   PMA_1.0.9       impute_1.48.0   plyr_1.8.4     
+[13] ggplot2_2.2.1  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.14      git2r_0.19.0      iterators_1.0.9  
+ [4] tools_3.3.0       digest_0.6.13     evaluate_0.10.1  
+ [7] tibble_1.3.4      gtable_0.2.0      lattice_0.20-35  
+[10] rlang_0.1.6       foreach_1.4.4     yaml_2.1.16      
+[13] parallel_3.3.0    gridExtra_2.3     stringr_1.2.0    
+[16] knitr_1.18        REBayes_0.85      rprojroot_1.2    
+[19] grid_3.3.0        flashr_0.1.1      ashr_2.2-3       
+[22] magrittr_1.5      backports_1.1.2   scales_0.4.1     
+[25] codetools_0.2-15  htmltools_0.3.6   assertthat_0.2.0 
+[28] colorspace_1.3-2  labeling_0.3      stringi_1.1.6    
+[31] Rmosek_7.1.2      lazyeval_0.2.0    pscl_1.5.2       
+[34] doParallel_1.0.11 munsell_0.4.3     truncnorm_1.0-7  
+[37] SQUAREM_2017.10-1</code></pre>
+</div>
+
+<hr>
+<p>
+    This <a href="http://rmarkdown.rstudio.com">R Markdown</a> site was created with <a href="https://github.com/jdblischak/workflowr">workflowr</a>
+</p>
+<hr>
+
+<!-- To enable disqus, uncomment the section below and provide your disqus_shortname -->
+
+<!-- disqus
+  <div id="disqus_thread"></div>
+    <script type="text/javascript">
+        /* * * CONFIGURATION VARIABLES: EDIT BEFORE PASTING INTO YOUR WEBPAGE * * */
+        var disqus_shortname = 'rmarkdown'; // required: replace example with your forum shortname
+
+        /* * * DON'T EDIT BELOW THIS LINE * * */
+        (function() {
+            var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+            dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+            (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+        })();
+    </script>
+    <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+    <a href="http://disqus.com" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+-->
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
