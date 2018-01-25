@@ -20,8 +20,8 @@
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
 <link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -31,12 +31,10 @@
   }
 </style>
 <script type="text/javascript">
-if (window.hljs) {
-  hljs.configure({languages: []});
-  hljs.initHighlightingOnLoad();
-  if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
-  }
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
 }
 </script>
 
@@ -209,9 +207,8 @@ $(document).ready(function () {
 </div>
 
 
-<div id="simulation-studies" class="section level3">
-<h3>simulation studies</h3>
-</div>
+<div id="simulation-studies" class="section level2">
+<h2>Simulation studies</h2>
 <div id="orthogonal-cv" class="section level3">
 <h3>Orthogonal CV</h3>
 <p>Click on this <a href="miss_position.html">orthogonal CV</a> to see my example.</p>
@@ -232,6 +229,7 @@ $(document).ready(function () {
 <li>Click on this <a href="Objcheck_1.html">rank 0 vs rank 1</a> to see more details.</li>
 <li>Click on this <a href="Objcheck_2.html">rank 0 vs rank 1: fdr with penalty</a> to see more details.</li>
 </ul>
+</div>
 </div>
 <div id="flashr2" class="section level2">
 <h2>flashr2</h2>
