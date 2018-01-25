@@ -443,18 +443,18 @@ setwd("~/HG/flash_workflow/analysis")
 
 ##############  MovieLens data
 
-ML_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/ML100K_box.rds")
+ML_res = readRDS("../data/output/missingdata/MovieLens/ML100K_box.rds")
 ML_res[c(2,13,17,21,29,37,62,76,77,93,95,100),] = NA
 ML_res = matrix(as.numeric(ML_res),ncol = 4)
 # c("flash","NBSFA","PMD","softImpute")
-ml_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/movies100K/boxplot_cv.rds")
+ml_res = readRDS("../data/output/missingdata/MovieLens/boxplot_cv.rds")
 # flashG_rmse,flashGwn_rmse,pmd_rmse,soft_rmse
 ml_res[1:20,] = sqrt((ml_res[1:20,])^2 * (943*1682)/(100000))
 ml_res = ml_res[1:20,]
 ML_res = ML_res[-c(2,13,17,21,29,37,62,76,77,93,95,100),]
 ML_res = ML_res[1:20,]
 # add PN result
-ML_pn_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/movies100K/box_cv_pn.rds")
+ML_pn_res = readRDS("../data/output/missingdata/MovieLens/box_cv_pn.rds")
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(ML_pn_res[,1],ML_pn_res[,2],ML_res[,3],ml_res[,3],ML_res[,2],ML_res[,4],ml_res[,4])
 
@@ -463,10 +463,10 @@ plotM = plot_res(output,"MovieLens data",x_label = x_label)
 
 ############ Breast Cancer data
 
-BC_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds")
+BC_res = readRDS("../data/output/missingdata/BreastCancer/BreastCancer_box.rds")
 BC_res = BC_res[1:20,]
 # c("flash","NBSFA","PMD","softImpute")
-bc_res = readRDS("../data/missingvalue/testingcode/box_Breast.rds")
+bc_res = readRDS("../data/output/missingdata/BreastCancer/box_Breast.rds")
 # c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
 
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
@@ -476,12 +476,12 @@ plotB = plot_res(output,"Breast Cancer data",x_label = x_label)
 
 ############ GTEx data
 
-GZ_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds")
+GZ_res = readRDS("../data/output/missingdata/GTExZsocre/gtexzscore_box.rds")
 GZ_res = GZ_res[1:20,]
 # c("flash","NBSFA","PMD","softImpute")
-gz_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/gtexzscore/box_cv.rds")
+gz_res = readRDS("../data/output/missingdata/GTExZsocre/box_cv.rds")
 # flashG_rmse,nsfa_rmse,pmd_rmse,soft_rmse
-gz_pn_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/gtexzscore/box_pn.rds")
+gz_pn_res = readRDS("../data/output/missingdata/GTExZsocre/box_pn.rds")
 gz_pn_res[c(23,25,29,34),] = NA
 gz_pn_res = matrix(as.numeric(gz_pn_res[21:40,]),ncol = 2)
 
@@ -493,10 +493,10 @@ plotG = plot_res(output,"GTEx data",x_label = x_label)
 
 ############ Text data
 
-PT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/president_box.rds")
+PT_res = readRDS("../data/output/missingdata/DenoiseRtext/president_box.rds")
 PT_res = PT_res[1:20,]
 # c("flash","NBSFA","PMD","softImpute")
-pt_res = readRDS("../data/missingvalue/testingcode/box_president.rds")
+pt_res = readRDS("../data/output/missingdata/DenoiseRtext/box_president.rds")
 # c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft","zero")
 
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
@@ -506,10 +506,10 @@ plotP = plot_res(output,"Text data",x_label = x_label)
 
 ############ Tumor data
 
-DT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds")
+DT_res = readRDS("../data/output/missingdata/DenoiseRtumor/denoiseRtumor_box.rds")
 DT_res = DT_res[1:20,]
 # c("flash","NBSFA","PMD","softImpute")
-dt_res = readRDS("../data/missingvalue/testingcode/box_denoiseTumor.rds")
+dt_res = readRDS("../data/output/missingdata/DenoiseRtumor/box_denoiseTumor.rds")
 # c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
 
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
