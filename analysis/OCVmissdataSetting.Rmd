@@ -28,7 +28,60 @@ knitr::read_chunk("chunks.R")
 
 ## settings for the 5 data sets in our paper.
 
+### GTEx zsocre 
 
+```{r}
+library(R.matlab)
+Y_centered = readMat("../data/output/missingdata/GTExZsocre/example.mat")
+Y = Y_centered$Ycentered
+```
+
+### MovieLens 
+
+```{r}
+library(methods)
+library(R.matlab)
+library(Matrix)
+## run the code
+ml100K_data = readRDS("../data/output/missingdata/MovieLens/scale_data.rds")
+MLMatrix <- sparseMatrix(i = ml100K_data[,1],
+                         j = ml100K_data[,2],
+                         x = ml100K_data[,3],dims = c(943,1682))
+# turn this sparse matrix into matrix in r
+Y = as.matrix(MLMatrix)
+Y[which(Y == 0)] = NA
+# writeMat("~/HG/flash/data/OCVmissflashr2/ML100K_scaled/Ydata.mat", Y = Y)
+```
+
+### denoiseR tumor data
+
+```{r}
+library(R.matlab)
+Y_centered = readMat("../data/output/missingdata/DenoiseRtumor/example.mat")
+Y = Y_centered$Ycentered
+```
+
+### denoiseR text data 
+
+```{r}
+library(R.matlab)
+## run the code
+Y_centered = readMat("../data/output/missingdata/DenoiseRtext/example.mat")
+Y = Y_centered$Yscaled
+```
+
+### Breast cancer data 
+
+```{r}
+library(R.matlab)
+## run the code
+Y_centered = readMat("../data/output/missingdata/BreastCancer/example.mat")
+Y = Y_centered$Y
+# in the matlab package of NSF, the use the centered data by rows
+N = dim(Y)[1]
+P = dim(Y)[2]
+Y = Y - rowMeans(Y) %*% t(rep(1,P))
+```
 
 
 ## other experiments during the test
