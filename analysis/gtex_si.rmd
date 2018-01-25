@@ -1,0 +1,54 @@
+---
+title: "Untitled"
+author: "Matthew Stephens"
+date: "January 23, 2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+set.seed(1)
+Zscores = readRDS("~/Downloads/MatrixEQTLSumStats.Portable.Z.rds")
+Ztop = Zscores$test.z
+z.s = softImpute::softImpute(Ztop,rank.max=30,lambda=89)
+```
+
+
+```{r}
+#this plotting due to Wei Wang
+library(ggplot2)
+library(reshape2)
+#' @param L a ntissue by K matrix of loadings
+#' @param pve a vector of K pve values
+#' @param offset a number to add to the loading numbers in titles  (eg set to 9 if plotting loadings 9-x)
+plot_GTEXres = function(L,pve,offset=0){
+  dat = read.table("GTExColors.txt", sep = '\t', comment.char = '')
+  nL = dim(L)[2]
+  colordata = dat[c(1:6,9:18,21:23,26:30,32,33,35,36,38:53),1:2]
+  data_L = melt(L)
+  colnames(data_L) = c("tissue","loading","value")
+  tissue_color = as.character(colordata[,2])
+  data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
+  data_L$loading = factor(data_L$loading,levels = 1:nL ,labels = paste("loading",offset+(1:nL),"; pve:", round(pve,3)))
+  
+  ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
+    geom_bar(stat = "identity",width = 0.6) +
+    scale_fill_manual(values=tissue_color) +
+    scale_x_discrete(labels = NULL) +
+    theme_grey()+
+    theme(legend.position="right", legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
+    labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
+    facet_wrap(~loading, ncol = 2, scales = "free_y") +
+    guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
+}
+
+pve.si = z.s$d^2/sum(Ztop^2)
+plot_GTEXres(z.s$v[,1:8],pve.si[1:8])
+plot_GTEXres(z.s$v[,9:16],pve.si[9:16],9)
+
+
+```
+

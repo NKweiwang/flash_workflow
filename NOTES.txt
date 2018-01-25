@@ -1,0 +1,33 @@
+To-do items, comments & suggestions for improving reproducibility
+Compiled by Peter Carbonetto & Wei Wang
+January 25, 2018
+
+* TO DO: In README, briefly describe computing environment(s) where
+  code has been tested. (i.e., summarize the sessionInfo at the bottom
+  of the webpages.)
+
+* TO DO: Add reference in README to manuscript when you have made it
+  available (e.g., on arXiv).
+
+* TO DO: In the "license" R Markdown file, add any additional license
+  or distribution info about the data.
+
+* TO DO: Remove dates from all your R Markdown files; this is already
+  generated automatically when you run wflow_build or wflow_publish.
+
+* TO DO: Fill out the setup instructions in setup.Rmd, and use this to
+  generate setup.html. These step-by-step nstructions should include:
+  (1) what software that needs to be installed, and where to get it;
+  (2) what R packages to install; (3) how to get the data; (4) how to
+  generate any preprocessed data or summary statistics from the data,
+  and how to generate any other outputs that are necessary to run the
+  analyses in the R Markdown documents; and (5) how to generate the
+  webpages from the R Markdown documents.
+
+* TO DO: Make sure that all the webpages have the updated navigation
+  bar ("home", "setup", "license").
+  
+* TO DO: Remove any .Rmd and .html files that are no longer used in
+  your project. (Remember, they can always be recovered from your git
+  history.)
+  
