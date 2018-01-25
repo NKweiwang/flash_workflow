@@ -5,7 +5,7 @@ output:
     toc: false
 ---
 
-### simulation studies
+## Simulation studies
 
 ### Orthogonal CV
 
@@ -26,7 +26,6 @@ Click on this [pairwise plot](pairwiseplotofflashgtexzscore.html) to see more de
 ### Issues
 
 Click on this [gap issue](ObjGap.html) to see more details. (test)
-
 
 Click on this [summary of the rank0 vs rank1](Obj_summary.html) to see a simple summary to the following two items.
 
