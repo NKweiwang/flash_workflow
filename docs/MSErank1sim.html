@@ -24,6 +24,7 @@
 <link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
 <script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
+<script src="site_libs/navigation-1.1/codefolding.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
 <link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
@@ -162,6 +163,14 @@ $(document).ready(function () {
 </script>
 
 <!-- code folding -->
+<style type="text/css">
+.code-folding-btn { margin-bottom: 4px; }
+</style>
+<script>
+$(document).ready(function () {
+  window.initializeCodeFolding("hide" === "show");
+});
+</script>
 
 
 
@@ -299,6 +308,14 @@ div.tocify {
 
 <div class="fluid-row" id="header">
 
+<div class="btn-group pull-right">
+<button type="button" class="btn btn-default btn-xs dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"><span>Code</span> <span class="caret"></span></button>
+<ul class="dropdown-menu" style="min-width: 50px;">
+<li><a id="rmd-show-all-code" href="#">Show All Code</a></li>
+<li><a id="rmd-hide-all-code" href="#">Hide All Code</a></li>
+</ul>
+</div>
+
 
 
 <h1 class="title toc-ignore">MSE for rank_1 simulation</h1>
@@ -312,12 +329,145 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-10</p>
+<pre><code>Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone &#39;default/
+America/Chicago&#39;</code></pre>
+<p><strong>Last updated:</strong> 2018-01-25</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> fcb28a4</p>
+<p><strong>Code version:</strong> bb240a9</p>
 <!-- Add your analysis here -->
-<pre><code>flash.wrapper = function(Y_data){
+<div id="run-the-methods" class="section level2">
+<h2>run the methods</h2>
+<div id="creat-a-folder" class="section level3">
+<h3>1. creat a folder</h3>
+<pre><code>mkdir rankone</code></pre>
+</div>
+<div id="creat-.r-file" class="section level3">
+<h3>2. creat .R file</h3>
+<pre class="r"><code># this file is for all the R function we need here for sparse factor model
+library(&quot;MASS&quot;)</code></pre>
+<pre><code>Warning: package &#39;MASS&#39; was built under R version 3.3.2</code></pre>
+<pre class="r"><code>betaO=function(P,betapi,betasigma,propt){
+  idx=rmultinom(P,size=1,prob=betapi)
+  K=length(betapi)
+  s=array(0,dim=c(K,K))
+  diag(s)=betasigma
+  bnorm=mvrnorm(P,rep(0,K),s)
+  betaO=apply(bnorm*t(idx),1,sum)
+  betaO=betaO*rbinom(P,1,propt)
+  return(betaO)
+}
+
+datamaker = function(N,P,l_pi,l_se,l_sp,f_pi,f_se,f_sp,sigmae){
+  # here I would like to fix the sparsity of L and F which is simple
+  # if we need to do futher experiment
+  L_true = betaO(N,l_pi,l_se,l_sp)
+  F_true = betaO(P,f_pi,f_se,f_sp)
+  E = matrix(rnorm(N*P,0,sigmae),ncol = P)
+  Y = L_true %*% t(F_true) + E
+  return(list(Y = Y, L_true = L_true, F_true = F_true, E = E))
+}
+
+CVPMD=function(Y,c_u,c_v){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = 5)
+  rowindex = matrix(sample(N,N),ncol = 5)
+  
+  missing= array(0,dim = c(5,N,P))
+  foldindex = array(0,dim = c(5,5,2))
+  for(i in 1:5){
+    for(j in 1:5){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% 5
+    }
+  }
+  foldindex[which(foldindex == 0)] = 5
+  for(i in 1:5){
+    missing[i, , ] = Y
+    for(j in 1:5){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+  }
+  n_u = length(c_u)
+  n_v = length(c_v)
+  CVRMSE = array(0,dim = c(n_u,n_v))
+  minrmse = Inf
+  opt_u = 0
+  opt_v = 0
+  for(t_u in 1:n_u){
+    for(t_v in 1:n_v){
+      rmse = rep(0,5)
+      for(i in 1:5){
+        out = PMD(missing[i,,], sumabsu = c_u[t_u], sumabsv = c_v[t_v],center=FALSE)
+        misshat = out$d * out$u %*% t(out$v)
+        for(j in 1:5){
+          rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
+                                     misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+        }
+        rmse[i] = sqrt(rmse[i] / (N * P/5))
+      }
+      CVRMSE[t_u,t_v] = mean(rmse)
+      if(CVRMSE[t_u,t_v] &lt; minrmse){
+        minrmse = CVRMSE[t_u,t_v]
+        opt_u = c_u[t_u]
+        opt_v = c_v[t_v]
+      }
+    }
+  }
+  return(list(opt_u = opt_u,opt_v = opt_v))
+}
+
+# input is a list of Y L_true and F_true which is called Y_data
+PMA.wrapper = function(Y_data,ngrids = 10){
+  library(PMA)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_u = seq(1,sqrt(N),length.out = ngrids)
+  c_v = seq(1,sqrt(P),length.out = ngrids)
+  cvout = CVPMD(Y,c_u,c_v)
+  out = PMD(Y,sumabsu = cvout$opt_u, sumabsv = cvout$opt_v,center=FALSE )
+  Y_hat = out$d * out$u %*% t(out$v)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+PMA_d.wrapper = function(Y_data){
+  library(PMA)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  cv.out &lt;- PMA::PMD.cv(Y, type=&quot;standard&quot;, sumabss=seq(0.1, 1, len=20),center=FALSE)
+  out &lt;-  PMA::PMD(Y, type=&quot;standard&quot;, sumabs=cv.out$bestsumabs, K=1, v=cv.out$v.init,center=FALSE)
+  Y_hat = out$d * out$u %*% t(out$v)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+PN.wrapper = function(Y_data){
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  library(ebnm)
+  library(flashr2)
+  data =  flashr2::flash_set_data(Y)
+  g_flash = flashr2::flash_r1(data,verbose=F,var_type = &quot;constant&quot;,ebnm_fn = ebnm_pn)
+  Y_hat = g_flash$EL %*% t(g_flash$EF)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
+}
+
+flash.wrapper = function(Y_data){
   # missindex is a matirx with 3 column here: i j x
   # Y has miss value already
   Y = Y_data$Y
@@ -327,14 +477,103 @@ shared across the workflowr files. -->
   N = dim(Y)[1]
   P = dim(Y)[2]
   data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_r1(data,verbose=F)
+  g_flash = flashr2::flash_r1(data,verbose=F,var_type = &quot;constant&quot;)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
 }
 
+SFA.wrapper = function(Y_data, K){
+  #sfa put sparse on loadings
+  Y = Y_data$Y
+  # N vector
+  L_true = Y_data$L_true
+  # P vector
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  
+  if(file.exists(&quot;SFAout&quot;)){
+    unlink(&quot;SFAout&quot;, recursive= T)
+  }
+  system(&quot;mkdir SFAout&quot;)
+  
+  write.table(Y, file=&quot;dscsfa.txt&quot;,row.names=F,col.names=F)
+  # sfa command line on cluster
+  # ~/flash/simulation/methods/sfa/src/sfa -gen ./dscsfamix.txt -g 600 -k 1 -n 200 -iter 100 -rand 999 -o ./SFAout/sfa
+  
+  # sqrt(mean(( loadings %*% factor - test$L_true%*%t(test$F_true))^2))/sqrt(mean((test$L_true%*%t(test$F_true))^2))
+  system(paste(&quot;~/HG/flash/data/missingvalue/methods/sfa/src/sfa&quot;, &quot;-gen&quot;, &quot;./dscsfa.txt&quot;, &quot;-g&quot;, N, &quot;-k&quot;, K,
+               &quot;-n&quot;, P, &quot;-iter&quot;, 100, &quot;-rand&quot;, 999, &quot;-o&quot;, &quot;./SFAout/sfa&quot;, sep=&quot; &quot;))
+  
+  if(file.info(&quot;./SFAout/sfa_F.out&quot;)$size == 1){
+    L_hat = 0
+    F_hat = 0
+    RMSE = 1
+    return(RMSE)
+  } else{
+    Fhat=read.table(&quot;./SFAout/sfa_F.out&quot;)
+    lambda=read.table(&quot;./SFAout/sfa_lambda.out&quot;)
+    Fhat=as.matrix(Fhat)
+    lambda=as.matrix(lambda)
+    L_hat = lambda
+    F_hat = Fhat
+    
+    Y_hat = L_hat %*% F_hat
+    RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+    return(RMSE)
+  }
+}
 
-#here I use SVD instead of KSVD.
+
+SFAmix.wrapper = function(Y_data,K){
+  Y = t(Y_data$Y)
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = t(Y_data$E)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  
+  write.table(Y,file=&quot;dscsfamix.txt&quot;,row.names=F,col.names=F)
+  print(class(Y))
+  print(dim(Y))
+  
+  if(file.exists(&quot;SFAmixout&quot;)){
+    unlink(&quot;SFAmixout&quot;, recursive= T)
+  }
+  system(&quot;mkdir SFAmixout&quot;)
+  
+  # ~/mvash/mvsim/SFAmix/SFAmix --nf K --y dscrsfamix.txt --out SFAmixout --sep space
+  # this is run on the PPS cluster
+  system(paste(&quot;~/HG/flash/data/missingvalue/methods/SFAmix/SFAmix&quot;,
+               &quot;--nf&quot;,K,&quot;--y&quot;,&quot;dscsfamix.txt&quot;,&quot;--out&quot;,
+               &quot;SFAmixout&quot;,&quot;--sep&quot;,&quot;space&quot;,sep=&quot; &quot;))
+  
+  alpha=read.table(&quot;./SFAmixout/PSI&quot;)
+  
+  if(file.info(&quot;./SFAmixout/EX&quot;)$size == 1){
+    L_hat = 0
+    F_hat = 0
+    RMSE = 1
+    return(RMSE)
+  } else{
+    Fhat=read.table(&quot;./SFAmixout/EX&quot;)
+    lambda=read.table(&quot;./SFAmixout/LAM&quot;)
+    Psi=as.vector(alpha)
+    Fhat=as.matrix(Fhat)
+    lambda=as.matrix(lambda)
+    # return(list(L = Fhat, F = lambda))
+    L_hat = Fhat
+    F_hat = lambda
+    
+    Y_hat = L_hat %*% F_hat
+    RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+    return(RMSE)
+  }
+}
+
+
 SVD.wrapper = function(Y_data){
   Y = Y_data$Y
   L_true = Y_data$L_true
@@ -359,18 +598,105 @@ SSVD.wrapper = function(Y_data){
   Y_hat = gssvd$d * (gssvd$u %*% t(gssvd$v))
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
+}
+
+
+CV_softImpute=function(Y,c_s,K,fold = 5, method = &quot;PMD&quot;){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = fold)
+  rowindex = matrix(sample(N,N),ncol = fold)
+
+  missing= array(0,dim = c(fold,N,P))
+  foldindex = array(0,dim = c(fold,fold,2))
+  for(i in 1:fold){
+    for(j in 1:fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = fold
+  for(i in 1:fold){
+    missing[i, , ] = Y
+    for(j in 1:fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+    missing[i,,which(colSums(missing[i,,],na.rm = T) ==0)] = Y[,which(colSums(missing[i,,],na.rm = T) ==0)]
+  }
+  # c_s is the candicate of shrinkage parameter
+  n_s = length(c_s)
+  # rmse for each grids
+  CVRMSE = rep(0,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # for each candidate, we run it N_sim times
+  for(t_s in 1:n_s){
+    # for each grid
+    # each time we set the rmse to zeros
+    rmse = rep(0,fold)
+    for(i in 1:fold){
+      if(method == &quot;PMD&quot;){
+        res_log = capture.output({out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)})
+      }else{
+        out = softImpute(missing[i,,], rank.max = K,lambda = c_s[t_s])
+      }
+      if(length(out$d)==1){
+        misshat = (out$d) * out$u %*% t(out$v)
+      }else{
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+      }
+      for(j in 1:fold){
+        # for each fold j
+        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2,na.rm = TRUE)
+      }
+    } #get the result for one run
+    CVRMSE[t_s] = CVRMSE[t_s] + sqrt(sum(rmse)/(N*P))
+    if(CVRMSE[t_s] &lt; minrmse){
+      minrmse = CVRMSE[t_s]
+      opt_s = c_s[t_s]
+    }
+  }
+  return(list(opt_s = opt_s, output = CVRMSE))
+}
+
+softImpute.wrapper = function(Y_data, ngrids = 10, K = 1, fold = 5){
+  library(softImpute)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0,100,len=ngrids)
+  cvout = CV_softImpute(Y,c_s,K ,fold , method = &quot;softImpute&quot;)
+  out = softImpute(Y, rank.max = K,lambda = cvout$opt_s)
+  Y_hat = out$d * out$u %*% t(out$v)
+  RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
+  return(RMSE)
 }</code></pre>
+<p>name this file as <code>Rfunction.R</code></p>
+</div>
+<div id="creat-the-folder-for-different-case" class="section level3">
+<h3>creat the folder for different case</h3>
+<pre><code>mkdir intermediate</code></pre>
+</div>
+<div id="creat-the-run.r-file" class="section level3">
+<h3>creat the run.R file</h3>
+<pre><code>cd intermediate</code></pre>
+<p>creat <code>run.R</code> file as follows:</p>
 <pre><code>library(PMA)
 library(flashr2)
 library(ssvd)
-source(&quot;~/HG/flash/data/simulations/rankone/MSE/Rfunction.R&quot;)
+source(&quot;../Rfunction.R&quot;)
 L_se = c( 0.25, 0.5, 1, 2, 4)
 L_pi = c(1, 1,1,1,1)
 L_pi = L_pi / sum(L_pi)
 N = 200
 P = 300
-# Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
-Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))
+Data = datamaker(N,P,L_pi,L_se,0.7,c(1),c(1),1,sqrt(16))
+# Data = datamaker(N,P,L_pi,L_se,0.1,c(1),c(1),1,sqrt(1))  sparse case
+# Data = datamaker(N,P,L_pi,L_se,1.0,c(1),c(1),1,sqrt(1))  dense case
 RMSE = rep(NA,6)
 RMSE[1] = PMA.wrapper(Y_data)
 RMSE[2] = flash.wrapper(Y_data)
@@ -379,14 +705,16 @@ RMSE[4] = SFAmix.wrapper(Y_data,K = 1)
 RMSE[5] = SVD.wrapper(Y_data)
 RMSE[6] = SSVD.wrapper(Y_data)
 saveRDS(result, &quot;./output.rds&quot;)</code></pre>
+<p>The score we restroe is as follows:</p>
 <p><span class="math display">\[RMSE =\frac{ \sqrt{(Y-\hat{Y} - E )^2}}{\sqrt{(Y - E )^2}}\]</span></p>
-<div id="batch-file" class="section level2">
-<h2>batch file</h2>
+</div>
+<div id="batch-file" class="section level3">
+<h3>batch file</h3>
 <pre><code>#!/bin/bash
 
 #SBATCH --job-name=arrayJob
-#SBATCH --output=/home/weidong/HG/flash/data/simulations/rankone/MSE/median/outlog/arrayJob_%A_%a.out
-#SBATCH --error=/home/weidong/HG/flash/data/simulations/rankone/MSE/median/outlog/arrayJob_%A_%a.err
+#SBATCH --output=./outlog/arrayJob_%A_%a.out
+#SBATCH --error=./outlog/arrayJob_%A_%a.err
 #SBATCH --array=1-100
 #SBATCH --time=02:00:00
 #SBATCH --partition=mstephens
@@ -399,14 +727,12 @@ saveRDS(result, &quot;./output.rds&quot;)</code></pre>
 ######################
 
 # Print this sub-job&#39;s task ID
-cd /home/weidong/HG/flash/data/simulations/rankone/MSE/median
 mkdir test${SLURM_ARRAY_TASK_ID}
 cd test${SLURM_ARRAY_TASK_ID}
-Rscript --verbose /home/weidong/HG/flash/data/simulations/rankone/MSE/median/run.R</code></pre>
-</div>
-<div id="run" class="section level2">
-<h2>run</h2>
+Rscript --verbose ../run.R</code></pre>
+<p>name the above file as <code>Jobs.sbatch</code></p>
 <pre><code>sbatch Jobs.sbatch</code></pre>
+</div>
 </div>
 <div id="plot-the-result" class="section level2">
 <h2>plot the result</h2>
@@ -414,34 +740,66 @@ Rscript --verbose /home/weidong/HG/flash/data/simulations/rankone/MSE/median/run
 results = matrix(NA,ncol = 6, nrow = T)
 for(i in 1:T){
   test_folder = paste(&quot;test&quot;, i, sep = &quot;&quot;)
-  # out_folder = &quot;NBSFAout&quot;
   out_file = &quot;output.rds&quot;
   file_name = file.path(test_folder,out_file)
   results[i,] = try(readRDS(file_name))
-}</code></pre>
+}
+
+saveRDS(results,&quot;./RES_rrmse.rds&quot;)</code></pre>
+</div>
+<div id="plot-the-result-1" class="section level2">
+<h2>plot the result</h2>
 </div>
 <div id="rmse-sparse-case-100-simulations" class="section level2">
 <h2>RMSE sparse case 100 simulations</h2>
+<pre class="r"><code>plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;, methods_name){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  methods = rep(methods_name, each = N)
+  df = data.frame(RRMSE_diff = rmse, Method = methods )
+  p&lt;-ggplot(df, aes(x=Method, y=RRMSE_diff, color=Method)) +
+  geom_boxplot()+
+  # geom_violin()+
+  ggtitle(title) +  theme_bw()+
+    theme(legend.position= legend_position, legend.text=element_text(size=10),
+          axis.text.y = element_text(size =12),
+          axis.text.x = element_text(size =12,angle = 45, hjust = 1))
+  p
+}
+library(ggplot2)</code></pre>
 <pre class="r"><code>sparse_res = readRDS(&quot;../data/simulation/rankone/RMSE/result_sparse.rds&quot;)
-colnames(sparse_res) = c(&quot;PMD&quot;,&quot;flash&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;SVD&quot;,&quot;SSVD&quot;)
+colnames(sparse_res) = c(&quot;PMD.cv2&quot;,&quot;flash&quot;,&quot;SFA&quot;,&quot;flash.pn&quot;,&quot;SVD&quot;,&quot;SSVD&quot;,&quot;PMD.cv1&quot;,&quot;SFAmix&quot;,&quot;SI.cv&quot;)
 sparse_diff = sparse_res - sparse_res[,2]
-
-boxplot(sparse_res,main = &quot;sparse case&quot;)</code></pre>
-<p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>boxplot(sparse_diff,main = &quot;sparse case (difference)&quot;)
-abline(a = 0,b = 0,col= &quot;red&quot;)</code></pre>
-<p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-1-2.png" width="672" style="display: block; margin: auto;" /></p>
+methods_name = colnames(sparse_diff)
+p1 = plot_res(sparse_diff,title = &quot;Difference from FLASH result (90% zeros)&quot;,methods_name = methods_name)
+methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
+p1_cut = plot_res(sparse_diff[-22,c(1,2,3,4,5,7,9)],title = &quot;Difference from FLASH result (90% zeros)&quot;,methods_name = methods_name)</code></pre>
 </div>
 <div id="rmse-intermediate-sparse-case-100-simulations" class="section level2">
 <h2>RMSE intermediate sparse case 100 simulations</h2>
 <pre class="r"><code>sparse_res = readRDS(&quot;../data/simulation/rankone/RMSE/result_itermediate.rds&quot;)
-colnames(sparse_res) = c(&quot;PMD&quot;,&quot;flash&quot;,&quot;SFA&quot;,&quot;SFAmix&quot;,&quot;SVD&quot;,&quot;SSVD&quot;)
+colnames(sparse_res) = c(&quot;PMD.cv2&quot;,&quot;flash&quot;,&quot;SFA&quot;,&quot;flash.pn&quot;,&quot;SVD&quot;,&quot;SSVD&quot;,&quot;PMD.cv1&quot;,&quot;SFAmix&quot;,&quot;SI.cv&quot;)
 sparse_diff = sparse_res - sparse_res[,2]
-boxplot(sparse_res,main = &quot;intermediate sparse case&quot;)</code></pre>
-<p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>boxplot(sparse_diff,main = &quot;sparse case (difference)&quot;)
-abline(a = 0,b = 0,col= &quot;red&quot;)</code></pre>
-<p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-2-2.png" width="672" style="display: block; margin: auto;" /></p>
+# p2 = plot_res(sparse_diff,&quot;Difference from FLASH result (30% zeros)&quot;)
+
+methods_name = colnames(sparse_diff)
+p2 = plot_res(sparse_diff,title = &quot;Difference from FLASH result (30% zeros)&quot;,methods_name = methods_name)
+methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
+p2_cut = plot_res(sparse_diff[,c(1,2,3,4,5,7,9)],title = &quot;Difference from FLASH result (30% zeros)&quot;,methods_name = methods_name)</code></pre>
+</div>
+<div id="rmse-dense-case-100-simulations" class="section level2">
+<h2>RMSE dense case 100 simulations</h2>
+<pre class="r"><code>sparse_res = readRDS(&quot;../data/simulation/rankone/RMSE/result_dense.rds&quot;)
+colnames(sparse_res) = c(&quot;PMD.cv2&quot;,&quot;flash&quot;,&quot;SFA&quot;,&quot;flash.pn&quot;,&quot;SVD&quot;,&quot;SSVD&quot;,&quot;PMD.cv1&quot;,&quot;SFAmix&quot;,&quot;SI.cv&quot;)
+sparse_diff = sparse_res - sparse_res[,2]
+# p3 = plot_res(sparse_diff,&quot;Difference from FLASH result (0% zeros)&quot;)
+methods_name = colnames(sparse_diff)
+p3 = plot_res(sparse_diff,title = &quot;Difference from FLASH result (0% zeros)&quot;,methods_name = methods_name)
+methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
+p3_cut = plot_res(sparse_diff[,c(1,2,3,4,5,7,9)],title = &quot;Difference from FLASH result (0% zeros)&quot;,methods_name = methods_name)</code></pre>
+<pre class="r"><code># gridExtra::grid.arrange(p1,p2,p3,p1_cut,p2_cut,p3_cut,ncol = 3)
+gridExtra::grid.arrange(p1,p1_cut,p2,p2_cut,p3,p3_cut,ncol = 2)</code></pre>
+<p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -458,29 +816,25 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] flashr2_0.4-0   softImpute_1.4  PMA_1.0.9       impute_1.48.0  
- [5] plyr_1.8.4      denoiseR_1.0    Matrix_1.2-11   R.matlab_3.6.1 
- [9] cowplot_0.8.0   ggplot2_2.2.1   ashr_2.2-3      ebnm_0.1-7     
-[13] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
+ [1] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6   reshape2_1.4.3 
+ [5] ebnm_0.1-7      softImpute_1.4  Matrix_1.2-11   ssvd_1.0       
+ [9] flashr2_0.4-0   PMA_1.0.9       impute_1.48.0   plyr_1.8.4     
+[13] ggplot2_2.2.1  
 
 loaded via a namespace (and not attached):
- [1] lattice_0.20-35      Rmosek_7.1.2         colorspace_1.3-2    
- [4] htmltools_0.3.6      yaml_2.1.14          rlang_0.1.2         
- [7] R.oo_1.21.0          withr_2.0.0          R.utils_2.5.0       
-[10] REBayes_0.85         foreach_1.4.4        stringr_1.2.0       
-[13] munsell_0.4.3        gtable_0.2.0         R.methodsS3_1.7.1   
-[16] devtools_1.13.3      codetools_0.2-15     leaps_3.0           
-[19] memoise_1.1.0        evaluate_0.10.1      knitr_1.17          
-[22] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
-[25] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
-[28] flashClust_1.01-2    scales_0.4.1         backports_1.1.0     
-[31] scatterplot3d_0.3-40 truncnorm_1.0-7      gridExtra_2.3       
-[34] digest_0.6.12        stringi_1.1.5        grid_3.3.0          
-[37] rprojroot_1.2        tools_3.3.0          magrittr_1.5        
-[40] lazyeval_0.2.0       tibble_1.3.3         cluster_2.0.6       
-[43] FactoMineR_1.36      SQUAREM_2017.10-1    assertthat_0.2.0    
-[46] httr_1.3.0           rstudioapi_0.6       iterators_1.0.9     
-[49] R6_2.2.2             git2r_0.19.0        </code></pre>
+ [1] Rcpp_0.12.14      git2r_0.19.0      iterators_1.0.9  
+ [4] tools_3.3.0       digest_0.6.13     evaluate_0.10.1  
+ [7] tibble_1.3.4      gtable_0.2.0      lattice_0.20-35  
+[10] rlang_0.1.6       foreach_1.4.4     yaml_2.1.16      
+[13] parallel_3.3.0    gridExtra_2.3     stringr_1.2.0    
+[16] knitr_1.18        REBayes_0.85      rprojroot_1.2    
+[19] grid_3.3.0        flashr_0.1.1      ashr_2.2-3       
+[22] magrittr_1.5      backports_1.1.2   scales_0.4.1     
+[25] codetools_0.2-15  htmltools_0.3.6   assertthat_0.2.0 
+[28] colorspace_1.3-2  labeling_0.3      stringi_1.1.6    
+[31] Rmosek_7.1.2      lazyeval_0.2.0    pscl_1.5.2       
+[34] doParallel_1.0.11 munsell_0.4.3     truncnorm_1.0-7  
+[37] SQUAREM_2017.10-1</code></pre>
 </div>
 
 <hr>
