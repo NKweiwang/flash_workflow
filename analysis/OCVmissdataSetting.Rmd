@@ -1,0 +1,146 @@
+---
+title: "Some useful information of OCV for missing data"
+author: "wei wang"
+date: 2018-01-25
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## settings for the 5 data sets in our paper.
+
+
+
+
+## other experiments during the test
+
+
+```{r}
+library(ggplot2)
+plot_res = function(output,title = "data",legend_position = "none", x_label){
+  rmse = as.vector(output)
+  N = dim(output)[1]
+  # methods = rep(c("flash","NBSFA","PMD","softImpute"), each = N)
+  methods = rep(x_label, each = N)
+  df = data.frame(RMSE = rmse, Method = methods )
+  p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
+  geom_boxplot()+
+  # geom_violin()+
+  ggtitle(title) +  theme_bw()+
+    theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
+  p
+}
+x_label = c("flash","NBSFA","PMD","softImpute")
+PT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/president_box.rds")
+pp = plot_res(PT_res,"Text data",x_label = x_label)
+DT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds")
+pd = plot_res(DT_res,"Tumor data",x_label = x_label)
+GZ_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds")
+pg = plot_res(GZ_res,"GTEx data",x_label = x_label)
+BC_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds")
+pb = plot_res(BC_res,"Breast Cancer data",x_label = x_label)
+ML_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/ML100K_box.rds")
+ML_res[c(2,13,17,21,29,37,62,76,77,93,95,100),] = NA
+ML_res = matrix(as.numeric(ML_res),ncol = 4)
+pM = plot_res(ML_res,"Movie Lens data",x_label = x_label)
+```
+
+
+## plots 
+
+```{r}
+gridExtra::grid.arrange(pp,pd,pg,pb,pM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))
+
+```
+
+## results for different tuning parameters
+
+```{r}
+pmd_c = sapply(seq(1,10),function(x){paste("PMD",x)})
+softImpute_c = sapply(seq(1,10),function(x){paste("SF",x)})
+x_label= c("flash","NBSFA",pmd_c,softImpute_c)
+PT_res = readRDS("../data/missingvalue/box_res_grids_sf_pmd/denoiseTumor_box.rds")
+pt = plot_res(PT_res,"Tumor data",x_label = x_label)
+pt
+PT_res = readRDS("../data/missingvalue/box_res_grids_sf_pmd/TEXT_prsdt_box.rds")
+pp = plot_res(PT_res,"Text data",x_label = x_label)
+pp
+```
+
+
+## use OCV choose the tuning parameters
+
+labels | null check | backfitting | greedy | ebnm_ash | ebnm_pn 
+------ | ---------- | ----------- | ------ | -------- | ------
+flashG | yes| |yes | yes |
+flashGwn | | | yes|yes |
+flashB | yes| yes| | yes|
+PN | yes | | yes| |yes
+
+### Breast Cancer data
+
+we use 10 grids for `softImpute` and `PMD`
+
+```{r}
+PB_res = readRDS("../data/missingvalue/testingcode/box_Breast.rds")
+x_label= c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
+pb = plot_res(PB_res,"Breast Cancer data",x_label = x_label)
+pb
+```
+
+we take the 'flashB' away to compare the rest.
+
+```{r}
+x_label= c("PN","flashG","flashGwn","nsfa","pmd","soft")
+pb = plot_res(PB_res[,-4],"Breast Cancer data",x_label = x_label)
+pb
+```
+
+### denoiseR Tumor data
+
+we use 10 grids for `softImpute` and `PMD`
+
+```{r}
+PT_res = readRDS("../data/missingvalue/testingcode/box_denoiseTumor.rds")
+x_label= c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
+pt = plot_res(PT_res,"Tumor data",x_label = x_label)
+pt
+```
+
+### text data
+
+in this data, we add `zero` as use zero values as imputation to compare with other methods.
+
+```{r}
+PT_res = readRDS("../data/missingvalue/testingcode/box_president.rds")
+x_label= c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft","zero")
+pt = plot_res(PT_res,"Text data",x_label = x_label)
+pt
+```
+
+
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
