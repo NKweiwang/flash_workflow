@@ -40,13 +40,15 @@ Initialization issue: [softimpute as initialization](missingimputeinitial.html)
 
 Click here to find the [null check for flashr2](NULLcheck.html) and [densen nu case](nullcheck2.html)
 
-### apply flashr2 for the examples in FLASH paper
+### Apply flashr2 for the examples in FLASH paper
 
 #### simulations
 
 Click here to check the [simulatoin result (rank one and rank three)](applyflahr2onsimulations.html)
 
 Click here to check the [RMSE for the rank one example in the paper](MSErank1sim.html)
+
+Click here to check the [RMSE for the rank three example in the paper](MSErank3sim.Rmd.html) and [RRMSE](simulation3.Rmd)
 
 #### GTEx Z-score
 

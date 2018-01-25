@@ -449,7 +449,7 @@ name the above file as `Jobs.sbatch`
 sbatch Jobs.sbatch
 ```
 
-## plot the result
+## get the result
 
 ```
 T = 100
