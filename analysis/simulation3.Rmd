@@ -2,7 +2,9 @@
 title: "simulation for the sparse factor loadings"
 author: "Wei Wang"
 date: 2017-04-04
-output: html_document
+output: 
+  html_document:
+    code_folding: hide
 ---
 
 <!-- The file analysis/chunks.R contains chunks that define default settings
@@ -26,168 +28,226 @@ knitr::read_chunk("chunks.R")
 
 <!-- Add your analysis here -->
 
-```{r}
+This file is just generate the structure heatmap of rank 3 data.
 
-CVPMD=function(Y,c_s,K){
+```{r}
+DataMaker = function(sigma = 2,seed_num = 99){
+  set.seed(seed_num)
+  N = 150
+  P = 240
+  K = 3
+  L_true = array(0,dim = c(N,K))
+  F_true = array(0,dim = c(P,K))
+  F_true[1:80,1] = rnorm(80,0,0.5)
+  F_true[81:160,2] = rnorm(80,0,1)
+  F_true[161:240,3] = rnorm(80,0,2)
+  L_true[1:10,1] = rnorm(10,0,2)
+  L_true[11:60,2] = rnorm(50,0,1)
+  L_true[61:150,3] = rnorm(90,0,0.5)
+  G = L_true %*% t(F_true)
+  # generate Y
+  E = matrix(rnorm(N*P,0,sigma),nrow=N)
+  Y = L_true %*% t(F_true) + E
+  return(list(Y = Y, L_true = L_true, F_true = F_true, E = E))
+}
+
+CVPMD_softImpute=function(Y,c_s,K,fold = 10, method = "PMD"){
   N = dim(Y)[1]
   P = dim(Y)[2]
-  colindex = matrix(sample(P,P),ncol = 5)
-  rowindex = matrix(sample(N,N),ncol = 5)
-  
-  missing= array(0,dim = c(5,N,P))
-  foldindex = array(0,dim = c(5,5,2))
-  for(i in 1:5){
-    for(j in 1:5){
+  colindex = matrix(sample(P,P),ncol = fold)
+  rowindex = matrix(sample(N,N),ncol = fold)
+
+  missing= array(0,dim = c(fold,N,P))
+  foldindex = array(0,dim = c(fold,fold,2))
+  for(i in 1:fold){
+    for(j in 1:fold){
       foldindex[i,j,1] = i
-      foldindex[i,j,2] = (i+j) %% 5
+      foldindex[i,j,2] = (i+j) %% fold
     }
   }
-  foldindex[which(foldindex == 0)] = 5
-  for(i in 1:5){
+  foldindex[which(foldindex == 0)] = fold
+  for(i in 1:fold){
     missing[i, , ] = Y
-    for(j in 1:5){
+    for(j in 1:fold){
       missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
     }
+    missing[i,,which(colSums(missing[i,,],na.rm = T) ==0)] = Y[,which(colSums(missing[i,,],na.rm = T) ==0)]
   }
+  # c_s is the candicate of shrinkage parameter
   n_s = length(c_s)
-  CVRMSE = rep(NA,n_s)
+  # rmse for each grids
+  CVRMSE = rep(0,n_s)
   minrmse = Inf
   opt_s = 0
-  # here we only need one layer
+  # for each candidate, we run it N_sim times
   for(t_s in 1:n_s){
-    rmse = rep(0,5)
-    for(i in 1:5){
-      out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)
-      misshat = out$u %*%  diag(out$d) %*% t(out$v)
-      for(j in 1:5){
-        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] - 
-                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2)
+    # for each grid
+    # each time we set the rmse to zeros
+    rmse = rep(0,fold)
+    for(i in 1:fold){
+      if(method == "PMD"){
+        res_log = capture.output({out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)})
+      }else{
+        out = softImpute(missing[i,,], rank.max = K,lambda = c_s[t_s])
       }
-      rmse[i] = sqrt(rmse[i] / (N * P/5))
-    }
-    CVRMSE[t_s] = mean(rmse)
+      if(length(out$d)==1){
+        misshat = (out$d) * out$u %*% t(out$v)
+      }else{
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+      }
+      for(j in 1:fold){
+        # for each fold j
+        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2,na.rm = TRUE)
+      }
+    } #get the result for one run
+    CVRMSE[t_s] = CVRMSE[t_s] + sqrt(sum(rmse)/(N*P))
     if(CVRMSE[t_s] < minrmse){
       minrmse = CVRMSE[t_s]
       opt_s = c_s[t_s]
     }
   }
-  
-  return(list(opt_s = opt_s ))
+  return(list(opt_s = opt_s, output = CVRMSE))
 }
 
-
-PMA.wrapper = function(Y,ngrids = 10,K){
+PMA.wrapper = function(Y_data, ngrids = 10, K=3, fold = 10){
   library(PMA)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
   N = dim(Y)[1]
   P = dim(Y)[2]
-  c_s = seq(0.2,0.8,len=ngrids)
-  cvout = CVPMD(Y,c_s, K = K)
-  out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)
-  residual_PMD = Y -  out$u %*%  diag(out$d) %*% t(out$v)
-  return(list(d = out$d, u = out$u, v = out$v, residual = residual_PMD))
+  c_s = seq(0.1,0.9,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = "PMD")
+  res_log = capture.output({out = PMD(Y,sumabsu = NULL, sumabsv = NULL, sumabs = cvout$opt_s ,K = K)})
+  Y_hat = out$u %*% diag(out$d) %*%  t(out$v)
+  return(Y_hat)
 }
 
 
+softImpute.wrapper = function(Y_data, ngrids = 10, K = 3, fold = 10){
+  library(softImpute)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0,100,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = "softImpute")
+  out = softImpute(Y, rank.max = K,lambda = cvout$opt_s)
+  if(length(out$d)==1){
+    Y_hat = (out$d) * out$u %*% t(out$v)
+  }else{
+    Y_hat = out$u %*%  diag(out$d) %*% t(out$v)
+  }
+  return(Y_hat)
+}
 
+SVD.wrapper = function(Y_data,K = 3){
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  gsvd = svd(Y,nu = 3,nv = 3)
+  Y_hat = (gsvd$u[,1:K] %*% diag(gsvd$d[1:K]) %*% t(gsvd$v[,1:K]))
+  return(Y_hat)
+}
+
+SSVD.wrapper = function(Y_data,K = 3){
+  library(ssvd)
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  gssvd = ssvd::ssvd(Y,method = "method",r = K)
+  Y_hat = (gssvd$u %*% diag(gssvd$d) %*% t(gssvd$v))
+  return(Y_hat)
+}
+
+flashBF.wrapper = function(Y_data,K = 3){
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  library(ebnm)
+  library(flashr2)
+  data =  flashr2::flash_set_data(Y)
+  f_greedy = flashr2::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
+  f = flashr2::flash_backfit(data,f_greedy,var_type = "constant")
+  Y_hat = f$EL %*% t(f$EF)
+  return(Y_hat)
+}
+
+flash.wrapper = function(Y_data, K = 3){
+  # missindex is a matirx with 3 column here: i j x
+  # Y has miss value already
+  Y = Y_data$Y
+  L_true = Y_data$L_true
+  F_true = Y_data$F_true
+  E = Y_data$E
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  data =  flashr2::flash_set_data(Y)
+  g_flash = flashr2::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
+  Y_hat = g_flash$EL %*% t(g_flash$EF)
+  return(Y_hat)
+}
 ```
 
 
 ```{r}
-set.seed(99)
-N = 150
-P = 240
-K = 3
-L_true = array(0,dim = c(N,K))
-F_true = array(0,dim = c(P,K))
-F_true[1:80,1] = rnorm(80,0,0.5)
-F_true[81:160,2] = rnorm(80,0,1)
-F_true[161:240,3] = rnorm(80,0,2)
-L_true[1:10,1] = rnorm(10,0,2)
-L_true[11:60,2] = rnorm(50,0,1)
-L_true[61:150,3] = rnorm(90,0,0.5)
-G = L_true %*% t(F_true)
-# generate Y
-E = matrix(rnorm(N*P,0,2),nrow=N)
-Y = L_true %*% t(F_true) + E
-g_flash = flashr::greedy(Y,K = 5)
-g_b_flash = flashr::backfitting(Y,initial_list = g_flash)
+library(PMA)
+library(flashr2)
+library(ssvd)
+library(softImpute)
+Y_data = DataMaker(seed_num = 0)
 
-outcv = PMA.wrapper(Y,10,K = 3)
-```
+LF_1 = PMA.wrapper(Y_data)
+LF_2 = flash.wrapper(Y_data)
+LF_3 = flashBF.wrapper(Y_data)
+LF_4 = SVD.wrapper(Y_data)
+LF_5 = SSVD.wrapper(Y_data)
+LF_6 = softImpute.wrapper(Y_data)
+LF_true = Y_data$L_true %*% t(Y_data$F_true)
 
-```{r}
 library(reshape2)
-melted_cormat_1 <- melt(G, na.rm = TRUE)
-melted_cormat_2 <- melt(g_b_flash$l %*% t(g_b_flash$f), na.rm = TRUE)
-melted_cormat_3 <- melt(outcv$u %*% diag(outcv$d) %*% t(outcv$v), na.rm = TRUE)
-melted_cormat_4 <- melt(Y, na.rm = TRUE)
+melted_cormat_1 <- melt(LF_1, na.rm = TRUE)
+melted_cormat_2 <- melt(LF_2, na.rm = TRUE)
+melted_cormat_3 <- melt(LF_3, na.rm = TRUE)
+melted_cormat_4 <- melt(LF_4, na.rm = TRUE)
+melted_cormat_5 <- melt(LF_5, na.rm = TRUE)
+melted_cormat_6 <- melt(LF_6, na.rm = TRUE)
+melted_cormat_true <- melt(LF_true, na.rm = TRUE)
 # Heatmap
 library(ggplot2)
-p1 = ggplot(data = melted_cormat_1, aes(Var2, Var1, fill = value))+
- geom_tile(color = "white")+
- scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "truth", y = "sample", x = "variable") +
-  theme_minimal() + theme(legend.position="none",plot.background = element_rect()) 
+plot_HP = function(title_name = "truth", melted_cormat){
+  p1 = ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+   geom_tile(color = "white")+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+     midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = title_name, y = "samples", x = "variables") +
+    theme_minimal() + theme(legend.position="none") 
+  p1
+}
 
-p2 = ggplot(data = melted_cormat_2, aes(Var2, Var1, fill = value))+
- geom_tile(color = "white")+
- scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "FLASH",y = "sample", x = "variable") +
-  theme_minimal() + theme(legend.position="none",plot.background = element_rect())
-
-p3 = ggplot(data = melted_cormat_3, aes(Var2, Var1, fill = value))+
- geom_tile(color = "white")+
- scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "PMD",y = "sample", x = "variable") +
-  theme_minimal() + theme(legend.position="none",plot.background = element_rect())
-
-p4 = ggplot(data = melted_cormat_4, aes(Var2, Var1, fill = value))+
- geom_tile(color = "white")+
- scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-   midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = "observed data",y = "sample", x = "variable") +
-  theme_minimal() + theme(legend.position="none",plot.background = element_rect())
-
-library(cowplot)
-plot_grid(p1,p4,p3,p2, ncol = 2)
+p0 = plot_HP(title_name = "Truth", melted_cormat = melted_cormat_true)
+p1 = plot_HP(title_name = "PMD.cv1", melted_cormat = melted_cormat_1)
+p2 = plot_HP(title_name = "flash", melted_cormat = melted_cormat_2)
+p3 = plot_HP(title_name = "flashb", melted_cormat = melted_cormat_3)
+p4 = plot_HP(title_name = "SVD", melted_cormat = melted_cormat_4)
+p5 = plot_HP(title_name = "SSVD", melted_cormat = melted_cormat_5)
+p6 = plot_HP(title_name = "SI.cv", melted_cormat = melted_cormat_6)
 ```
 
-
 ```{r}
-library(ggplot2)
-library(cowplot)
-mat = cbind(L_true,g_b_flash$l,outcv$u)
-mat[,8] = -mat[,8]
-mat[,9] = -mat[,9]
-mat[,6] = -mat[,6]
-mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
-colnames(mat1) = c("truth.l1","truth.l2","truth.l3","FLASH.l3","FLASH.l2","FLASH.l1","PMD.u3","PMD.u2","PMD.u1")
-df1 = data.frame(mat1)
-p1_1_l <- ggplot(df1, aes(truth.l1, FLASH.l1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 1 (FLASH)")
-p1_2_l <- ggplot(df1, aes(truth.l2, FLASH.l2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 2 (FLASH)")
-p1_3_l <- ggplot(df1, aes(truth.l3, FLASH.l3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 3 (FLASH)")
-p2_1_l <- ggplot(df1, aes(truth.l1, PMD.u1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 1 (PMD)")
-p2_2_l <- ggplot(df1, aes(truth.l2, PMD.u2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 2 (PMD)")
-p2_3_l <- ggplot(df1, aes(truth.l3, PMD.u3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("loading 3 (PMD)")
-
-
-library(ggplot2)
-library(cowplot)
-mat = cbind(F_true,g_b_flash$f,outcv$v)
-mat[,8] = -mat[,8]
-mat[,9] = -mat[,9]
-mat[,6] = -mat[,6]
-mat1 = sapply(seq(1,dim(mat)[2]), function(x){ mat[,x]/sqrt(sum((mat[,x])^2)) } )
-colnames(mat1) = c("truth.f1","truth.f2","truth.f3","FLASH.f3","FLASH.f2","FLASH.f1","PMD.v3","PMD.v2","PMD.v1")
-df1 = data.frame(mat1)
-p1_1 <- ggplot(df1, aes(truth.f1, FLASH.f1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 1 (FLASH)")
-p1_2 <- ggplot(df1, aes(truth.f2, FLASH.f2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 2 (FLASH)")
-p1_3 <- ggplot(df1, aes(truth.f3, FLASH.f3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 3 (FLASH)")
-p2_1 <- ggplot(df1, aes(truth.f1, PMD.v1)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 1 (PMD)")
-p2_2 <- ggplot(df1, aes(truth.f2, PMD.v2)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 2 (PMD)")
-p2_3 <- ggplot(df1, aes(truth.f3, PMD.v3)) + geom_point() +  geom_abline(intercept = 0, slope = 1)+theme_gray() + ggtitle("factor 3 (PMD)")
-plot_grid(p1_1_l, p2_1_l, p1_1, p2_1,
-          p1_2_l, p2_2_l, p1_2, p2_2,
-          p1_3_l, p2_3_l, p1_3, p2_3,labels = "" , ncol = 4)
+gridExtra::grid.arrange(p0,p5,p6,p4,p1,p2,ncol = 2)
 ```
 
 ## Session information
