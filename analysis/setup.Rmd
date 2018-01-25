@@ -1,0 +1,44 @@
+---
+title: "Setup for flash project"
+output:
+  html_document:
+    toc: false
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+To reproduce our results on your own computer, please follow these
+setup instructions.
+
+## Setup instructions
+
+*Fill out setup instructions in this section. See
+[here](https://stephenslab.github.io/wflow-divvy/setup.html) and
+[here](https://github.com/pcarbo/mouthwash_sims/blob/master/README.md)
+for some ideas.*
+
+## Session information
+
+Here are details about the computing environment, including the
+version of R and the R packages, that were used to generate the
+results from the R Markdown documents.
+
+```{r session-info}
+```
