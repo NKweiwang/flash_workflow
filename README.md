@@ -2,8 +2,10 @@
 
 This repository contains source code to reproduce the experiments of a
 forthcoming manuscript on Empirical Bayes methods for factor
-analysis. The new methods can be found in the
-[flashr](https://github.com/stephenslab/flashr) package.
+analysis. View the project website
+[here](https://nkweiwang.github.io/flash_workflow). The new methods
+can be found in the [flashr](https://github.com/stephenslab/flashr)
+package.
 
 If you find a bug, please create an
 [issue](https://github.com/dcgerard/ruvb_sims/issues).
