@@ -258,9 +258,12 @@ NSF_OCV = function(OCVindex){
 
 ```
 
-Here you need change the `\"addpath(\'~/HG/flash/data/OCVmissflashr2/Breastcancer\');` to your folder which contains `missvalue.m` file. this file name is `wrapper.R`
+This file name is `wrapper.R`
+
 
 ### matlab code 
+
+In this folder 
 
 ```{}
 ddpath('~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/');
@@ -308,14 +311,14 @@ for i = 1:k_fold
 
 end
 
-RMSE = sqrt(sum(SSE)/(100000));
+RMSE = sqrt(sum(SSE)/(settings.D*settings.N));
 RMSE;
 
 save_path = fullfile(pwd,'NBSFAout/NSFAresult');
 save(save_path,'RMSE');
 ```
 
-you need change the path as well. this file name is 'missvalue.m'
+you need change the path `~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/` and `~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/utils/` which have the NBSFA matlab code.
 
 ### creat the run.R file to run the code
 
@@ -416,105 +419,108 @@ saveRDS(results,"./boxplot.rds")
 ## plot the result 
 
 ```{r}
+# this is the independent result
+
+
 library(ggplot2)
 plot_res = function(output,title = "data",legend_position = "none", x_label){
   rmse = as.vector(output)
   N = dim(output)[1]
-  # methods = rep(c("flash","NBSFA","PMD","softImpute"), each = N)
   methods = rep(x_label, each = N)
   df = data.frame(RMSE = rmse, Method = methods )
   p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
-  geom_boxplot()+
-  # geom_violin()+
-  ggtitle(title) +  theme_bw()+
-    theme(legend.position= legend_position, legend.text=element_text(size=15), axis.text.y = element_text(size =6))
+    geom_boxplot()+
+    # geom_violin()+
+    ggtitle(title) +  theme_bw()+
+    theme(legend.position= legend_position, legend.text=element_text(size=15),
+          plot.title = element_text(size = 15, face = "bold"),
+          axis.text.y = element_text(size =12.6),
+          axis.text.x = element_text(size =12.6,angle = 45, hjust = 1))
   p
 }
-x_label = c("flash","NBSFA","PMD","softImpute")
-PT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/president_box.rds")
-pp = plot_res(PT_res,"Text data",x_label = x_label)
-DT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds")
-pd = plot_res(DT_res,"Tumor data",x_label = x_label)
-GZ_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds")
-pg = plot_res(GZ_res,"GTEx data",x_label = x_label)
-BC_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds")
-pb = plot_res(BC_res,"Breast Cancer data",x_label = x_label)
+
+setwd("~/HG/flash_workflow/analysis")
+
+##############  MovieLens data
+
 ML_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/ML100K_box.rds")
 ML_res[c(2,13,17,21,29,37,62,76,77,93,95,100),] = NA
 ML_res = matrix(as.numeric(ML_res),ncol = 4)
-pM = plot_res(ML_res,"Movie Lens data",x_label = x_label)
-```
+# c("flash","NBSFA","PMD","softImpute")
+ml_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/movies100K/boxplot_cv.rds")
+# flashG_rmse,flashGwn_rmse,pmd_rmse,soft_rmse
+ml_res[1:20,] = sqrt((ml_res[1:20,])^2 * (943*1682)/(100000))
+ml_res = ml_res[1:20,]
+ML_res = ML_res[-c(2,13,17,21,29,37,62,76,77,93,95,100),]
+ML_res = ML_res[1:20,]
+# add PN result
+ML_pn_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/movies100K/box_cv_pn.rds")
+# the result order would be flashG PMD PMDcv NSFA SF SFcv
+output = cbind(ML_pn_res[,1],ML_pn_res[,2],ML_res[,3],ml_res[,3],ML_res[,2],ML_res[,4],ml_res[,4])
+
+x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
+plotM = plot_res(output,"MovieLens data",x_label = x_label)
+
+############ Breast Cancer data
+
+BC_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/BreastCancer_box.rds")
+BC_res = BC_res[1:20,]
+# c("flash","NBSFA","PMD","softImpute")
+bc_res = readRDS("../data/missingvalue/testingcode/box_Breast.rds")
+# c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
+
+# the result order would be flashG PMD PMDcv NSFA SF SFcv
+output = cbind(bc_res[,2],bc_res[,1],BC_res[,3],bc_res[,6],BC_res[,2],BC_res[,4],bc_res[,7])
+x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
+plotB = plot_res(output,"Breast Cancer data",x_label = x_label)
+
+############ GTEx data
+
+GZ_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/gtexzscore_box.rds")
+GZ_res = GZ_res[1:20,]
+# c("flash","NBSFA","PMD","softImpute")
+gz_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/gtexzscore/box_cv.rds")
+# flashG_rmse,nsfa_rmse,pmd_rmse,soft_rmse
+gz_pn_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/OCVNew20rep/gtexzscore/box_pn.rds")
+gz_pn_res[c(23,25,29,34),] = NA
+gz_pn_res = matrix(as.numeric(gz_pn_res[21:40,]),ncol = 2)
 
 
-## plots 
+# the result order would be flashG PMD PMDcv NSFA SF SFcv
+output = cbind(gz_res[,1],gz_pn_res[,2],GZ_res[,3],gz_res[,3],GZ_res[,2],GZ_res[,4],gz_res[,4])
+x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
+plotG = plot_res(output,"GTEx data",x_label = x_label)
 
-```{r}
-gridExtra::grid.arrange(pp,pd,pg,pb,pM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))
-```
+############ Text data
 
-## results for different tuning parameters
+PT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/president_box.rds")
+PT_res = PT_res[1:20,]
+# c("flash","NBSFA","PMD","softImpute")
+pt_res = readRDS("../data/missingvalue/testingcode/box_president.rds")
+# c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft","zero")
 
-```{r}
-pmd_c = sapply(seq(1,10),function(x){paste("PMD",x)})
-softImpute_c = sapply(seq(1,10),function(x){paste("SF",x)})
-x_label= c("flash","NBSFA",pmd_c,softImpute_c)
-PT_res = readRDS("../data/missingvalue/box_res_grids_sf_pmd/denoiseTumor_box.rds")
-pt = plot_res(PT_res,"Tumor data",x_label = x_label)
-pt
-PT_res = readRDS("../data/missingvalue/box_res_grids_sf_pmd/TEXT_prsdt_box.rds")
-pp = plot_res(PT_res,"Text data",x_label = x_label)
-pp
-```
+# the result order would be flashG PMD PMDcv NSFA SF SFcv
+output = cbind(pt_res[,3],pt_res[,1],PT_res[,3],pt_res[,6],PT_res[,2],PT_res[,4],pt_res[,7])
+x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
+plotP = plot_res(output,"Text data",x_label = x_label)
+
+############ Tumor data
+
+DT_res = readRDS("../data/missingvalue/OCVtemplate/RCCres/denoiseRtumor_box.rds")
+DT_res = DT_res[1:20,]
+# c("flash","NBSFA","PMD","softImpute")
+dt_res = readRDS("../data/missingvalue/testingcode/box_denoiseTumor.rds")
+# c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
+
+# the result order would be flashG PMD PMDcv NSFA SF SFcv
+output = cbind(dt_res[,2],dt_res[,1],DT_res[,3],dt_res[,6],DT_res[,2],DT_res[,4],dt_res[,7])
+x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
+plotT = plot_res(output,"Tumor data",x_label = x_label)
+
+# gridExtra::grid.arrange(plotP,plotT,plotG,plotB,plotM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))
+gridExtra::grid.arrange(plotM,plotT,plotG,plotB,plotP, layout_matrix = rbind(c(1,2,3),c(4,5,NA) ))
 
 
-## use OCV choose the tuning parameters
-
-labels | null check | backfitting | greedy | ebnm_ash | ebnm_pn 
------- | ---------- | ----------- | ------ | -------- | ------
-flashG | yes| |yes | yes |
-flashGwn | | | yes|yes |
-flashB | yes| yes| | yes|
-PN | yes | | yes| |yes
-
-### Breast Cancer data
-
-we use 10 grids for `softImpute` and `PMD`
-
-```{r}
-PB_res = readRDS("../data/missingvalue/testingcode/box_Breast.rds")
-x_label= c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
-pb = plot_res(PB_res,"Breast Cancer data",x_label = x_label)
-pb
-```
-
-we take the 'flashB' away to compare the rest.
-
-```{r}
-x_label= c("PN","flashG","flashGwn","nsfa","pmd","soft")
-pb = plot_res(PB_res[,-4],"Breast Cancer data",x_label = x_label)
-pb
-```
-
-### denoiseR Tumor data
-
-we use 10 grids for `softImpute` and `PMD`
-
-```{r}
-PT_res = readRDS("../data/missingvalue/testingcode/box_denoiseTumor.rds")
-x_label= c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft")
-pt = plot_res(PT_res,"Tumor data",x_label = x_label)
-pt
-```
-
-### text data
-
-in this data, we add `zero` as use zero values as imputation to compare with other methods.
-
-```{r}
-PT_res = readRDS("../data/missingvalue/testingcode/box_president.rds")
-x_label= c("PN","flashG","flashGwn","flashB","nsfa","pmd","soft","zero")
-pt = plot_res(PT_res,"Text data",x_label = x_label)
-pt
 ```
 
 
