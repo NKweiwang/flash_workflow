@@ -48,7 +48,7 @@ Click here to check the [simulatoin result (rank one and rank three)](applyflahr
 
 Click here to check the [RMSE for the rank one example in the paper](MSErank1sim.html)
 
-Click here to check the [RMSE for the rank three example in the paper](MSErank3sim.Rmd.html) and [RRMSE](simulation3.Rmd)
+Click here to check the [RMSE for the rank three example in the paper](MSErank3sim.html) and [RRMSE](simulation3.html)
 
 #### GTEx Z-score
 
