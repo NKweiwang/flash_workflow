@@ -27,3 +27,7 @@ January 25, 2018
 * TO DO: Make sure that all the webpages have the updated navigation
   bar ("home", "setup", "license").
   
+* TO DO: Remove any .Rmd and .html files that are no longer used in
+  your project. (Remember, they can always be recovered from your git
+  history.)
+  
