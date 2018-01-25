@@ -1,5 +1,5 @@
 To-do items, comments & suggestions for improving reproducibility
-Compiled by Peter Carbonetto
+Compiled by Peter Carbonetto & Wei Wang
 January 25, 2018
 
 * TO DO: In README, briefly describe computing environment(s) where

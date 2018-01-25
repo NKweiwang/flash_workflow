@@ -8,7 +8,7 @@ can be found in the [flashr](https://github.com/stephenslab/flashr)
 package.
 
 If you find a bug, please create an
-[issue](https://github.com/dcgerard/ruvb_sims/issues).
+[issue](https://github.com/NKweiwang/flash_workflow/issues).
 
 This code has been tested in ...
 
@@ -17,9 +17,7 @@ This code has been tested in ...
 If you find any of the source code in this repository useful for your
 work, please cite our paper:
 
-> Gerard, David, and Matthew Stephens. 2017. "Empirical Bayes Shrinkage
-> and False Discovery Rate Estimation, Allowing for Unwanted Variation."
-> *arXiv Preprint arXiv:1709.10066*. <https://arxiv.org/abs/1709.10066>.
+> *Add reference here.*
 
 ## License
 
@@ -29,3 +27,12 @@ All source code and software in this repository are made available
 under the terms of the
 [MIT License](https://opensource.org/licenses/mit-license.html). See the
 [LICENSE](LICENSE) file for the full text of the license.
+
+## Credits
+
+This project was developed by [Wei Wang](https://github.com/NKweiwang)
+at the University of Chicago.
+
+Thanks to [Matthew Stephens](http://stephenslab.uchicago.edu) for his
+support and mentorship.
+
