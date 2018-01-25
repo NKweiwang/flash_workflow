@@ -523,7 +523,9 @@ gridExtra::grid.arrange(plotM,plotT,plotG,plotB,plotP, layout_matrix = rbind(c(1
 
 ```
 
+## other information
 
+please click here to check other information [Missing data OCV settings](OCVmissdataSetting.html)
 
 ## Session information
 
