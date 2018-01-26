@@ -347,6 +347,7 @@ nsfa_rmse = NSF_OCV(OCVindex)
 
 result = c(PN_rmse,flashG_rmse,flashGwn_rmse,flashB_rmse,nsfa_rmse,pmd_rmse,soft_rmse)
 saveRDS(result, "./NBSFAout/output.rds")
+print(sessionInfo())
 ```
 
 this file name is `runOCV.R`
