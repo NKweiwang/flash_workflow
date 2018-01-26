@@ -26,6 +26,28 @@ knitr::read_chunk("chunks.R")
 
 <!-- Add your analysis here -->
 
+## software
+
+### SFAmix 
+
+http://beehive.cs.princeton.edu/software/
+
+### sfa
+
+http://stephenslab.uchicago.edu/software.html#sfa
+
+### NBSFA
+
+https://github.com/davidaknowles/nsfa
+
+### R packages
+
+```{r}
+library(ssvd)
+library(PMA)
+library(softImpute)
+```
+
 ## settings for the 5 data sets in our paper.
 
 ### GTEx zsocre 
