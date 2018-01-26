@@ -329,10 +329,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-25</p>
+<p><strong>Last updated:</strong> 2018-01-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> 49f1de1</p>
+<p><strong>Code version:</strong> d348408</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -640,7 +640,8 @@ soft_rmse = OCV_SSE(Y,OCVindex,OCVdata,k_fold = 10,method = &quot;softImpute&quo
 nsfa_rmse = NSF_OCV(OCVindex)
 
 result = c(PN_rmse,flashG_rmse,flashGwn_rmse,flashB_rmse,nsfa_rmse,pmd_rmse,soft_rmse)
-saveRDS(result, &quot;./NBSFAout/output.rds&quot;)</code></pre>
+saveRDS(result, &quot;./NBSFAout/output.rds&quot;)
+print(sessionInfo())</code></pre>
 <p>this file name is <code>runOCV.R</code></p>
 </div>
 <div id="creat-folder-to-track-the-result" class="section level3">
