@@ -313,23 +313,38 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-25</p>
+<p><strong>Last updated:</strong> 2018-01-26</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d65ade1</p>
+<p><strong>Code version:</strong> 624bc83</p>
 <!-- Add your analysis here -->
+<div id="software" class="section level2">
+<h2>software</h2>
+<div id="sfamix" class="section level3">
+<h3>SFAmix</h3>
+<p><a href="http://beehive.cs.princeton.edu/software/" class="uri">http://beehive.cs.princeton.edu/software/</a></p>
+</div>
+<div id="sfa" class="section level3">
+<h3>sfa</h3>
+<p><a href="http://stephenslab.uchicago.edu/software.html#sfa" class="uri">http://stephenslab.uchicago.edu/software.html#sfa</a></p>
+</div>
+<div id="nbsfa" class="section level3">
+<h3>NBSFA</h3>
+<p><a href="https://github.com/davidaknowles/nsfa" class="uri">https://github.com/davidaknowles/nsfa</a></p>
+</div>
+<div id="r-packages" class="section level3">
+<h3>R packages</h3>
+<pre class="r"><code>library(ssvd)
+library(PMA)
+library(softImpute)</code></pre>
+</div>
+</div>
 <div id="settings-for-the-5-data-sets-in-our-paper." class="section level2">
 <h2>settings for the 5 data sets in our paper.</h2>
 <div id="gtex-zsocre" class="section level3">
 <h3>GTEx zsocre</h3>
-<pre class="r"><code>library(R.matlab)</code></pre>
-<pre><code>R.matlab v3.6.1 (2016-10-19) successfully loaded. See ?R.matlab for help.</code></pre>
-<pre><code>
-Attaching package: &#39;R.matlab&#39;</code></pre>
-<pre><code>The following objects are masked from &#39;package:base&#39;:
-
-    getOption, isOpen</code></pre>
-<pre class="r"><code>Y_centered = readMat(&quot;../data/output/missingdata/GTExZsocre/example.mat&quot;)
+<pre class="r"><code>library(R.matlab)
+Y_centered = readMat(&quot;../data/output/missingdata/GTExZsocre/example.mat&quot;)
 Y = Y_centered$Ycentered</code></pre>
 </div>
 <div id="movielens" class="section level3">
@@ -406,7 +421,7 @@ pM = plot_res(ML_res,&quot;Movie Lens data&quot;,x_label = x_label)</code></pre>
 <h2>plots</h2>
 <pre class="r"><code>gridExtra::grid.arrange(pp,pd,pg,pb,pM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))</code></pre>
 <pre><code>Warning: Removed 48 rows containing non-finite values (stat_boxplot).</code></pre>
-<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-7-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="results-for-different-tuning-parameters" class="section level2">
 <h2>results for different tuning parameters</h2>
@@ -416,11 +431,11 @@ x_label= c(&quot;flash&quot;,&quot;NBSFA&quot;,pmd_c,softImpute_c)
 PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/denoiseTumor_box.rds&quot;)
 pt = plot_res(PT_res,&quot;Tumor data&quot;,x_label = x_label)
 pt</code></pre>
-<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
 <pre class="r"><code>PT_res = readRDS(&quot;../data/missingvalue/box_res_grids_sf_pmd/TEXT_prsdt_box.rds&quot;)
 pp = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
 pp</code></pre>
-<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-8-2.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-9-2.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="use-ocv-choose-the-tuning-parameters" class="section level2">
 <h2>use OCV choose the tuning parameters</h2>
@@ -477,12 +492,12 @@ pp</code></pre>
 x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
 pb = plot_res(PB_res,&quot;Breast Cancer data&quot;,x_label = x_label)
 pb</code></pre>
-<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-9-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
 <p>we take the ‘flashB’ away to compare the rest.</p>
 <pre class="r"><code>x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
 pb = plot_res(PB_res[,-4],&quot;Breast Cancer data&quot;,x_label = x_label)
 pb</code></pre>
-<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-10-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="denoiser-tumor-data-1" class="section level3">
 <h3>denoiseR Tumor data</h3>
@@ -491,7 +506,7 @@ pb</code></pre>
 x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;)
 pt = plot_res(PT_res,&quot;Tumor data&quot;,x_label = x_label)
 pt</code></pre>
-<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-11-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="text-data" class="section level3">
 <h3>text data</h3>
@@ -500,7 +515,7 @@ pt</code></pre>
 x_label= c(&quot;PN&quot;,&quot;flashG&quot;,&quot;flashGwn&quot;,&quot;flashB&quot;,&quot;nsfa&quot;,&quot;pmd&quot;,&quot;soft&quot;,&quot;zero&quot;)
 pt = plot_res(PT_res,&quot;Text data&quot;,x_label = x_label)
 pt</code></pre>
-<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-12-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/OCVmissdataSetting.Rmd/unnamed-chunk-13-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
 <div id="session-information" class="section level2">
