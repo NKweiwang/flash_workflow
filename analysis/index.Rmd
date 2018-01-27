@@ -5,6 +5,8 @@ output:
     toc: false
 ---
 
+[old experiments](oldanalysis.html)
+
 ## Simulation studies
 
 ### Orthogonal CV

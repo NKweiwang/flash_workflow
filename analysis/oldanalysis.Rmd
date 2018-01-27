@@ -63,6 +63,10 @@ Click here to check the [simulated examples](compare_ash_ebmn.html)
 
 Click here to check the [missing data examples (first simple comparison)](compare_ash_pn_miss.html)
 
+#### choice of lambda of softImpute
+
+Click here to check the [choice of lambda for softImpute](softImputelambda.html)
+
 ## Session information
 
 <!-- Insert the session information into the document -->
