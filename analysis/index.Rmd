@@ -11,7 +11,7 @@ output:
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
 
-### Apply flashr2 for the examples in FLASH paper
+### Apply flashr (flashr2) for the examples in FLASH paper
 
 #### simulations
 
