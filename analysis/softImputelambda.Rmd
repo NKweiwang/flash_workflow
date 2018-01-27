@@ -1,0 +1,330 @@
+---
+title: "the choice of softImpte lambda"
+author: "Wei Wang"
+date: 2018-01-27
+output: 
+  html_document:
+    code_folding: hide
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+## Document 
+
+Based on the document of the authors ![https://cran.r-project.org/web/packages/softImpute/softImpute.pdf], we should choose lambda ($\lambda$) as "Ideally lambda should be chosen so that the solution reached has rank slightly
+less than rank.max."
+
+## Brease Cancer data in flash paper
+
+```{r}
+CVPMD_softImpute=function(Y,c_s,K,fold = 10, method = "PMD"){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = fold)
+  rowindex = matrix(sample(N,N),ncol = fold)
+
+  missing= array(0,dim = c(fold,N,P))
+  foldindex = array(0,dim = c(fold,fold,2))
+  for(i in 1:fold){
+    for(j in 1:fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = fold
+  for(i in 1:fold){
+    missing[i, , ] = Y
+    for(j in 1:fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+    missing[i,,which(colSums(missing[i,,],na.rm = T) ==0)] = Y[,which(colSums(missing[i,,],na.rm = T) ==0)]
+  }
+  # c_s is the candicate of shrinkage parameter
+  n_s = length(c_s)
+  # rmse for each grids
+  CVRMSE = rep(0,n_s)
+  minrmse = Inf
+  opt_s = 0
+  # for each candidate, we run it N_sim times
+  for(t_s in 1:n_s){
+    # for each grid
+    # each time we set the rmse to zeros
+    rmse = rep(0,fold)
+    for(i in 1:fold){
+      if(method == "PMD"){
+        res_log = capture.output({out = PMD(missing[i,,], sumabs = c_s[t_s], sumabsv = NULL, sumabsu = NULL,K = K)})
+      }else{
+        out = softImpute(missing[i,,], rank.max = K,lambda = c_s[t_s])
+      }
+      if(length(out$d)==1){
+        misshat = (out$d) * out$u %*% t(out$v)
+      }else{
+        misshat = out$u %*%  diag(out$d) %*% t(out$v)
+      }
+      for(j in 1:fold){
+        # for each fold j
+        rmse[i] = rmse[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                                   misshat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2,na.rm = TRUE)
+      }
+    } #get the result for one run
+    CVRMSE[t_s] = CVRMSE[t_s] + sqrt(sum(rmse)/(N*P))
+    if(CVRMSE[t_s] < minrmse){
+      minrmse = CVRMSE[t_s]
+      opt_s = c_s[t_s]
+    }
+  }
+  return(list(opt_s = opt_s, output = CVRMSE))
+}
+
+softImpute.wrapper = function(Y,ngrids = 10,K,fold = 10){
+  library(softImpute)
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  c_s = seq(0,100,len=ngrids)
+  cvout = CVPMD_softImpute(Y,c_s,K ,fold , method = "softImpute")
+  out = softImpute(Y, rank.max = K,lambda = cvout$opt_s)
+  return(list(d = out$d, u = out$u, v = out$v))
+}
+
+
+OCV_index=function(Y,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = matrix(sample(P,P),ncol = k_fold)
+  rowindex = matrix(sample(N,N),ncol = k_fold)
+
+  foldindex = array(0,dim = c(k_fold,k_fold,2))
+  for(i in 1:k_fold){
+    for(j in 1:k_fold){
+      foldindex[i,j,1] = i
+      foldindex[i,j,2] = (i+j) %% k_fold
+    }
+  }
+  foldindex[which(foldindex == 0)] = k_fold
+
+  return(list(foldindex = foldindex, rowindex = rowindex, colindex = colindex))
+}
+# OCVindex = OCV_index(Y,k_fold = 5)
+
+OCV_data = function(Y,OCVindex,k_fold = 5){
+  N = dim(Y)[1]
+  P = dim(Y)[2]
+  colindex = OCVindex$colindex
+  rowindex = OCVindex$rowindex
+  foldindex = OCVindex$foldindex
+  missing= array(0,dim = c(k_fold,N,P))
+  for(i in 1:k_fold){
+    missing[i, , ] = Y
+    for(j in 1:k_fold){
+      missing[i,rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] = NA
+    }
+    missing[i,,which(colSums(missing[i,,],na.rm = T) ==0)] = Y[,which(colSums(missing[i,,],na.rm = T) ==0)]
+  }
+  return(missing)
+}
+# OCVdata = OCV_data(Y,OCVindex,k_fold = 5)
+
+
+OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50){
+  colindex = OCVindex$colindex
+  rowindex = OCVindex$rowindex
+  foldindex = OCVindex$foldindex
+  missing = OCVdata
+  SSE = rep(0,k_fold)
+  for(i in 1:k_fold){
+    miss_hat = call_method(missing[i,,], method = method, Kmax = Kmax)
+    for(j in 1:k_fold){
+      SSE[i] = SSE[i] + sum((Y[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]] -
+                               miss_hat[rowindex[,foldindex[j,i,1]],colindex[,foldindex[j,i,2]]])^2,na.rm = TRUE)
+    }
+  }
+  RMSE = sqrt(sum(SSE)/(dim(Y)[1] * dim(Y)[2]))
+  return(RMSE)
+}
+
+call_method = function(Y_data,method,Kmax = 50){
+  if(method == "flash"){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == "flash_wn"){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,nullcheck=FALSE)
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == "flash_gb"){
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
+    f = flashr2::flash_backfit(data,f_greedy)
+    Y_hat = f$EL %*% t(f$EF)
+  }else if(method == "flash_bf"){
+    data = flashr2::flash_set_data(Y_data)
+    f_data = flashr2::flash_add_factors_from_data(data,K = Kmax)
+    f = flashr2::flash_backfit(data,f_data)
+    Y_hat = f$EL %*% t(f$EF)
+  }else if(method == "PMD"){
+    res_log = capture.output({out = PMA.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10)})
+    if(length(out$d)==1){
+      Y_hat =  (out$d) * out$u %*% t(out$v)
+    }else{
+      Y_hat =  out$u %*% diag(out$d) %*% t(out$v)
+    }
+  }else if(method == 'PN'){
+    library(ebnm)
+    library(flashr2)
+    data = flashr2::flash_set_data(Y_data)
+    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,ebnm_fn = ebnm_pn)
+    Y_hat = f_greedy$EL %*% t(f_greedy$EF)
+  }else if(method == 'PMD_d'){
+    out = PMA::PMD(Y_data, K = Kmax)
+    Y_hat =  out$u %*% diag(out$d) %*% t(out$v)
+  }else if(method == 'softImpute_d'){
+    gsoft = softImpute::softImpute(Y_data, rank.max = Kmax)
+    Y_hat =  gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v)
+  }else if(method == "softImpute"){
+    gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
+    if(length(gsoft$d)==1){
+      Y_hat =  try((gsoft$d) * gsoft$u %*% t(gsoft$v))
+    }else{
+      Y_hat =  try(gsoft$u %*% diag(gsoft$d) %*% t(gsoft$v))
+    }
+  }else if(method == "SF_flash"){
+    gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
+    LL = gsoft$u %*% diag(gsoft$d)
+    FF = gsoft$v
+    data = flashr2::flash_set_data(Y_data)
+    f_data = flashr2::flash_add_lf(data, LL=LL, FF=FF)
+    f = flashr2::flash_backfit(data,f_data)
+    Y_hat = f$EL %*% t(f$EF)
+  }else{
+    # stop("the method is not implemented yet, please check it out")
+    Y_hat = matrix(0,ncol = dim(Y_data)[2],nrow = dim(Y_data)[1])
+  }
+  return(Y_hat)
+}
+
+```
+
+read the data
+
+```{r}
+library(R.matlab)
+## run the code
+Y_centered = readMat("../data/output/missingdata/BreastCancer/example.mat")
+Y = Y_centered$Y
+# in the matlab package of NSF, the use the centered data by rows
+N = dim(Y)[1]
+P = dim(Y)[2]
+Y = Y - rowMeans(Y) %*% t(rep(1,P))
+```
+
+first we try to get the lambda based on the authors suggestion.  
+
+```{r}
+OCVindex = OCV_index(Y,k_fold = 10)
+OCVdata = OCV_data(Y,OCVindex,k_fold = 10)
+
+colindex = OCVindex$colindex
+rowindex = OCVindex$rowindex
+foldindex = OCVindex$foldindex
+missing = OCVdata
+Y_data = missing[1,,]
+
+out = softImpute(Y_data, rank.max = 40,lambda = 80)
+length(out$d)
+out = softImpute(Y_data, rank.max = 40,lambda = 30)
+length(out$d)
+out = softImpute(Y_data, rank.max = 40,lambda = 20)
+length(out$d)
+out = softImpute(Y_data, rank.max = 40,lambda = 10)
+length(out$d)
+out = softImpute(Y_data, rank.max = 40,lambda = 9)
+length(out$d)
+```
+
+so it seems 10 or 11 should be a good choice which "Ideally lambda should be chosen so that the solution reached has rank slightly less than rank.max"
+
+## OCV choice
+
+for the grids we choose in our paper, we use 0-100 with ten grids
+
+```{r}
+library(softImpute)
+N = dim(Y_data)[1]
+P = dim(Y_data)[2]
+ngrids = 10
+fold = 10
+K = 40
+c_s = seq(0,100,len=ngrids)
+cvout = CVPMD_softImpute(Y_data,c_s,K ,fold , method = "softImpute")
+cvout
+```
+
+the result fit the authors' suggestion well (we choose $\lambda = 11$). 
+
+But can we try smaller grids with OCV
+
+```{r}
+library(softImpute)
+N = dim(Y_data)[1]
+P = dim(Y_data)[2]
+ngrids = 10
+fold = 10
+K = 40
+c_s = seq(0,15,len=ngrids)
+cvout = CVPMD_softImpute(Y_data,c_s,K ,fold , method = "softImpute")
+cvout
+```
+
+At this time, we can see that we choose $\lambda = 5$ this time. 
+
+## check the result
+
+```{r}
+out = softImpute(Y_data, rank.max = 40,lambda = 10)
+miss_hat = out$u %*% diag(out$d) %*% t(out$v)
+SSE = 0
+for(j in 1:fold){
+      SSE = SSE + sum((Y[rowindex[,foldindex[j,1,1]],colindex[,foldindex[j,1,2]]] -
+                               miss_hat[rowindex[,foldindex[j,1,1]],colindex[,foldindex[j,1,2]]])^2,na.rm = TRUE)
+}
+sqrt(SSE/sum(is.na(Y_data)))
+```
+
+
+```{r}
+out = softImpute(Y_data, rank.max = 40,lambda = 5)
+miss_hat = out$u %*% diag(out$d) %*% t(out$v)
+SSE = 0
+for(j in 1:fold){
+      SSE = SSE + sum((Y[rowindex[,foldindex[j,1,1]],colindex[,foldindex[j,1,2]]] -
+                               miss_hat[rowindex[,foldindex[j,1,1]],colindex[,foldindex[j,1,2]]])^2,na.rm = TRUE)
+}
+sqrt(SSE/sum(is.na(Y_data)))
+```
+
+we can see that the result is slightly improved. 
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```
