@@ -9,9 +9,11 @@
 <meta name="generator" content="pandoc" />
 
 
+<meta name="author" content="wei wang" />
 
+<meta name="date" content="2018-01-27" />
 
-<title>Home</title>
+<title>old experiments</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -19,6 +21,9 @@
 <script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-1.1/highlight.js"></script>
@@ -162,6 +167,101 @@ $(document).ready(function () {
 
 
 
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+  padding-left: 25px;
+  text-indent: 0;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
 
 
 <div class="navbar navbar-default  navbar-fixed-top" role="navigation">
@@ -202,36 +302,80 @@ $(document).ready(function () {
 
 
 
-<h1 class="title toc-ignore">Home</h1>
+<h1 class="title toc-ignore">old experiments</h1>
+<h4 class="author"><em>wei wang</em></h4>
+<h4 class="date"><em>2018-01-27</em></h4>
 
 </div>
 
 
-<div id="simulation-studies" class="section level2">
-<h2>Simulation studies</h2>
-<div id="orthogonal-cv" class="section level3">
-<h3>Orthogonal CV</h3>
-<p>Click on this <a href="miss_position.html">orthogonal CV</a> to see my example.</p>
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+<!-- Update knitr chunk options -->
+<!-- Insert the date the file was last updated -->
+<pre><code>Warning in as.POSIXlt.POSIXct(Sys.time()): unknown timezone &#39;default/
+America/Chicago&#39;</code></pre>
+<p><strong>Last updated:</strong> 2018-01-27</p>
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+<p><strong>Code version:</strong> 4f884d4</p>
+<!-- Add your analysis here -->
+<p>Click on this <a href="first-analysis.html">Questions on Algorithm</a> to see more details.</p>
+<div id="flash-on-the-chipseq-data-from-kevin" class="section level3">
+<h3>flash on the chipseq data from Kevin</h3>
+<p>Click on this <a href="sd_chr1_asinh.html">three data sets on the 4500 rows chr1 var_col</a> to see more details.</p>
+<p><a href="draft.html">ns</a></p>
+<p>Click on this <a href="GTExresult.html">load reslut of GTEx data</a> to see more details.</p>
+<p>Click on this <a href="pairwiseplotofflashgtexzscore.html">pairwise plot</a> to see more details.</p>
 </div>
-<div id="apply-flashr2-for-the-examples-in-flash-paper" class="section level3">
-<h3>Apply flashr2 for the examples in FLASH paper</h3>
-<div id="simulations" class="section level4">
-<h4>simulations</h4>
-<p>Click here to check the <a href="applyflahr2onsimulations.html">simulatoin result (rank one and rank three)</a></p>
-<p>Click here to check the <a href="MSErank1sim.html">RMSE for the rank one example in the paper</a></p>
-<p>Click here to check the <a href="simulation3.html">RMSE for the rank three example in the paper</a> and <a href="MSErank3sim.html">RRMSE</a></p>
+<div id="issues" class="section level3">
+<h3>Issues</h3>
+<p>Click on this <a href="ObjGap.html">gap issue</a> to see more details. (test)</p>
+<p>Click on this <a href="Obj_summary.html">summary of the rank0 vs rank1</a> to see a simple summary to the following two items.</p>
+<ul>
+<li>Click on this <a href="Objcheck_1.html">rank 0 vs rank 1</a> to see more details.</li>
+<li>Click on this <a href="Objcheck_2.html">rank 0 vs rank 1: fdr with penalty</a> to see more details.</li>
+</ul>
 </div>
-<div id="gtex-z-score" class="section level4">
-<h4>GTEx Z-score</h4>
-<p>Here is a example to run <code>flashr2</code> on RCC <a href="GTEXzscoreTemplate.html">RCC template</a></p>
-<p>compare with PCA result<a href="PCAresult.html">compare with SVD</a></p>
+<div id="flashr2" class="section level2">
+<h2>flashr2</h2>
+<p>This is a simple test <a href="flash_beta_test.html">first try</a></p>
+<p>Initialization issue: <a href="missingimputeinitial.html">softimpute as initialization</a></p>
+<p>Click here to find the <a href="NULLcheck.html">null check for flashr2</a> and <a href="nullcheck2.html">densen nu case</a></p>
+<div id="different-options-for-ebnm" class="section level3">
+<h3>different options for EBNM</h3>
+<div id="simulation-examples-in-our-paper" class="section level4">
+<h4>simulation examples in our paper</h4>
+<p>Click here to check the <a href="compare_ash_ebmn.html">simulated examples</a></p>
+<p>Click here to check the <a href="compare_ash_pn_miss.html">missing data examples (first simple comparison)</a></p>
 </div>
-<div id="missing-data-imputation" class="section level4">
-<h4>missing data imputation</h4>
-<p>click here to check the template for <a href="templateforOCV.html">missing data imputation with OCV</a> and <a href="CVtemplate.html">CV template</a></p>
-<p>click here to check the comparison of different options for FLASH <a href="compareOptionsOCV.html">different shrink options</a></p>
 </div>
 </div>
+<div id="session-information" class="section level2">
+<h2>Session information</h2>
+<!-- Insert the session information into the document -->
+<pre class="r"><code>sessionInfo()</code></pre>
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.13.2 (unknown)
+
+locale:
+[1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1  
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_0.12.14     rstudioapi_0.6   knitr_1.18       magrittr_1.5    
+ [5] munsell_0.4.3    colorspace_1.3-2 rlang_0.1.6      stringr_1.2.0   
+ [9] plyr_1.8.4       tools_3.3.0      grid_3.3.0       gtable_0.2.0    
+[13] git2r_0.19.0     htmltools_0.3.6  yaml_2.1.16      lazyeval_0.2.0  
+[17] digest_0.6.13    rprojroot_1.2    tibble_1.3.4     gridExtra_2.3   
+[21] ssvd_1.0         evaluate_0.10.1  labeling_0.3     stringi_1.1.6   
+[25] scales_0.4.1     backports_1.1.2 </code></pre>
 </div>
 
 <hr>
@@ -260,6 +404,8 @@ $(document).ready(function () {
 -->
 
 
+</div>
+</div>
 
 </div>
 
