@@ -277,7 +277,7 @@ saveRDS(results,"./RES_rrmse.rds")
 
 
 ```{r}
-plot_res = function(output,title = "data",legend_position = "none", methods_name){
+plot_res = function(output,title = "data",legend_position = "none", methods_name,myColors){
   rmse = as.vector(output)
   N = dim(output)[1]
   methods = rep(methods_name, each = N)
@@ -285,7 +285,7 @@ plot_res = function(output,title = "data",legend_position = "none", methods_name
   p<-ggplot(df, aes(x=Method, y=RRMSE_diff, color=Method)) +
   geom_boxplot()+
   # geom_violin()+
-  ggtitle(title) +  theme_bw()+
+  ggtitle(title) +  theme_bw()+ scale_color_manual(values=myColors)+
     theme(legend.position= legend_position, legend.text=element_text(size=10),
           plot.title = element_text(size = 18, face = "bold"),
           axis.text.y = element_text(size =15), 
@@ -298,12 +298,14 @@ library(ggplot2)
 
 
 ```{r}
-sparse_res = readRDS("../data/simulation/rankthree/boxplot.rds")
+sparse_res = readRDS("../data/output/simulation/rankthree/boxplot.rds")
 colnames(sparse_res) = c("PMD.cv1","flash","flash.pn","SVD","SSVD","SI.cv")
 sparse_diff = sparse_res - sparse_res[,2]
 # p3 = plot_res(sparse_diff,"Difference from FLASH result (0% zeros)")
 methods_name = colnames(sparse_diff)
-p3 = plot_res(sparse_diff,title = "Rank 3 example",methods_name = methods_name)
+fill_color =  c("red","yellow3", "springgreen", "springgreen3", "cyan","cyan3", "deepskyblue","violet","purple")
+p3 = plot_res(sparse_diff,title = "Rank 3 example",methods_name = methods_name,
+              myColors = fill_color[c(1,2,3,7,8,9)])
 ```
 
 
