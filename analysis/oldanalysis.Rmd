@@ -1,0 +1,70 @@
+---
+title: "old experiments"
+author: "wei wang"
+date: 2018-01-27
+output: html_document
+---
+
+<!-- The file analysis/chunks.R contains chunks that define default settings
+shared across the workflowr files. -->
+```{r read-chunk, include=FALSE, cache=FALSE}
+knitr::read_chunk("chunks.R")
+```
+
+<!-- Update knitr chunk options -->
+```{r knitr-opts-chunk, include=FALSE}
+```
+
+<!-- Insert the date the file was last updated -->
+```{r last-updated, echo=FALSE, results='asis'}
+```
+
+<!-- Insert the code version (Git commit SHA1) if Git repository exists and R
+ package git2r is installed -->
+```{r code-version, echo=FALSE, results='asis'}
+```
+
+<!-- Add your analysis here -->
+
+Click on this [Questions on Algorithm](first-analysis.html) to see more details.
+
+### flash on the chipseq data from Kevin
+
+Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html) to see more details.
+
+[ns](draft.html) 
+
+Click on this [load reslut of GTEx data](GTExresult.html) to see more details.
+
+Click on this [pairwise plot](pairwiseplotofflashgtexzscore.html) to see more details.
+
+### Issues
+
+Click on this [gap issue](ObjGap.html) to see more details. (test)
+
+Click on this [summary of the rank0 vs rank1](Obj_summary.html) to see a simple summary to the following two items.
+
+- Click on this [rank 0 vs rank 1](Objcheck_1.html) to see more details.
+- Click on this [rank 0 vs rank 1: fdr with penalty](Objcheck_2.html) to see more details.
+
+## flashr2
+
+This is a simple test [first try](flash_beta_test.html)
+
+Initialization issue: [softimpute as initialization](missingimputeinitial.html)
+
+Click here to find the [null check for flashr2](NULLcheck.html) and [densen nu case](nullcheck2.html)
+
+### different options for EBNM
+
+#### simulation examples in our paper
+
+Click here to check the [simulated examples](compare_ash_ebmn.html)
+
+Click here to check the [missing data examples (first simple comparison)](compare_ash_pn_miss.html)
+
+## Session information
+
+<!-- Insert the session information into the document -->
+```{r session-info}
+```

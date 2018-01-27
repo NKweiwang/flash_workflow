@@ -11,35 +11,6 @@ output:
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
 
-Click on this [Questions on Algorithm](first-analysis.html) to see more details.
-
-### flash on the chipseq data from Kevin
-
-Click on this [three data sets on the 4500 rows chr1 var_col](sd_chr1_asinh.html) to see more details.
-
-[ns](draft.html) 
-
-Click on this [load reslut of GTEx data](GTExresult.html) to see more details.
-
-Click on this [pairwise plot](pairwiseplotofflashgtexzscore.html) to see more details.
-
-### Issues
-
-Click on this [gap issue](ObjGap.html) to see more details. (test)
-
-Click on this [summary of the rank0 vs rank1](Obj_summary.html) to see a simple summary to the following two items.
-
-- Click on this [rank 0 vs rank 1](Objcheck_1.html) to see more details.
-- Click on this [rank 0 vs rank 1: fdr with penalty](Objcheck_2.html) to see more details.
-
-## flashr2
-
-This is a simple test [first try](flash_beta_test.html)
-
-Initialization issue: [softimpute as initialization](missingimputeinitial.html)
-
-Click here to find the [null check for flashr2](NULLcheck.html) and [densen nu case](nullcheck2.html)
-
 ### Apply flashr2 for the examples in FLASH paper
 
 #### simulations
@@ -48,7 +19,7 @@ Click here to check the [simulatoin result (rank one and rank three)](applyflahr
 
 Click here to check the [RMSE for the rank one example in the paper](MSErank1sim.html)
 
-Click here to check the [RMSE for the rank three example in the paper](MSErank3sim.html) and [RRMSE](simulation3.html)
+Click here to check the [RMSE for the rank three example in the paper](simulation3.html) and [RRMSE](MSErank3sim.html)
 
 #### GTEx Z-score
 
@@ -61,12 +32,4 @@ compare with PCA result[compare with SVD](PCAresult.html)
 click here to check the template for [missing data imputation with OCV](templateforOCV.html) and [CV template](CVtemplate.html)
 
 click here to check the comparison of different options for FLASH [different shrink options](compareOptionsOCV.html)
-
-### different options for EBNM
-
-#### simulation examples in our paper
-
-Click here to check the [simulated examples](compare_ash_ebmn.html)
-
-Click here to check the [missing data examples (first simple comparison)](compare_ash_pn_miss.html)
 
