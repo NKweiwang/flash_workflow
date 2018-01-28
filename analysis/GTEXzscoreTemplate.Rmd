@@ -121,7 +121,7 @@ sbatch runflash.sbatch
 
 ## plot
 
-```{}
+```{r}
 b_flash = readRDS("../data/GTExdata/res_flashr2/bflashvarcol.rds")
 load("../data/GTExdata/gtexEQTL_zscore.rds")
 ssY = sum(zscore^2)
@@ -139,7 +139,7 @@ colnames(data_L) = c("tissue","loading","value")
 library(ggplot2)
 tissue_color = as.character(colordata[,2])
 data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
-data_L$loading = factor(data_L$loading,levels = 1:14 ,labels = paste("loading",1:14,"; pve:", pve[1:14]))
+data_L$loading = factor(data_L$loading,levels = 1:14 ,labels = paste("Factor",1:14,"; pve:", pve[1:14]))
 
 
 ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
@@ -147,11 +147,11 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
   scale_fill_manual(values=tissue_color) +
   scale_x_discrete(labels = NULL) +
   theme_grey()+
-  theme(legend.position="right", legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
-  labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
+  theme(legend.position="right", legend.text=element_text(size=9), axis.text.y = element_text(size = 5)) + 
+  labs(title = "GTEx data", y = "factor values" ,x = "tissues", fill="tissue") +
   facet_wrap(~loading, ncol = 2, scales = "free_y") +
-  guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
-  ggsave("flashr2GTEx1.pdf", width = 8, height = 11)
+  guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))
+  #ggsave("flashr2GTEx1.pdf", width = 8, height = 11)
 
 # the 27th factor is zero
 L = b_flash$EL[,15:26]
@@ -161,7 +161,7 @@ colnames(data_L) = c("tissue","loading","value")
 library(ggplot2)
 tissue_color = as.character(colordata[,2])
 data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
-data_L$loading = factor(data_L$loading,levels = 1:12 ,labels = paste("loading",15:26,"; pve:", pve[15:26]))
+data_L$loading = factor(data_L$loading,levels = 1:12 ,labels = paste("Factor",15:26,"; pve:", pve[15:26]))
 
 
 ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
@@ -169,11 +169,11 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
   scale_fill_manual(values=tissue_color) +
   scale_x_discrete(labels = NULL) +
   theme_grey()+
-  theme(legend.position="right", legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
-  labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
+  theme(legend.position="right", legend.text=element_text(size=9), axis.text.y = element_text(size = 5)) + 
+  labs(title = "GTEx data", y = "factor values" ,x = "tissues", fill="tissue") +
   facet_wrap(~loading, ncol = 2, scales = "free_y") +
-  guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
-  ggsave("flashr2GTEx2.pdf", width = 8, height = 10)
+  guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))
+  #ggsave("flashr2GTEx2.pdf", width = 8, height = 10)
 ```
 
 

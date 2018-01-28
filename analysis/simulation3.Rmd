@@ -247,8 +247,62 @@ p6 = plot_HP(title_name = "SI.cv", melted_cormat = melted_cormat_6)
 ```
 
 ```{r}
-gridExtra::grid.arrange(p0,p5,p6,p4,p1,p2,ncol = 2)
+gridExtra::grid.arrange(p0,p2,p1,p6,p5,p4,ncol = 2)
 ```
+
+## average of 100 simulations
+
+```{r}
+HMatrix = readRDS("../data/simulation/rankthree/HeatMap.rds")
+T = 100
+AVG_HM = matrix(0,nrow = 36000,ncol = 7)
+for(i in 1:T){
+  AVG_HM = AVG_HM + HMatrix[i,,]
+}
+AVG_HM = AVG_HM/100
+```
+
+```{r}
+LF_1 = matrix(AVG_HM[,1],ncol = 240, nrow = 150)
+LF_2 = matrix(AVG_HM[,2],ncol = 240, nrow = 150)
+LF_3 = matrix(AVG_HM[,3],ncol = 240, nrow = 150)
+LF_4 = matrix(AVG_HM[,4],ncol = 240, nrow = 150)
+LF_5 = matrix(AVG_HM[,5],ncol = 240, nrow = 150)
+LF_6 = matrix(AVG_HM[,6],ncol = 240, nrow = 150)
+LF_true = matrix(AVG_HM[,7],ncol = 240, nrow = 150)
+library(reshape2)
+melted_cormat_1 <- melt(LF_1, na.rm = TRUE)
+melted_cormat_2 <- melt(LF_2, na.rm = TRUE)
+melted_cormat_3 <- melt(LF_3, na.rm = TRUE)
+melted_cormat_4 <- melt(LF_4, na.rm = TRUE)
+melted_cormat_5 <- melt(LF_5, na.rm = TRUE)
+melted_cormat_6 <- melt(LF_6, na.rm = TRUE)
+melted_cormat_true <- melt(LF_true, na.rm = TRUE)
+# Heatmap
+library(ggplot2)
+plot_HP = function(title_name = "truth", melted_cormat){
+  p1 = ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
+   geom_tile(color = "white")+
+    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+     midpoint = 0, limit = c(-0.25,0.25), space = "Lab") + labs(title = title_name, y = "samples", x = "variables") +
+    theme_minimal() + theme(legend.position="none") 
+  p1
+}
+
+p0 = plot_HP(title_name = "Truth", melted_cormat = melted_cormat_true)
+p1 = plot_HP(title_name = "PMD.cv1", melted_cormat = melted_cormat_1)
+p2 = plot_HP(title_name = "flash", melted_cormat = melted_cormat_2)
+p3 = plot_HP(title_name = "flas_pn", melted_cormat = melted_cormat_3)
+p4 = plot_HP(title_name = "SVD", melted_cormat = melted_cormat_4)
+p5 = plot_HP(title_name = "SSVD", melted_cormat = melted_cormat_5)
+p6 = plot_HP(title_name = "SI.cv", melted_cormat = melted_cormat_6)
+
+```
+
+```{r}
+gridExtra::grid.arrange(p0,p2,p3,p1,p6,p5,p4,layout_matrix = rbind(c(NA,1,NA),c(2,3,4),c(5,6,7)))
+```
+
 
 ## Session information
 
