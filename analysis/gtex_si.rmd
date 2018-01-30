@@ -39,10 +39,10 @@ plot_GTEXres = function(L,pve,offset=0){
     scale_fill_manual(values=tissue_color) +
     scale_x_discrete(labels = NULL) +
     theme_grey()+
-    theme(legend.position="right", legend.text=element_text(size=5), axis.text.y = element_text(size = 5)) + 
+    theme(legend.position="right", legend.text=element_text(size=9), axis.text.y = element_text(size = 5)) + 
     labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
     facet_wrap(~loading, ncol = 2, scales = "free_y") +
-    guides(fill = guide_legend(ncol = 1, keyheight = 0.5, keywidth = 0.5))
+    guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))
 }
 
 pve.si = z.s$d^2/sum(Ztop^2)
