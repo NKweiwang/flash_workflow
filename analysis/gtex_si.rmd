@@ -1,5 +1,5 @@
 ---
-title: "Untitled"
+title: "Run SoftImpute on GTEX data"
 author: "Matthew Stephens"
 date: "January 23, 2018"
 output: html_document
@@ -9,14 +9,17 @@ output: html_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+Load the data and run:
+
 ```{r}
 set.seed(1)
-Zscores = readRDS("~/Downloads/MatrixEQTLSumStats.Portable.Z.rds")
+Zscores = readRDS("../data/MatrixEQTLSumStats.Portable.Z.rds")
 Ztop = Zscores$test.z
 z.s = softImpute::softImpute(Ztop,rank.max=30,lambda=89)
 ```
 
 
+Now plotting:
 ```{r}
 #this plotting due to Wei Wang
 library(ggplot2)
@@ -47,7 +50,7 @@ plot_GTEXres = function(L,pve,offset=0){
 
 pve.si = z.s$d^2/sum(Ztop^2)
 plot_GTEXres(z.s$v[,1:8],pve.si[1:8])
-plot_GTEXres(z.s$v[,9:16],pve.si[9:16],9)
+plot_GTEXres(z.s$v[,9:16],pve.si[9:16],8)
 
 
 ```
