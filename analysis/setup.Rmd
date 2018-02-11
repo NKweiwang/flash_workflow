@@ -29,16 +29,45 @@ setup instructions.
 
 ## Setup instructions
 
-*Fill out setup instructions in this section. See
-[here](https://stephenslab.github.io/wflow-divvy/setup.html) and
-[here](https://github.com/pcarbo/mouthwash_sims/blob/master/README.md)
-for some ideas.*
+### Install software and R packages
+
+1. Install [R](https://cran.r-project.org).
+
+2. Install [MATLAB](https://www.mathworks.com/products/matlab.html)
+
+3. Install the required R packages (run the following commands in the R).
+
+```R
+install.packages(c("devtools", "ashr", "PMA","ssvd","softImpute","Matrix","R.matlab","ggplot2","denoiseR"))
+devtools::install_github("stephenslab/flashr")
+```
+
+4. Install MATLAB package [NBSFA](https://github.com/davidaknowles/nsfa)
+
+5. Install packages [sfa](http://stephenslab.uchicago.edu/software.html#sfa) and [SFAmix](http://beehive.cs.princeton.edu/software/)
+
+
+### Data sets
+
+All the data sets used in the paper are in [data files](https://github.com/NKweiwang/flash_workflow/tree/master/data/output/missingdata)
 
 ## Session information
 
 Here are details about the computing environment, including the
 version of R and the R packages, that were used to generate the
 results from the R Markdown documents.
+
+```{r,echo=FALSE}
+library(flashr)
+library(ssvd)
+library(methods)
+library(PMA)
+library(R.matlab)
+library(Matrix)
+library(softImpute)
+library(ggplot2)
+library(denoiseR)
+```
 
 ```{r session-info}
 ```

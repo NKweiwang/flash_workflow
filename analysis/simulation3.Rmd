@@ -1,7 +1,6 @@
 ---
 title: "simulation for the sparse factor loadings"
 author: "Wei Wang"
-date: 2017-04-04
 output: 
   html_document:
     code_folding: hide
@@ -178,10 +177,10 @@ flashBF.wrapper = function(Y_data,K = 3){
   N = dim(Y)[1]
   P = dim(Y)[2]
   library(ebnm)
-  library(flashr2)
-  data =  flashr2::flash_set_data(Y)
-  f_greedy = flashr2::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
-  f = flashr2::flash_backfit(data,f_greedy,var_type = "constant")
+  library(flashr)
+  data =  flashr::flash_set_data(Y)
+  f_greedy = flashr::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
+  f = flashr::flash_backfit(data,f_greedy,var_type = "constant")
   Y_hat = f$EL %*% t(f$EF)
   return(Y_hat)
 }
@@ -195,60 +194,13 @@ flash.wrapper = function(Y_data, K = 3){
   E = Y_data$E
   N = dim(Y)[1]
   P = dim(Y)[2]
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   return(Y_hat)
 }
 ```
 
-
-```{r}
-library(PMA)
-library(flashr2)
-library(ssvd)
-library(softImpute)
-Y_data = DataMaker(seed_num = 0)
-
-LF_1 = PMA.wrapper(Y_data)
-LF_2 = flash.wrapper(Y_data)
-LF_3 = flashBF.wrapper(Y_data)
-LF_4 = SVD.wrapper(Y_data)
-LF_5 = SSVD.wrapper(Y_data)
-LF_6 = softImpute.wrapper(Y_data)
-LF_true = Y_data$L_true %*% t(Y_data$F_true)
-
-library(reshape2)
-melted_cormat_1 <- melt(LF_1, na.rm = TRUE)
-melted_cormat_2 <- melt(LF_2, na.rm = TRUE)
-melted_cormat_3 <- melt(LF_3, na.rm = TRUE)
-melted_cormat_4 <- melt(LF_4, na.rm = TRUE)
-melted_cormat_5 <- melt(LF_5, na.rm = TRUE)
-melted_cormat_6 <- melt(LF_6, na.rm = TRUE)
-melted_cormat_true <- melt(LF_true, na.rm = TRUE)
-# Heatmap
-library(ggplot2)
-plot_HP = function(title_name = "truth", melted_cormat){
-  p1 = ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
-   geom_tile(color = "white")+
-    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-     midpoint = 0, limit = c(-2,2), space = "Lab") + labs(title = title_name, y = "samples", x = "variables") +
-    theme_minimal() + theme(legend.position="none") 
-  p1
-}
-
-p0 = plot_HP(title_name = "Truth", melted_cormat = melted_cormat_true)
-p1 = plot_HP(title_name = "PMD.cv1", melted_cormat = melted_cormat_1)
-p2 = plot_HP(title_name = "flash", melted_cormat = melted_cormat_2)
-p3 = plot_HP(title_name = "flashb", melted_cormat = melted_cormat_3)
-p4 = plot_HP(title_name = "SVD", melted_cormat = melted_cormat_4)
-p5 = plot_HP(title_name = "SSVD", melted_cormat = melted_cormat_5)
-p6 = plot_HP(title_name = "SI.cv", melted_cormat = melted_cormat_6)
-```
-
-```{r}
-gridExtra::grid.arrange(p0,p2,p1,p6,p5,p4,ncol = 2)
-```
 
 ## average of 100 simulations
 
@@ -257,7 +209,7 @@ HMatrix = readRDS("../data/simulation/rankthree/HeatMap.rds")
 T = 100
 AVG_HM = matrix(0,nrow = 36000,ncol = 7)
 for(i in 1:T){
-  AVG_HM = AVG_HM + HMatrix[i,,]
+  AVG_HM = AVG_HM + abs(HMatrix[i,,])
 }
 AVG_HM = AVG_HM/100
 ```
@@ -283,16 +235,18 @@ library(ggplot2)
 plot_HP = function(title_name = "truth", melted_cormat){
   p1 = ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
    geom_tile(color = "white")+
-    scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-     midpoint = 0, limit = c(-0.25,0.25), space = "Lab") + labs(title = title_name, y = "samples", x = "variables") +
-    theme_minimal() + theme(legend.position="none") 
+    #scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+     #midpoint = 0, limit = c(-0.81,0.81), space = "Lab") + labs(title = title_name, y = "samples", x = "variables") +
+    scale_fill_gradient2(low = "white", high = "grey6", mid = "grey9", 
+     midpoint = 0.41, limit = c(0,0.82), space = "Lab") + labs(title = title_name, y = "samples", x = "variables") +
+    theme_minimal() + theme(legend.position="none",plot.title = element_text(size = 12.9, face = "bold")) 
   p1
 }
 
-p0 = plot_HP(title_name = "Truth", melted_cormat = melted_cormat_true)
+p0 = plot_HP(title_name = "Latent structure (truth)", melted_cormat = melted_cormat_true)
 p1 = plot_HP(title_name = "PMD.cv1", melted_cormat = melted_cormat_1)
 p2 = plot_HP(title_name = "flash", melted_cormat = melted_cormat_2)
-p3 = plot_HP(title_name = "flas_pn", melted_cormat = melted_cormat_3)
+p3 = plot_HP(title_name = "flash_pn", melted_cormat = melted_cormat_3)
 p4 = plot_HP(title_name = "SVD", melted_cormat = melted_cormat_4)
 p5 = plot_HP(title_name = "SSVD", melted_cormat = melted_cormat_5)
 p6 = plot_HP(title_name = "SI.cv", melted_cormat = melted_cormat_6)
@@ -300,7 +254,7 @@ p6 = plot_HP(title_name = "SI.cv", melted_cormat = melted_cormat_6)
 ```
 
 ```{r}
-gridExtra::grid.arrange(p0,p2,p3,p1,p6,p5,p4,layout_matrix = rbind(c(NA,1,NA),c(2,3,4),c(5,6,7)))
+gridExtra::grid.arrange(p2,p3,p1,p6,p5,p4,ncol = 3)
 ```
 
 

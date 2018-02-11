@@ -1,7 +1,6 @@
 ---
 title: "template for CV in RCC"
 author: "Wei"
-date: 10-03
 output: 
   html_document:
     code_folding: hide
@@ -53,8 +52,8 @@ flashG_wrapper = function(Y, missindex, rank_max,type = "constant"){
   # delete the value in the missing position
   Y_miss = Y
   Y_miss[missindex$rowindex, missindex$colindex] = NA
-  data = flashr2::flash_set_data(Y_miss)
-  g_flash = flashr2::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = "fdr"),var_type = type)
+  data = flashr::flash_set_data(Y_miss)
+  g_flash = flashr::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = "fdr"),var_type = type)
   misshat_flash = g_flash$EL %*% t(g_flash$EF)
   rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_flash[missindex$rowindex, missindex$colindex])^2))
   return(rmse)
@@ -64,8 +63,8 @@ flashB_wrapper = function(Y, missindex, rank_max,type = "constant"){
   # delete the value in the missing position
   Y_miss = Y
   Y_miss[missindex$rowindex, missindex$colindex] = NA
-  data = flashr2::flash_set_data(Y_miss)
-  g_flash = flashr2::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = "fdr"),var_type = type)
+  data = flashr::flash_set_data(Y_miss)
+  g_flash = flashr::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = "fdr"),var_type = type)
   b_flash = flash_backfit(data,g_flash)
   misshat_flash = b_flash$EL %*% t(b_flash$EF)
   rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_flash[missindex$rowindex, missindex$colindex])^2))
@@ -99,10 +98,10 @@ PMD_wrapper = function(Y, missindex, rank_max){
 ```
 library(R.matlab)
 # call the R functions
-source("~/HG/flash/data/CVmissflashr2/template/Rfunction.R")
+source("~/HG/flash/data/CVmissflashr/template/Rfunction.R")
 # read the data
 # you need to change the path for different data
-Y_data = R.matlab::readMat("~/HG/flash/data/CVmissflashr2/Breastcancer/example.mat")
+Y_data = R.matlab::readMat("~/HG/flash/data/CVmissflashr/Breastcancer/example.mat")
 Y = Y_data$Y
 N = dim(Y)[1]
 P = dim(Y)[2]
@@ -122,7 +121,7 @@ pmd_rmse  = PMD_wrapper(Y, missindex, rank_max= 50 )
 soft_rmse = softImpute_wrapper(Y, missindex, rank_max = 50)
 # then call the matlab estiamtion 
 # this for the folder of the data
-system("matlab -nosplash -nodesktop -r \"addpath(\'~/HG/flash/data/CVmissflashr2/template\'); run(\'missvalue.m\');exit;\" ")
+system("matlab -nosplash -nodesktop -r \"addpath(\'~/HG/flash/data/CVmissflashr/template\'); run(\'missvalue.m\');exit;\" ")
 g_nsfa = readMat("./NBSFAout/NSFAresult.mat")
 nsfa_rmse = as.vector(g_nsfa$rmse.NSFA)
 
@@ -169,8 +168,8 @@ save(save_path,'rmse_NSFA');
 #!/bin/bash
 
 #SBATCH --job-name=arrayJob
-#SBATCH --output=/home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.out
-#SBATCH --error=/home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.err
+#SBATCH --output=/home/weidong/HG/flash/data/CVmissflashr/Breastcancer/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/CVmissflashr/Breastcancer/outlog/arrayJob_%A_%a.err
 #SBATCH --array=1-100
 #SBATCH --time=06:00:00
 #SBATCH --partition=broadwl
@@ -183,10 +182,10 @@ save(save_path,'rmse_NSFA');
 ######################
 
 # Print this sub-job's task ID
-cd /home/weidong/HG/flash/data/CVmissflashr2/Breastcancer
+cd /home/weidong/HG/flash/data/CVmissflashr/Breastcancer
 mkdir test${SLURM_ARRAY_TASK_ID}
 cd test${SLURM_ARRAY_TASK_ID}
-Rscript --verbose /home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/runR.R
+Rscript --verbose /home/weidong/HG/flash/data/CVmissflashr/Breastcancer/runR.R
 ```
 
 

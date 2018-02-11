@@ -1,7 +1,6 @@
 ---
-title: "apply flashr2 with OCV"
+title: "apply flashr with OCV"
 author: "wei wang"
-date: 09-30
 output: 
   html_document:
     code_folding: hide
@@ -183,22 +182,22 @@ OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = "flash",Kmax = 50){
 
 call_method = function(Y_data,method,Kmax = 50){
   if(method == "flash"){
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == "flash_wn"){
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,nullcheck=FALSE)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax,nullcheck=FALSE)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == "flash_gb"){
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
-    f = flashr2::flash_backfit(data,f_greedy)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax)
+    f = flashr::flash_backfit(data,f_greedy)
     Y_hat = f$EL %*% t(f$EF)
   }else if(method == "flash_bf"){
-    data = flashr2::flash_set_data(Y_data)
-    f_data = flashr2::flash_add_factors_from_data(data,K = Kmax)
-    f = flashr2::flash_backfit(data,f_data)
+    data = flashr::flash_set_data(Y_data)
+    f_data = flashr::flash_add_factors_from_data(data,K = Kmax)
+    f = flashr::flash_backfit(data,f_data)
     Y_hat = f$EL %*% t(f$EF)
   }else if(method == "PMD"){
     res_log = capture.output({out = PMA.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10)})
@@ -209,9 +208,9 @@ call_method = function(Y_data,method,Kmax = 50){
     }
   }else if(method == 'PN'){
     library(ebnm)
-    library(flashr2)
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,ebnm_fn = ebnm_pn)
+    library(flashr)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax,ebnm_fn = ebnm_pn)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == 'PMD_d'){
     out = PMA::PMD(Y_data, K = Kmax)
@@ -230,9 +229,9 @@ call_method = function(Y_data,method,Kmax = 50){
     gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
     LL = gsoft$u %*% diag(gsoft$d)
     FF = gsoft$v
-    data = flashr2::flash_set_data(Y_data)
-    f_data = flashr2::flash_add_lf(data, LL=LL, FF=FF)
-    f = flashr2::flash_backfit(data,f_data)
+    data = flashr::flash_set_data(Y_data)
+    f_data = flashr::flash_add_lf(data, LL=LL, FF=FF)
+    f = flashr::flash_backfit(data,f_data)
     Y_hat = f$EL %*% t(f$EF)
   }else{
     # stop("the method is not implemented yet, please check it out")
@@ -322,7 +321,7 @@ you need change the path `~/HG/flash/data/missingvalue/methods/NBSF/nsfa-master/
 
 ### creat the run.R file to run the code
 
-In this case, we have problem in running `flashr2` on RCC. so we just try other methods first.
+In this case, we have problem in running `flashr` on RCC. so we just try other methods first.
 
 ```{}
 source("../wrapper.R")
@@ -424,7 +423,7 @@ saveRDS(results,"./boxplot.rds")
 
 
 library(ggplot2)
-plot_res = function(output,title = "data",legend_position = "none", x_label){
+plot_res = function(output,title = "data",legend_position = "none", x_label, myColors){
   rmse = as.vector(output)
   N = dim(output)[1]
   methods = rep(x_label, each = N)
@@ -432,7 +431,7 @@ plot_res = function(output,title = "data",legend_position = "none", x_label){
   p<-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
     geom_boxplot()+
     # geom_violin()+
-    ggtitle(title) +  theme_bw()+
+    ggtitle(title) +  theme_bw()+  scale_color_manual(values=myColors)+
     theme(legend.position= legend_position, legend.text=element_text(size=15),
           plot.title = element_text(size = 15, face = "bold"),
           axis.text.y = element_text(size =12.6),
@@ -441,6 +440,9 @@ plot_res = function(output,title = "data",legend_position = "none", x_label){
 }
 
 setwd("~/HG/flash_workflow/analysis")
+
+
+fill_color = c("red","yellow3", "tan1","springgreen3", "springgreen","deepskyblue3","deepskyblue")
 
 ##############  MovieLens data
 
@@ -460,7 +462,7 @@ ML_pn_res = readRDS("../data/output/missingdata/MovieLens/box_cv_pn.rds")
 output = cbind(ML_pn_res[,1],ML_pn_res[,2],ML_res[,3],ml_res[,3],ML_res[,2],ML_res[,4],ml_res[,4])
 
 x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
-plotM = plot_res(output,"MovieLens data",x_label = x_label)
+plotM = plot_res(output,"MovieLens data",x_label = x_label,myColors = fill_color)
 
 ############ Breast Cancer data
 
@@ -473,7 +475,7 @@ bc_res = readRDS("../data/output/missingdata/BreastCancer/box_Breast.rds")
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(bc_res[,2],bc_res[,1],BC_res[,3],bc_res[,6],BC_res[,2],BC_res[,4],bc_res[,7])
 x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
-plotB = plot_res(output,"Breast Cancer data",x_label = x_label)
+plotB = plot_res(output,"Breast cancer data",x_label = x_label,myColors = fill_color)
 
 ############ GTEx data
 
@@ -490,7 +492,7 @@ gz_pn_res = matrix(as.numeric(gz_pn_res[21:40,]),ncol = 2)
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(gz_res[,1],gz_pn_res[,2],GZ_res[,3],gz_res[,3],GZ_res[,2],GZ_res[,4],gz_res[,4])
 x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
-plotG = plot_res(output,"GTEx data",x_label = x_label)
+plotG = plot_res(output,"GTEx data",x_label = x_label,myColors = fill_color)
 
 ############ Text data
 
@@ -503,7 +505,7 @@ pt_res = readRDS("../data/output/missingdata/DenoiseRtext/box_president.rds")
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(pt_res[,3],pt_res[,1],PT_res[,3],pt_res[,6],PT_res[,2],PT_res[,4],pt_res[,7])
 x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
-plotP = plot_res(output,"Text data",x_label = x_label)
+plotP = plot_res(output,"Presidential address data",x_label = x_label,myColors = fill_color)
 
 ############ Tumor data
 
@@ -516,12 +518,12 @@ dt_res = readRDS("../data/output/missingdata/DenoiseRtumor/box_denoiseTumor.rds"
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(dt_res[,2],dt_res[,1],DT_res[,3],dt_res[,6],DT_res[,2],DT_res[,4],dt_res[,7])
 x_label= c("flash","flash.pn","PMD","PMD.cv1","NBSFA","SI","SI.cv")
-plotT = plot_res(output,"Tumor data",x_label = x_label)
+plotT = plot_res(output,"Tumor data",x_label = x_label,myColors = fill_color)
+```
 
+```{r}
 # gridExtra::grid.arrange(plotP,plotT,plotG,plotB,plotM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))
 gridExtra::grid.arrange(plotM,plotT,plotG,plotB,plotP, layout_matrix = rbind(c(1,2,3),c(4,5,NA) ))
-
-
 ```
 
 ## other information

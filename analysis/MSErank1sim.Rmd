@@ -1,7 +1,6 @@
 ---
 title: "MSE for rank_1 simulation"
 author: "wei wang"
-date: 17-12-09
 output: 
   html_document:
     code_folding: hide
@@ -153,9 +152,9 @@ PN.wrapper = function(Y_data){
   N = dim(Y)[1]
   P = dim(Y)[2]
   library(ebnm)
-  library(flashr2)
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_r1(data,verbose=F,var_type = "constant",ebnm_fn = ebnm_pn)
+  library(flashr)
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_r1(data,verbose=F,var_type = "constant",ebnm_fn = ebnm_pn)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
@@ -170,8 +169,8 @@ flash.wrapper = function(Y_data){
   E = Y_data$E
   N = dim(Y)[1]
   P = dim(Y)[2]
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_r1(data,verbose=F,var_type = "constant")
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_r1(data,verbose=F,var_type = "constant")
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
@@ -392,7 +391,7 @@ creat `run.R` file as follows:
 
 ```{}
 library(PMA)
-library(flashr2)
+library(flashr)
 library(ssvd)
 source("../Rfunction.R")
 L_se = c( 0.25, 0.5, 1, 2, 4)
@@ -470,6 +469,28 @@ saveRDS(results,"./RES_rrmse.rds")
  
 ```{r}
 plot_res = function(output,title = "data",legend_position = "none", methods_name,myColors){
+  library(scales)
+  modulus_trans <- function(lambda){
+   trans_new("modulus",
+             transform = function(y){
+                if(lambda != 0){
+                   yt <- sign(y) * abs(y)^(lambda)
+                } else {
+                   yt = sign(y) * (log(abs(y) + 1))
+                }
+                return(yt)
+             },
+             inverse = function(yt){
+                if(lambda != 0){
+                   y <- abs(yt)^(1/lambda) * sign(yt)
+                } else {
+                   y <- (exp(abs(yt)) - 1) * sign(yt)
+                   
+                }
+                return(y)
+             }
+             )
+  }
   rmse = as.vector(output)
   N = dim(output)[1]
   methods = rep(methods_name, each = N)
@@ -479,8 +500,10 @@ plot_res = function(output,title = "data",legend_position = "none", methods_name
   # geom_violin()+
   ggtitle(title) +  theme_bw()+ scale_color_manual(values=myColors)+
     theme(legend.position= legend_position, legend.text=element_text(size=10),
-          axis.text.y = element_text(size =12),
-          axis.text.x = element_text(size =12,angle = 45, hjust = 1))
+          axis.text.y = element_text(size =12.9),
+          axis.text.x = element_text(size =15,angle = 45, hjust = 1),
+          plot.title = element_text(size = 12.9, face = "bold")) + 
+           scale_y_continuous(limits = c(-0.02,0.8), trans = modulus_trans(lambda = 0.5))
   p
 }
 library(ggplot2)
@@ -492,7 +515,7 @@ colnames(sparse_res) = c("PMD.cv2","flash","SFA","flash.pn","SVD","SSVD","PMD.cv
 sparse_diff = sparse_res - sparse_res[,2]
 methods_name = colnames(sparse_diff)
 fill_color = c("red","yellow3", "springgreen", "springgreen3", "cyan","cyan3", "deepskyblue","violet","purple")
-p1 = plot_res(sparse_diff,title = "Difference from FLASH result (90% zeros)",
+p1 = plot_res(sparse_diff,title = "Difference from flash result (90% zeros)",
               methods_name = methods_name, myColors = fill_color)
 methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
 p1_cut = plot_res(sparse_diff[-22,c(1,2,3,4,5,7,9)],title = "Difference from FLASH result (90% zeros)",methods_name = methods_name,myColors = fill_color[c(1,2,3,4,5,7,9)])
@@ -507,7 +530,7 @@ sparse_diff = sparse_res - sparse_res[,2]
 # p2 = plot_res(sparse_diff,"Difference from FLASH result (30% zeros)")
 
 methods_name = colnames(sparse_diff)
-p2 = plot_res(sparse_diff,title = "Difference from FLASH result (30% zeros)",methods_name = methods_name,myColors = fill_color)
+p2 = plot_res(sparse_diff,title = "Difference from flash result (30% zeros)",methods_name = methods_name,myColors = fill_color)
 methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
 p2_cut = plot_res(sparse_diff[,c(1,2,3,4,5,7,9)],title = "Difference from FLASH result (30% zeros)",methods_name = methods_name,myColors = fill_color[c(1,2,3,4,5,7,9)])
 ```
@@ -521,14 +544,15 @@ colnames(sparse_res) = c("PMD.cv2","flash","SFA","flash.pn","SVD","SSVD","PMD.cv
 sparse_diff = sparse_res - sparse_res[,2]
 # p3 = plot_res(sparse_diff,"Difference from FLASH result (0% zeros)")
 methods_name = colnames(sparse_diff)
-p3 = plot_res(sparse_diff,title = "Difference from FLASH result (0% zeros)",methods_name = methods_name,myColors = fill_color )
+p3 = plot_res(sparse_diff,title = "Difference from flash result (0% zeros)",methods_name = methods_name,myColors = fill_color )
 methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
 p3_cut = plot_res(sparse_diff[,c(1,2,3,4,5,7,9)],title = "Difference from FLASH result (0% zeros)",methods_name = methods_name,myColors = fill_color[c(1,2,3,4,5,7,9)])
 ```
 
 ```{r}
 # gridExtra::grid.arrange(p1,p2,p3,p1_cut,p2_cut,p3_cut,ncol = 3)
-gridExtra::grid.arrange(p1,p1_cut,p2,p2_cut,p3,p3_cut,ncol = 2)
+# gridExtra::grid.arrange(p1,p1_cut,p2,p2_cut,p3,p3_cut,ncol = 2)
+gridExtra::grid.arrange(p1,p2,p3,ncol = 3)
 ```
 
 ## Session information

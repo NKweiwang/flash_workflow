@@ -13,11 +13,9 @@ output:
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
 
-### Apply flashr (flashr2) for the examples in FLASH paper
+### Apply flashr for the examples in FLASH paper
 
 #### simulations
-
-Click here to check the [simulatoin result (rank one and rank three)](applyflahr2onsimulations.html)
 
 Click here to check the [RMSE for the rank one example in the paper](MSErank1sim.html)
 
@@ -25,7 +23,7 @@ Click here to check the [RMSE for the rank three example in the paper](simulatio
 
 #### GTEx Z-score
 
-Here is a example to run `flashr2` on RCC [RCC template](GTEXzscoreTemplate.html)
+Here is a example to run `flashr` on RCC [RCC template](GTEXzscoreTemplate.html)
 
 compare with PCA result[compare with SVD](PCAresult.html)
 
@@ -33,5 +31,4 @@ compare with PCA result[compare with SVD](PCAresult.html)
 
 click here to check the template for [missing data imputation with OCV](templateforOCV.html) and [CV template](CVtemplate.html)
 
-click here to check the comparison of different options for FLASH [different shrink options](compareOptionsOCV.html)
 

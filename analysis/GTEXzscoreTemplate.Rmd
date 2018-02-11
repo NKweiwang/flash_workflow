@@ -1,7 +1,6 @@
 ---
 title: "Template for GTEx example on cluster"
 author: "wei"
-date: 09-29
 output: 
   html_document:
     code_folding: hide
@@ -30,15 +29,15 @@ knitr::read_chunk("chunks.R")
 
 ## Install the package
 
-1 please git clone the `flashr2` on PPS.
+1 please git clone the `flashr` on PPS.
 
-`git clone https://github.com/stephenslab/flashr2.git`
+`git clone https://github.com/stephenslab/flashr.git`
 
-2 install `flashr2` locally
+2 install `flashr` locally
 
-`R CMD build flashr2`
+`R CMD build flashr`
 
-`R CMD INSTALL flashr2_0.2-2.tar.gz`
+`R CMD INSTALL flashr_0.2-2.tar.gz`
 
 
 ## prepare the data
@@ -50,9 +49,9 @@ Please read your original data as a $N \times P$ matrix in R.
 In this case you can create a folder the restore the data as `.rds` file
 
 ```
-mkdir testflashr2
-cd testflashr2
-cp gtexEQTL_zscore.rds GTEX/testflashr2/
+mkdir testflashr
+cd testflashr
+cp gtexEQTL_zscore.rds GTEX/testflashr/
 ```
 
 now you have the data matrix in `gtexEQTL_zscore.rds`
@@ -72,7 +71,7 @@ Here I take the GTEx EQTL zscore as an example
 
 ```
 library(ashr)
-library(flashr2)
+library(flashr)
 load("./gtexEQTL_zscore.rds")
 Y = t(zscore)
 data = flash_set_data(Y)
@@ -92,8 +91,8 @@ here 60 is much larger than the sample size. our method doesn't restrict $K < \m
 #!/bin/bash
 
 #SBATCH --job-name=arrayJob
-#SBATCH --output=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.out
-#SBATCH --error=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.err
+#SBATCH --output=/home/weidong/HG/flash/data/GTEX/testflashr/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/GTEX/testflashr/outlog/arrayJob_%A_%a.err
 #SBATCH --array=1
 #SBATCH --time=30:00:00
 #SBATCH --partition=mstephens
@@ -107,11 +106,11 @@ here 60 is much larger than the sample size. our method doesn't restrict $K < \m
 ######################
 
 # Print this sub-job's task ID
-cd /home/weidong/HG/flash/data/GTEX/testflashr2
+cd /home/weidong/HG/flash/data/GTEX/testflashr
 Rscript --verbose flashwrapper.R
 ```
 
-you can substitute the folder path `/home/weidong/HG/flash/data/GTEX/testflashr2`. and we call this `.sbatch` file as `runflash.sbatch`
+you can substitute the folder path `/home/weidong/HG/flash/data/GTEX/testflashr`. and we call this `.sbatch` file as `runflash.sbatch`
 
 ## run 
 
@@ -120,6 +119,8 @@ sbatch runflash.sbatch
 ```
 
 ## plot
+
+Get the result from `flashr` as `bflashvarcol.rds` (backfitting result).
 
 ```{r}
 b_flash = readRDS("../data/GTExdata/res_flashr2/bflashvarcol.rds")
@@ -151,7 +152,7 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
   labs(title = "GTEx data", y = "factor values" ,x = "tissues", fill="tissue") +
   facet_wrap(~loading, ncol = 2, scales = "free_y") +
   guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))
-  #ggsave("flashr2GTEx1.pdf", width = 8, height = 11)
+  #ggsave("flashrGTEx1.pdf", width = 8, height = 11)
 
 # the 27th factor is zero
 L = b_flash$EL[,15:26]
@@ -173,17 +174,13 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
   labs(title = "GTEx data", y = "factor values" ,x = "tissues", fill="tissue") +
   facet_wrap(~loading, ncol = 2, scales = "free_y") +
   guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))
-  #ggsave("flashr2GTEx2.pdf", width = 8, height = 10)
+  #ggsave("flashrGTEx2.pdf", width = 8, height = 10)
 ```
 
 
-the plots are
 
-<img src="figure/flashr2GTEx1.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200">
 
-<img src="figure/flashr2GTEx2.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200">
-
-## an example to run SFA on RCC or PPS
+## An example to run SFA on RCC or PPS
 
 1. go to the folder where the data is.
 

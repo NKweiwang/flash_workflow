@@ -1,7 +1,6 @@
 ---
 title: "MSE for rank_1 simulation"
 author: "wei wang"
-date: 18-01-23
 output: 
   html_document:
     code_folding: hide
@@ -182,9 +181,9 @@ PN.wrapper = function(Y_data,K = 3){
   N = dim(Y)[1]
   P = dim(Y)[2]
   library(ebnm)
-  library(flashr2)
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_add_greedy(data,verbose=F,var_type = "constant",ebnm_fn = ebnm_pn, K = K)
+  library(flashr)
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_add_greedy(data,verbose=F,var_type = "constant",ebnm_fn = ebnm_pn, K = K)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
@@ -199,8 +198,8 @@ flash.wrapper = function(Y_data, K = 3){
   E = Y_data$E
   N = dim(Y)[1]
   P = dim(Y)[2]
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_add_greedy(data,verbose=F,var_type = "constant", K = K)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
@@ -211,7 +210,7 @@ creat `run.R` file as follows:
 
 ```{}
 library(PMA)
-library(flashr2)
+library(flashr)
 library(ssvd)
 library(softImpute)
 Y_data = DataMaker()
@@ -287,9 +286,9 @@ plot_res = function(output,title = "data",legend_position = "none", methods_name
   # geom_violin()+
   ggtitle(title) +  theme_bw()+ scale_color_manual(values=myColors)+
     theme(legend.position= legend_position, legend.text=element_text(size=10),
-          plot.title = element_text(size = 18, face = "bold"),
-          axis.text.y = element_text(size =15), 
-          axis.text.x = element_text(size =15,angle = 45, hjust = 1))
+          plot.title = element_text(size = 12.9, face = "bold"),
+          axis.text.y = element_text(size =12), 
+          axis.text.x = element_text(size =12,angle = 45, hjust = 1))
   p
 }
 library(ggplot2)
@@ -304,13 +303,13 @@ sparse_diff = sparse_res - sparse_res[,2]
 # p3 = plot_res(sparse_diff,"Difference from FLASH result (0% zeros)")
 methods_name = colnames(sparse_diff)
 fill_color =  c("red","yellow3", "springgreen", "springgreen3", "cyan","cyan3", "deepskyblue","violet","purple")
-p3 = plot_res(sparse_diff,title = "Rank 3 example",methods_name = methods_name,
+p3mse = plot_res(sparse_diff,title = "Box plot of RRMSE compared with flash",methods_name = methods_name,
               myColors = fill_color[c(1,2,3,7,8,9)])
 ```
 
 
 ```{r}
-p3
+p3mse
 ```
 
 ## Session information
