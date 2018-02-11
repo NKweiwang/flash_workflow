@@ -32,7 +32,7 @@ plot_GTEXres = function(L,pve,offset=0){
   colnames(data_L) = c("tissue","loading","value")
   tissue_color = as.character(colordata[,2])
   data_L$tissue = factor(data_L$tissue,levels = 1:44 ,labels = as.character(colordata[,1]) )
-  data_L$loading = factor(data_L$loading,levels = 1:nL ,labels = paste("loading",offset+(1:nL),"; pve:", round(pve,3)))
+  data_L$loading = factor(data_L$loading,levels = 1:nL ,labels = paste("factor",offset+(1:nL),"; pve:", round(pve,3)))
   
   ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
     geom_bar(stat = "identity",width = 0.6) +
@@ -40,7 +40,7 @@ plot_GTEXres = function(L,pve,offset=0){
     scale_x_discrete(labels = NULL) +
     theme_grey()+
     theme(legend.position="right", legend.text=element_text(size=9), axis.text.y = element_text(size = 5)) + 
-    labs(title = "GTEx data", y = "loading values" ,x = "tissues", fill="tissue") +
+    labs(title = "GTEx data", y = "factor values" ,x = "tissues", fill="tissue") +
     facet_wrap(~loading, ncol = 2, scales = "free_y") +
     guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))
 }
