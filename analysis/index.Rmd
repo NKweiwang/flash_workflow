@@ -30,3 +30,7 @@ click here to check the template for [missing data imputation with OCV](template
 ### Orthogonal CV
 
 Click on this [orthogonal CV](miss_position.html) to see my example.
+
+
+
+Please use [workflowr](https://github.com/jdblischak/workflowr) to build the webpages from `.Rmd` files. Please refer [workflowr](https://jdblischak.github.io/workflowr/) for more details of instruction. 
