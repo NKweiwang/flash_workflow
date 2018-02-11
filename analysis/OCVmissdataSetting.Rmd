@@ -1,7 +1,6 @@
 ---
 title: "Some useful information of OCV for missing data"
 author: "wei wang"
-date: 2018-01-25
 output: html_document
 ---
 
