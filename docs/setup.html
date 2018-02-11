@@ -20,8 +20,8 @@
 <script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
 <script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
-<link href="site_libs/highlightjs-9.12.0/textmate.css" rel="stylesheet" />
-<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/highlightjs-1.1/textmate.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-1.1/highlight.js"></script>
 <link href="site_libs/font-awesome-4.5.0/css/font-awesome.min.css" rel="stylesheet" />
 
 <style type="text/css">code{white-space: pre;}</style>
@@ -31,12 +31,10 @@
   }
 </style>
 <script type="text/javascript">
-if (window.hljs) {
-  hljs.configure({languages: []});
-  hljs.initHighlightingOnLoad();
-  if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
-  }
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
 }
 </script>
 
@@ -213,26 +211,39 @@ $(document).ready(function () {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-25</p>
+<p><strong>Last updated:</strong> 2018-02-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> ca9b5ed</p>
+<p><strong>Code version:</strong> d53227e</p>
 <p>To reproduce our results on your own computer, please follow these setup instructions.</p>
 <div id="setup-instructions" class="section level2">
 <h2>Setup instructions</h2>
-<p><em>Fill out setup instructions in this section. See <a href="https://stephenslab.github.io/wflow-divvy/setup.html">here</a> and <a href="https://github.com/pcarbo/mouthwash_sims/blob/master/README.md">here</a> for some ideas.</em></p>
+<div id="install-software-and-r-packages" class="section level3">
+<h3>Install software and R packages</h3>
+<ol style="list-style-type: decimal">
+<li><p>Install <a href="https://cran.r-project.org">R</a>.</p></li>
+<li><p>Install <a href="https://www.mathworks.com/products/matlab.html">MATLAB</a></p></li>
+<li><p>Install the required R packages (run the following commands in the R).</p></li>
+</ol>
+<pre class="r"><code>install.packages(c(&quot;devtools&quot;, &quot;ashr&quot;, &quot;PMA&quot;,&quot;ssvd&quot;,&quot;softImpute&quot;,&quot;Matrix&quot;,&quot;R.matlab&quot;,&quot;ggplot2&quot;,&quot;denoiseR&quot;))
+devtools::install_github(&quot;stephenslab/flashr&quot;)</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li><p>Install MATLAB package <a href="https://github.com/davidaknowles/nsfa">NBSFA</a></p></li>
+<li><p>Install packages <a href="http://stephenslab.uchicago.edu/software.html#sfa">sfa</a> and <a href="http://beehive.cs.princeton.edu/software/">SFAmix</a></p></li>
+</ol>
+</div>
+<div id="data-sets" class="section level3">
+<h3>Data sets</h3>
+<p>All the data sets used in the paper are in <a href="https://github.com/NKweiwang/flash_workflow/tree/master/data/output/missingdata">data files</a></p>
+</div>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
 <p>Here are details about the computing environment, including the version of R and the R packages, that were used to generate the results from the R Markdown documents.</p>
 <pre class="r"><code>sessionInfo()</code></pre>
-<pre><code>R version 3.4.3 (2017-11-30)
-Platform: x86_64-apple-darwin15.6.0 (64-bit)
-Running under: macOS High Sierra 10.13.2
-
-Matrix products: default
-BLAS: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRblas.0.dylib
-LAPACK: /Library/Frameworks/R.framework/Versions/3.4/Resources/lib/libRlapack.dylib
+<pre><code>R version 3.3.0 (2016-05-03)
+Platform: x86_64-apple-darwin13.4.0 (64-bit)
+Running under: OS X 10.13.3 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -240,11 +251,30 @@ locale:
 attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
+other attached packages:
+ [1] denoiseR_1.0    scales_0.4.1    MASS_7.3-47     reshape2_1.4.3 
+ [5] flashr_0.4-6    workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1  
+ [9] R.matlab_3.6.1  softImpute_1.4  Matrix_1.2-11   PMA_1.0.9      
+[13] impute_1.48.0   plyr_1.8.4      ssvd_1.0       
+
 loaded via a namespace (and not attached):
- [1] compiler_3.4.3  backports_1.1.2 magrittr_1.5    rprojroot_1.3-2
- [5] tools_3.4.3     htmltools_0.3.6 yaml_2.1.16     Rcpp_0.12.15   
- [9] stringi_1.1.6   rmarkdown_1.8   knitr_1.18      git2r_0.21.0   
-[13] stringr_1.2.0   digest_0.6.13   evaluate_0.10.1</code></pre>
+ [1] ashr_2.2-3           lattice_0.20-35      colorspace_1.3-2    
+ [4] htmltools_0.3.6      yaml_2.1.16          rlang_0.1.6         
+ [7] R.oo_1.21.0          withr_2.1.1          R.utils_2.5.0       
+[10] foreach_1.4.4        stringr_1.2.0        munsell_0.4.3       
+[13] gtable_0.2.0         R.methodsS3_1.7.1    devtools_1.13.3     
+[16] codetools_0.2-15     leaps_3.0            evaluate_0.10.1     
+[19] memoise_1.1.0        labeling_0.3         knitr_1.18          
+[22] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
+[25] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
+[28] flashClust_1.01-2    backports_1.1.2      scatterplot3d_0.3-40
+[31] truncnorm_1.0-7      gridExtra_2.3        digest_0.6.13       
+[34] stringi_1.1.6        flashr2_0.4-0        grid_3.3.0          
+[37] rprojroot_1.2        tools_3.3.0          magrittr_1.5        
+[40] lazyeval_0.2.0       tibble_1.3.4         cluster_2.0.6       
+[43] FactoMineR_1.36      SQUAREM_2017.10-1    httr_1.3.0          
+[46] rstudioapi_0.6       iterators_1.0.9      R6_2.2.2            
+[49] git2r_0.19.0        </code></pre>
 </div>
 
 <hr>

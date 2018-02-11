@@ -280,7 +280,7 @@ div.tocify {
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="index.html">flash workflow</a>
+      <a class="navbar-brand" href="index.html">flash workflowr project</a>
     </div>
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
@@ -288,7 +288,7 @@ div.tocify {
   <a href="index.html">Home</a>
 </li>
 <li>
-  <a href="about.html">About</a>
+  <a href="setup.html">Setup</a>
 </li>
 <li>
   <a href="license.html">License</a>
@@ -320,7 +320,6 @@ div.tocify {
 
 <h1 class="title toc-ignore">template for CV in RCC</h1>
 <h4 class="author"><em>Wei</em></h4>
-<h4 class="date"><em>10-03</em></h4>
 
 </div>
 
@@ -329,10 +328,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-06</p>
+<p><strong>Last updated:</strong> 2018-02-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d385d46</p>
+<p><strong>Code version:</strong> d53227e</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -359,8 +358,8 @@ flashG_wrapper = function(Y, missindex, rank_max,type = &quot;constant&quot;){
   # delete the value in the missing position
   Y_miss = Y
   Y_miss[missindex$rowindex, missindex$colindex] = NA
-  data = flashr2::flash_set_data(Y_miss)
-  g_flash = flashr2::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = &quot;fdr&quot;),var_type = type)
+  data = flashr::flash_set_data(Y_miss)
+  g_flash = flashr::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = &quot;fdr&quot;),var_type = type)
   misshat_flash = g_flash$EL %*% t(g_flash$EF)
   rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_flash[missindex$rowindex, missindex$colindex])^2))
   return(rmse)
@@ -370,8 +369,8 @@ flashB_wrapper = function(Y, missindex, rank_max,type = &quot;constant&quot;){
   # delete the value in the missing position
   Y_miss = Y
   Y_miss[missindex$rowindex, missindex$colindex] = NA
-  data = flashr2::flash_set_data(Y_miss)
-  g_flash = flashr2::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = &quot;fdr&quot;),var_type = type)
+  data = flashr::flash_set_data(Y_miss)
+  g_flash = flashr::flash_add_greedy(data,Kmax=rank_max,ash_param=list(method = &quot;fdr&quot;),var_type = type)
   b_flash = flash_backfit(data,g_flash)
   misshat_flash = b_flash$EL %*% t(b_flash$EF)
   rmse = sqrt(mean((Y[missindex$rowindex, missindex$colindex] - misshat_flash[missindex$rowindex, missindex$colindex])^2))
@@ -399,10 +398,10 @@ PMD_wrapper = function(Y, missindex, rank_max){
 }</code></pre>
 <pre><code>library(R.matlab)
 # call the R functions
-source(&quot;~/HG/flash/data/CVmissflashr2/template/Rfunction.R&quot;)
+source(&quot;~/HG/flash/data/CVmissflashr/template/Rfunction.R&quot;)
 # read the data
 # you need to change the path for different data
-Y_data = R.matlab::readMat(&quot;~/HG/flash/data/CVmissflashr2/Breastcancer/example.mat&quot;)
+Y_data = R.matlab::readMat(&quot;~/HG/flash/data/CVmissflashr/Breastcancer/example.mat&quot;)
 Y = Y_data$Y
 N = dim(Y)[1]
 P = dim(Y)[2]
@@ -422,7 +421,7 @@ pmd_rmse  = PMD_wrapper(Y, missindex, rank_max= 50 )
 soft_rmse = softImpute_wrapper(Y, missindex, rank_max = 50)
 # then call the matlab estiamtion 
 # this for the folder of the data
-system(&quot;matlab -nosplash -nodesktop -r \&quot;addpath(\&#39;~/HG/flash/data/CVmissflashr2/template\&#39;); run(\&#39;missvalue.m\&#39;);exit;\&quot; &quot;)
+system(&quot;matlab -nosplash -nodesktop -r \&quot;addpath(\&#39;~/HG/flash/data/CVmissflashr/template\&#39;); run(\&#39;missvalue.m\&#39;);exit;\&quot; &quot;)
 g_nsfa = readMat(&quot;./NBSFAout/NSFAresult.mat&quot;)
 nsfa_rmse = as.vector(g_nsfa$rmse.NSFA)
 
@@ -466,8 +465,8 @@ save(save_path,&#39;rmse_NSFA&#39;); </code></pre>
 <pre><code>#!/bin/bash
 
 #SBATCH --job-name=arrayJob
-#SBATCH --output=/home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.out
-#SBATCH --error=/home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/outlog/arrayJob_%A_%a.err
+#SBATCH --output=/home/weidong/HG/flash/data/CVmissflashr/Breastcancer/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/CVmissflashr/Breastcancer/outlog/arrayJob_%A_%a.err
 #SBATCH --array=1-100
 #SBATCH --time=06:00:00
 #SBATCH --partition=broadwl
@@ -480,10 +479,10 @@ save(save_path,&#39;rmse_NSFA&#39;); </code></pre>
 ######################
 
 # Print this sub-job&#39;s task ID
-cd /home/weidong/HG/flash/data/CVmissflashr2/Breastcancer
+cd /home/weidong/HG/flash/data/CVmissflashr/Breastcancer
 mkdir test${SLURM_ARRAY_TASK_ID}
 cd test${SLURM_ARRAY_TASK_ID}
-Rscript --verbose /home/weidong/HG/flash/data/CVmissflashr2/Breastcancer/runR.R</code></pre>
+Rscript --verbose /home/weidong/HG/flash/data/CVmissflashr/Breastcancer/runR.R</code></pre>
 </div>
 <div id="run" class="section level2">
 <h2>run</h2>
@@ -507,7 +506,7 @@ for(i in 1:T){
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.13.2 (unknown)
+Running under: OS X 10.13.3 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -516,29 +515,26 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] denoiseR_1.0    Matrix_1.2-11   R.matlab_3.6.1  cowplot_0.8.0  
- [5] ggplot2_2.2.1   flashr2_0.3-3   ashr_2.2-3      ebnm_0.1-7     
- [9] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
+ [1] reshape2_1.4.3  flashr_0.4-6    workflowr_0.4.0 rmarkdown_1.6  
+ [5] ggplot2_2.2.1   R.matlab_3.6.1  softImpute_1.4  Matrix_1.2-11  
+ [9] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      ssvd_1.0       
 
 loaded via a namespace (and not attached):
- [1] softImpute_1.4       PMA_1.0.9            lattice_0.20-35     
- [4] Rmosek_7.1.2         colorspace_1.3-2     htmltools_0.3.6     
- [7] yaml_2.1.14          rlang_0.1.2          R.oo_1.21.0         
-[10] withr_2.0.0          R.utils_2.5.0        REBayes_0.85        
-[13] foreach_1.4.4        plyr_1.8.4           stringr_1.2.0       
-[16] munsell_0.4.3        gtable_0.2.0         R.methodsS3_1.7.1   
-[19] devtools_1.13.3      codetools_0.2-15     leaps_3.0           
-[22] memoise_1.1.0        evaluate_0.10.1      knitr_1.17          
-[25] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
-[28] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
-[31] flashClust_1.01-2    scales_0.4.1         backports_1.1.0     
-[34] scatterplot3d_0.3-40 truncnorm_1.0-7      digest_0.6.12       
-[37] stringi_1.1.5        grid_3.3.0           rprojroot_1.2       
-[40] tools_3.3.0          magrittr_1.5         lazyeval_0.2.0      
-[43] tibble_1.3.3         cluster_2.0.6        FactoMineR_1.36     
-[46] SQUAREM_2017.10-1    assertthat_0.2.0     httr_1.3.0          
-[49] rstudioapi_0.6       iterators_1.0.9      R6_2.2.2            
-[52] git2r_0.19.0        </code></pre>
+ [1] Rcpp_0.12.14      git2r_0.19.0      R.methodsS3_1.7.1
+ [4] R.utils_2.5.0     iterators_1.0.9   tools_3.3.0      
+ [7] digest_0.6.13     memoise_1.1.0     evaluate_0.10.1  
+[10] tibble_1.3.4      gtable_0.2.0      lattice_0.20-35  
+[13] rlang_0.1.6       foreach_1.4.4     rstudioapi_0.6   
+[16] curl_2.8.1        yaml_2.1.16       parallel_3.3.0   
+[19] gridExtra_2.3     httr_1.3.0        withr_2.1.1      
+[22] stringr_1.2.0     knitr_1.18        devtools_1.13.3  
+[25] rprojroot_1.2     grid_3.3.0        R6_2.2.2         
+[28] flashr2_0.4-0     ashr_2.2-3        magrittr_1.5     
+[31] scales_0.4.1      backports_1.1.2   codetools_0.2-15 
+[34] htmltools_0.3.6   MASS_7.3-47       colorspace_1.3-2 
+[37] labeling_0.3      stringi_1.1.6     lazyeval_0.2.0   
+[40] doParallel_1.0.11 munsell_0.4.3     pscl_1.5.2       
+[43] truncnorm_1.0-7   SQUAREM_2017.10-1 R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>

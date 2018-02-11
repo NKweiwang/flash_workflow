@@ -11,7 +11,6 @@
 
 <meta name="author" content="Wei Wang" />
 
-<meta name="date" content="2017-04-04" />
 
 <title>simulation for the sparse factor loadings</title>
 
@@ -321,7 +320,6 @@ div.tocify {
 
 <h1 class="title toc-ignore">simulation for the sparse factor loadings</h1>
 <h4 class="author"><em>Wei Wang</em></h4>
-<h4 class="date"><em>2017-04-04</em></h4>
 
 </div>
 
@@ -330,10 +328,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-28</p>
+<p><strong>Last updated:</strong> 2018-02-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d4cedff</p>
+<p><strong>Code version:</strong> d53227e</p>
 <!-- Add your analysis here -->
 <p>This file is just generate the structure heatmap of rank 3 data.</p>
 <pre class="r"><code>DataMaker = function(sigma = 2,seed_num = 99){
@@ -483,10 +481,10 @@ flashBF.wrapper = function(Y_data,K = 3){
   N = dim(Y)[1]
   P = dim(Y)[2]
   library(ebnm)
-  library(flashr2)
-  data =  flashr2::flash_set_data(Y)
-  f_greedy = flashr2::flash_add_greedy(data,verbose=F,var_type = &quot;constant&quot;, K = K)
-  f = flashr2::flash_backfit(data,f_greedy,var_type = &quot;constant&quot;)
+  library(flashr)
+  data =  flashr::flash_set_data(Y)
+  f_greedy = flashr::flash_add_greedy(data,verbose=F,var_type = &quot;constant&quot;, K = K)
+  f = flashr::flash_backfit(data,f_greedy,var_type = &quot;constant&quot;)
   Y_hat = f$EL %*% t(f$EF)
   return(Y_hat)
 }
@@ -500,143 +498,18 @@ flash.wrapper = function(Y_data, K = 3){
   E = Y_data$E
   N = dim(Y)[1]
   P = dim(Y)[2]
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_add_greedy(data,verbose=F,var_type = &quot;constant&quot;, K = K)
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_add_greedy(data,verbose=F,var_type = &quot;constant&quot;, K = K)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   return(Y_hat)
 }</code></pre>
-<pre class="r"><code>library(PMA)</code></pre>
-<pre><code>Loading required package: plyr</code></pre>
-<pre><code>Loading required package: impute</code></pre>
-<pre><code>Warning: package &#39;impute&#39; was built under R version 3.3.1</code></pre>
-<pre class="r"><code>library(flashr2)
-library(ssvd)
-library(softImpute)
-Y_data = DataMaker(seed_num = 0)
-
-LF_1 = PMA.wrapper(Y_data)
-LF_2 = flash.wrapper(Y_data)</code></pre>
-<pre><code>fitting factor/loading 1</code></pre>
-<pre><code>fitting factor/loading 2</code></pre>
-<pre><code>fitting factor/loading 3</code></pre>
-<pre class="r"><code>LF_3 = flashBF.wrapper(Y_data)</code></pre>
-<pre><code>fitting factor/loading 1</code></pre>
-<pre><code>fitting factor/loading 2</code></pre>
-<pre><code>fitting factor/loading 3</code></pre>
-<pre class="r"><code>LF_4 = SVD.wrapper(Y_data)
-LF_5 = SSVD.wrapper(Y_data)</code></pre>
-<pre><code>Warning in ssvd.initial(x, method = method, alpha.method = alpha.method, :
-SSVD.initial: Number of selected rows less than rank!</code></pre>
-<pre><code>Warning in ssvd.initial(x, method = method, alpha.method = alpha.method, :
-SSVD.initial: Number of selected cols less than rank!</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre><code>Warning in error.est(x.scaled, u.old, v.cur, n.boot = n.boot): error.est:
-dense</code></pre>
-<pre><code>Warning in error.est(t(x.scaled), v.old, u.cur, n.boot = n.boot):
-error.est: dense</code></pre>
-<pre class="r"><code>LF_6 = softImpute.wrapper(Y_data)</code></pre>
-<pre><code>Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations</code></pre>
-<pre><code>Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations
-
-Warning in simpute.als(x, J, thresh, lambda, maxit, trace.it, warm.start, :
-Convergence not achieved by 100 iterations</code></pre>
-<pre class="r"><code>LF_true = Y_data$L_true %*% t(Y_data$F_true)
-
-library(reshape2)
-melted_cormat_1 &lt;- melt(LF_1, na.rm = TRUE)
-melted_cormat_2 &lt;- melt(LF_2, na.rm = TRUE)
-melted_cormat_3 &lt;- melt(LF_3, na.rm = TRUE)
-melted_cormat_4 &lt;- melt(LF_4, na.rm = TRUE)
-melted_cormat_5 &lt;- melt(LF_5, na.rm = TRUE)
-melted_cormat_6 &lt;- melt(LF_6, na.rm = TRUE)
-melted_cormat_true &lt;- melt(LF_true, na.rm = TRUE)
-# Heatmap
-library(ggplot2)
-plot_HP = function(title_name = &quot;truth&quot;, melted_cormat){
-  p1 = ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
-   geom_tile(color = &quot;white&quot;)+
-    scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
-     midpoint = 0, limit = c(-2,2), space = &quot;Lab&quot;) + labs(title = title_name, y = &quot;samples&quot;, x = &quot;variables&quot;) +
-    theme_minimal() + theme(legend.position=&quot;none&quot;) 
-  p1
-}
-
-p0 = plot_HP(title_name = &quot;Truth&quot;, melted_cormat = melted_cormat_true)
-p1 = plot_HP(title_name = &quot;PMD.cv1&quot;, melted_cormat = melted_cormat_1)
-p2 = plot_HP(title_name = &quot;flash&quot;, melted_cormat = melted_cormat_2)
-p3 = plot_HP(title_name = &quot;flashb&quot;, melted_cormat = melted_cormat_3)
-p4 = plot_HP(title_name = &quot;SVD&quot;, melted_cormat = melted_cormat_4)
-p5 = plot_HP(title_name = &quot;SSVD&quot;, melted_cormat = melted_cormat_5)
-p6 = plot_HP(title_name = &quot;SI.cv&quot;, melted_cormat = melted_cormat_6)</code></pre>
-<pre class="r"><code>gridExtra::grid.arrange(p0,p2,p1,p6,p5,p4,ncol = 2)</code></pre>
-<p><img src="figure/simulation3.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 <div id="average-of-100-simulations" class="section level2">
 <h2>average of 100 simulations</h2>
 <pre class="r"><code>HMatrix = readRDS(&quot;../data/simulation/rankthree/HeatMap.rds&quot;)
 T = 100
 AVG_HM = matrix(0,nrow = 36000,ncol = 7)
 for(i in 1:T){
-  AVG_HM = AVG_HM + HMatrix[i,,]
+  AVG_HM = AVG_HM + abs(HMatrix[i,,])
 }
 AVG_HM = AVG_HM/100</code></pre>
 <pre class="r"><code>LF_1 = matrix(AVG_HM[,1],ncol = 240, nrow = 150)
@@ -659,21 +532,23 @@ library(ggplot2)
 plot_HP = function(title_name = &quot;truth&quot;, melted_cormat){
   p1 = ggplot(data = melted_cormat, aes(Var2, Var1, fill = value))+
    geom_tile(color = &quot;white&quot;)+
-    scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
-     midpoint = 0, limit = c(-0.25,0.25), space = &quot;Lab&quot;) + labs(title = title_name, y = &quot;samples&quot;, x = &quot;variables&quot;) +
-    theme_minimal() + theme(legend.position=&quot;none&quot;) 
+    #scale_fill_gradient2(low = &quot;blue&quot;, high = &quot;red&quot;, mid = &quot;white&quot;, 
+     #midpoint = 0, limit = c(-0.81,0.81), space = &quot;Lab&quot;) + labs(title = title_name, y = &quot;samples&quot;, x = &quot;variables&quot;) +
+    scale_fill_gradient2(low = &quot;white&quot;, high = &quot;grey6&quot;, mid = &quot;grey9&quot;, 
+     midpoint = 0.41, limit = c(0,0.82), space = &quot;Lab&quot;) + labs(title = title_name, y = &quot;samples&quot;, x = &quot;variables&quot;) +
+    theme_minimal() + theme(legend.position=&quot;none&quot;,plot.title = element_text(size = 12.9, face = &quot;bold&quot;)) 
   p1
 }
 
-p0 = plot_HP(title_name = &quot;Truth&quot;, melted_cormat = melted_cormat_true)
+p0 = plot_HP(title_name = &quot;Latent structure (truth)&quot;, melted_cormat = melted_cormat_true)
 p1 = plot_HP(title_name = &quot;PMD.cv1&quot;, melted_cormat = melted_cormat_1)
 p2 = plot_HP(title_name = &quot;flash&quot;, melted_cormat = melted_cormat_2)
-p3 = plot_HP(title_name = &quot;flas_pn&quot;, melted_cormat = melted_cormat_3)
+p3 = plot_HP(title_name = &quot;flash_pn&quot;, melted_cormat = melted_cormat_3)
 p4 = plot_HP(title_name = &quot;SVD&quot;, melted_cormat = melted_cormat_4)
 p5 = plot_HP(title_name = &quot;SSVD&quot;, melted_cormat = melted_cormat_5)
 p6 = plot_HP(title_name = &quot;SI.cv&quot;, melted_cormat = melted_cormat_6)</code></pre>
-<pre class="r"><code>gridExtra::grid.arrange(p0,p2,p3,p1,p6,p5,p4,layout_matrix = rbind(c(NA,1,NA),c(2,3,4),c(5,6,7)))</code></pre>
-<p><img src="figure/simulation3.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>gridExtra::grid.arrange(p2,p3,p1,p6,p5,p4,ncol = 3)</code></pre>
+<p><img src="figure/simulation3.Rmd/unnamed-chunk-4-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
 <h2>Session information</h2>
@@ -681,7 +556,7 @@ p6 = plot_HP(title_name = &quot;SI.cv&quot;, melted_cormat = melted_cormat_6)</c
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.13.2 (unknown)
+Running under: OS X 10.13.3 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -690,28 +565,29 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] ebnm_0.1-7      ssvd_1.0        flashr2_0.4-0   PMA_1.0.9      
- [5] impute_1.48.0   plyr_1.8.4      reshape2_1.4.3  denoiseR_1.0   
- [9] softImpute_1.4  Matrix_1.2-11   R.matlab_3.6.1  MASS_7.3-47    
-[13] workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1  
+ [1] denoiseR_1.0    scales_0.4.1    MASS_7.3-47     reshape2_1.4.3 
+ [5] flashr_0.4-6    workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1  
+ [9] R.matlab_3.6.1  softImpute_1.4  Matrix_1.2-11   PMA_1.0.9      
+[13] impute_1.48.0   plyr_1.8.4      ssvd_1.0       
 
 loaded via a namespace (and not attached):
- [1] ashr_2.2-3           lattice_0.20-35      Rmosek_7.1.2        
- [4] colorspace_1.3-2     htmltools_0.3.6      yaml_2.1.16         
- [7] rlang_0.1.6          R.oo_1.21.0          R.utils_2.5.0       
-[10] REBayes_0.85         foreach_1.4.4        stringr_1.2.0       
-[13] munsell_0.4.3        gtable_0.2.0         R.methodsS3_1.7.1   
-[16] leaps_3.0            codetools_0.2-15     evaluate_0.10.1     
-[19] labeling_0.3         knitr_1.18           doParallel_1.0.11   
-[22] pscl_1.5.2           irlba_2.2.1          parallel_3.3.0      
-[25] Rcpp_0.12.14         scales_0.4.1         backports_1.1.2     
-[28] flashClust_1.01-2    scatterplot3d_0.3-40 truncnorm_1.0-7     
-[31] gridExtra_2.3        digest_0.6.13        stringi_1.1.6       
-[34] grid_3.3.0           rprojroot_1.2        tools_3.3.0         
-[37] magrittr_1.5         lazyeval_0.2.0       tibble_1.3.4        
-[40] cluster_2.0.6        FactoMineR_1.36      SQUAREM_2017.10-1   
-[43] assertthat_0.2.0     rstudioapi_0.6       iterators_1.0.9     
-[46] git2r_0.19.0        </code></pre>
+ [1] ashr_2.2-3           lattice_0.20-35      colorspace_1.3-2    
+ [4] htmltools_0.3.6      yaml_2.1.16          rlang_0.1.6         
+ [7] R.oo_1.21.0          withr_2.1.1          R.utils_2.5.0       
+[10] foreach_1.4.4        stringr_1.2.0        munsell_0.4.3       
+[13] gtable_0.2.0         R.methodsS3_1.7.1    devtools_1.13.3     
+[16] codetools_0.2-15     leaps_3.0            evaluate_0.10.1     
+[19] memoise_1.1.0        labeling_0.3         knitr_1.18          
+[22] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
+[25] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
+[28] flashClust_1.01-2    backports_1.1.2      scatterplot3d_0.3-40
+[31] truncnorm_1.0-7      gridExtra_2.3        digest_0.6.13       
+[34] stringi_1.1.6        flashr2_0.4-0        grid_3.3.0          
+[37] rprojroot_1.2        tools_3.3.0          magrittr_1.5        
+[40] lazyeval_0.2.0       tibble_1.3.4         cluster_2.0.6       
+[43] FactoMineR_1.36      SQUAREM_2017.10-1    httr_1.3.0          
+[46] rstudioapi_0.6       iterators_1.0.9      R6_2.2.2            
+[49] git2r_0.19.0        </code></pre>
 </div>
 
 <hr>

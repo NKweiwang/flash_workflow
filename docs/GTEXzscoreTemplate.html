@@ -320,7 +320,6 @@ div.tocify {
 
 <h1 class="title toc-ignore">Template for GTEx example on cluster</h1>
 <h4 class="author"><em>wei</em></h4>
-<h4 class="date"><em>09-29</em></h4>
 
 </div>
 
@@ -329,18 +328,18 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-28</p>
+<p><strong>Last updated:</strong> 2018-02-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d4cedff</p>
+<p><strong>Code version:</strong> d53227e</p>
 <!-- Add your analysis here -->
 <div id="install-the-package" class="section level2">
 <h2>Install the package</h2>
-<p>1 please git clone the <code>flashr2</code> on PPS.</p>
-<p><code>git clone https://github.com/stephenslab/flashr2.git</code></p>
-<p>2 install <code>flashr2</code> locally</p>
-<p><code>R CMD build flashr2</code></p>
-<p><code>R CMD INSTALL flashr2_0.2-2.tar.gz</code></p>
+<p>1 please git clone the <code>flashr</code> on PPS.</p>
+<p><code>git clone https://github.com/stephenslab/flashr.git</code></p>
+<p>2 install <code>flashr</code> locally</p>
+<p><code>R CMD build flashr</code></p>
+<p><code>R CMD INSTALL flashr_0.2-2.tar.gz</code></p>
 </div>
 <div id="prepare-the-data" class="section level2">
 <h2>prepare the data</h2>
@@ -348,9 +347,9 @@ shared across the workflowr files. -->
 <h3>original data</h3>
 <p>Please read your original data as a <span class="math inline">\(N \times P\)</span> matrix in R.</p>
 <p>In this case you can create a folder the restore the data as <code>.rds</code> file</p>
-<pre><code>mkdir testflashr2
-cd testflashr2
-cp gtexEQTL_zscore.rds GTEX/testflashr2/</code></pre>
+<pre><code>mkdir testflashr
+cd testflashr
+cp gtexEQTL_zscore.rds GTEX/testflashr/</code></pre>
 <p>now you have the data matrix in <code>gtexEQTL_zscore.rds</code></p>
 <p>to restore the result and track the errors, you can crest folders</p>
 <pre><code>mkdir output
@@ -363,7 +362,7 @@ mkdir ourlog</code></pre>
 <div id="creat-a-.r-file" class="section level3">
 <h3>creat a .R file</h3>
 <pre><code>library(ashr)
-library(flashr2)
+library(flashr)
 load(&quot;./gtexEQTL_zscore.rds&quot;)
 Y = t(zscore)
 data = flash_set_data(Y)
@@ -380,8 +379,8 @@ saveRDS(f_greedy_bf,file = &quot;./output/bflashvarcol.rds&quot;)</code></pre>
 <pre><code>#!/bin/bash
 
 #SBATCH --job-name=arrayJob
-#SBATCH --output=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.out
-#SBATCH --error=/home/weidong/HG/flash/data/GTEX/testflashr2/outlog/arrayJob_%A_%a.err
+#SBATCH --output=/home/weidong/HG/flash/data/GTEX/testflashr/outlog/arrayJob_%A_%a.out
+#SBATCH --error=/home/weidong/HG/flash/data/GTEX/testflashr/outlog/arrayJob_%A_%a.err
 #SBATCH --array=1
 #SBATCH --time=30:00:00
 #SBATCH --partition=mstephens
@@ -395,9 +394,9 @@ saveRDS(f_greedy_bf,file = &quot;./output/bflashvarcol.rds&quot;)</code></pre>
 ######################
 
 # Print this sub-job&#39;s task ID
-cd /home/weidong/HG/flash/data/GTEX/testflashr2
+cd /home/weidong/HG/flash/data/GTEX/testflashr
 Rscript --verbose flashwrapper.R</code></pre>
-<p>you can substitute the folder path <code>/home/weidong/HG/flash/data/GTEX/testflashr2</code>. and we call this <code>.sbatch</code> file as <code>runflash.sbatch</code></p>
+<p>you can substitute the folder path <code>/home/weidong/HG/flash/data/GTEX/testflashr</code>. and we call this <code>.sbatch</code> file as <code>runflash.sbatch</code></p>
 </div>
 </div>
 <div id="run" class="section level2">
@@ -406,6 +405,7 @@ Rscript --verbose flashwrapper.R</code></pre>
 </div>
 <div id="plot" class="section level2">
 <h2>plot</h2>
+<p>Get the result from <code>flashr</code> as <code>bflashvarcol.rds</code> (backfitting result).</p>
 <pre class="r"><code>b_flash = readRDS(&quot;../data/GTExdata/res_flashr2/bflashvarcol.rds&quot;)
 load(&quot;../data/GTExdata/gtexEQTL_zscore.rds&quot;)
 ssY = sum(zscore^2)
@@ -436,7 +436,7 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
   facet_wrap(~loading, ncol = 2, scales = &quot;free_y&quot;) +
   guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))</code></pre>
 <p><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-1-1.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>  #ggsave(&quot;flashr2GTEx1.pdf&quot;, width = 8, height = 11)
+<pre class="r"><code>  #ggsave(&quot;flashrGTEx1.pdf&quot;, width = 8, height = 11)
 
 # the 27th factor is zero
 L = b_flash$EL[,15:26]
@@ -459,13 +459,10 @@ ggplot(data_L,aes(x = tissue,y = value,fill = factor(tissue) )) +
   facet_wrap(~loading, ncol = 2, scales = &quot;free_y&quot;) +
   guides(fill = guide_legend(ncol = 1, keyheight = 0.8, keywidth = 0.3))</code></pre>
 <p><img src="figure/GTEXzscoreTemplate.Rmd/unnamed-chunk-1-2.png" width="672" style="display: block; margin: auto;" /></p>
-<pre class="r"><code>  #ggsave(&quot;flashr2GTEx2.pdf&quot;, width = 8, height = 10)</code></pre>
-<p>the plots are</p>
-<p><img src="figure/flashr2GTEx1.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200"></p>
-<p><img src="figure/flashr2GTEx2.pdf" alt="the plot is in analysis/flashr2GTEx1.pdf"  width="4200" height="4200"></p>
+<pre class="r"><code>  #ggsave(&quot;flashrGTEx2.pdf&quot;, width = 8, height = 10)</code></pre>
 </div>
 <div id="an-example-to-run-sfa-on-rcc-or-pps" class="section level2">
-<h2>an example to run SFA on RCC or PPS</h2>
+<h2>An example to run SFA on RCC or PPS</h2>
 <ol style="list-style-type: decimal">
 <li>go to the folder where the data is.</li>
 </ol>
@@ -634,7 +631,7 @@ dim(sfamixres$L)</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.13.2 (unknown)
+Running under: OS X 10.13.3 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -643,24 +640,26 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] reshape2_1.4.3  denoiseR_1.0    softImpute_1.4  Matrix_1.2-11  
-[5] R.matlab_3.6.1  MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
-[9] ggplot2_2.2.1  
+ [1] reshape2_1.4.3  flashr_0.4-6    workflowr_0.4.0 rmarkdown_1.6  
+ [5] ggplot2_2.2.1   R.matlab_3.6.1  softImpute_1.4  Matrix_1.2-11  
+ [9] PMA_1.0.9       impute_1.48.0   plyr_1.8.4      ssvd_1.0       
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.14         git2r_0.19.0         plyr_1.8.4          
- [4] R.methodsS3_1.7.1    R.utils_2.5.0        tools_3.3.0         
- [7] ssvd_1.0             digest_0.6.13        evaluate_0.10.1     
-[10] tibble_1.3.4         gtable_0.2.0         lattice_0.20-35     
-[13] rlang_0.1.6          rstudioapi_0.6       yaml_2.1.16         
-[16] gridExtra_2.3        cluster_2.0.6        stringr_1.2.0       
-[19] knitr_1.18           flashClust_1.01-2    scatterplot3d_0.3-40
-[22] rprojroot_1.2        grid_3.3.0           irlba_2.2.1         
-[25] PMA_1.0.9            FactoMineR_1.36      magrittr_1.5        
-[28] flashr2_0.4-0        leaps_3.0            backports_1.1.2     
-[31] scales_0.4.1         htmltools_0.3.6      colorspace_1.3-2    
-[34] labeling_0.3         stringi_1.1.6        lazyeval_0.2.0      
-[37] munsell_0.4.3        R.oo_1.21.0         </code></pre>
+ [1] Rcpp_0.12.14      git2r_0.19.0      R.methodsS3_1.7.1
+ [4] R.utils_2.5.0     iterators_1.0.9   tools_3.3.0      
+ [7] digest_0.6.13     memoise_1.1.0     evaluate_0.10.1  
+[10] tibble_1.3.4      gtable_0.2.0      lattice_0.20-35  
+[13] rlang_0.1.6       foreach_1.4.4     rstudioapi_0.6   
+[16] curl_2.8.1        yaml_2.1.16       parallel_3.3.0   
+[19] gridExtra_2.3     httr_1.3.0        withr_2.1.1      
+[22] stringr_1.2.0     knitr_1.18        devtools_1.13.3  
+[25] rprojroot_1.2     grid_3.3.0        R6_2.2.2         
+[28] flashr2_0.4-0     ashr_2.2-3        magrittr_1.5     
+[31] scales_0.4.1      backports_1.1.2   codetools_0.2-15 
+[34] htmltools_0.3.6   MASS_7.3-47       colorspace_1.3-2 
+[37] labeling_0.3      stringi_1.1.6     lazyeval_0.2.0   
+[40] doParallel_1.0.11 munsell_0.4.3     pscl_1.5.2       
+[43] truncnorm_1.0-7   SQUAREM_2017.10-1 R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>

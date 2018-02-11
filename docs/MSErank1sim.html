@@ -320,7 +320,6 @@ div.tocify {
 
 <h1 class="title toc-ignore">MSE for rank_1 simulation</h1>
 <h4 class="author"><em>wei wang</em></h4>
-<h4 class="date"><em>17-12-09</em></h4>
 
 </div>
 
@@ -329,10 +328,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-27</p>
+<p><strong>Last updated:</strong> 2018-02-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d7edc50</p>
+<p><strong>Code version:</strong> d53227e</p>
 <!-- Add your analysis here -->
 <div id="run-the-methods" class="section level2">
 <h2>run the methods</h2>
@@ -457,9 +456,9 @@ PN.wrapper = function(Y_data){
   N = dim(Y)[1]
   P = dim(Y)[2]
   library(ebnm)
-  library(flashr2)
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_r1(data,verbose=F,var_type = &quot;constant&quot;,ebnm_fn = ebnm_pn)
+  library(flashr)
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_r1(data,verbose=F,var_type = &quot;constant&quot;,ebnm_fn = ebnm_pn)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
@@ -474,8 +473,8 @@ flash.wrapper = function(Y_data){
   E = Y_data$E
   N = dim(Y)[1]
   P = dim(Y)[2]
-  data =  flashr2::flash_set_data(Y)
-  g_flash = flashr2::flash_r1(data,verbose=F,var_type = &quot;constant&quot;)
+  data =  flashr::flash_set_data(Y)
+  g_flash = flashr::flash_r1(data,verbose=F,var_type = &quot;constant&quot;)
   Y_hat = g_flash$EL %*% t(g_flash$EF)
   RMSE = sqrt(mean(( Y - Y_hat - E )^2 ))/sqrt(mean(( Y - E )^2 ))
   return(RMSE)
@@ -684,7 +683,7 @@ softImpute.wrapper = function(Y_data, ngrids = 10, K = 1, fold = 5){
 <pre><code>cd intermediate</code></pre>
 <p>creat <code>run.R</code> file as follows:</p>
 <pre><code>library(PMA)
-library(flashr2)
+library(flashr)
 library(ssvd)
 source(&quot;../Rfunction.R&quot;)
 L_se = c( 0.25, 0.5, 1, 2, 4)
@@ -751,6 +750,28 @@ saveRDS(results,&quot;./RES_rrmse.rds&quot;)</code></pre>
 <div id="rmse-sparse-case-100-simulations" class="section level2">
 <h2>RMSE sparse case 100 simulations</h2>
 <pre class="r"><code>plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;, methods_name,myColors){
+  library(scales)
+  modulus_trans &lt;- function(lambda){
+   trans_new(&quot;modulus&quot;,
+             transform = function(y){
+                if(lambda != 0){
+                   yt &lt;- sign(y) * abs(y)^(lambda)
+                } else {
+                   yt = sign(y) * (log(abs(y) + 1))
+                }
+                return(yt)
+             },
+             inverse = function(yt){
+                if(lambda != 0){
+                   y &lt;- abs(yt)^(1/lambda) * sign(yt)
+                } else {
+                   y &lt;- (exp(abs(yt)) - 1) * sign(yt)
+                   
+                }
+                return(y)
+             }
+             )
+  }
   rmse = as.vector(output)
   N = dim(output)[1]
   methods = rep(methods_name, each = N)
@@ -760,8 +781,10 @@ saveRDS(results,&quot;./RES_rrmse.rds&quot;)</code></pre>
   # geom_violin()+
   ggtitle(title) +  theme_bw()+ scale_color_manual(values=myColors)+
     theme(legend.position= legend_position, legend.text=element_text(size=10),
-          axis.text.y = element_text(size =12),
-          axis.text.x = element_text(size =12,angle = 45, hjust = 1))
+          axis.text.y = element_text(size =12.9),
+          axis.text.x = element_text(size =15,angle = 45, hjust = 1),
+          plot.title = element_text(size = 12.9, face = &quot;bold&quot;)) + 
+           scale_y_continuous(limits = c(-0.02,0.8), trans = modulus_trans(lambda = 0.5))
   p
 }
 library(ggplot2)</code></pre>
@@ -770,9 +793,10 @@ colnames(sparse_res) = c(&quot;PMD.cv2&quot;,&quot;flash&quot;,&quot;SFA&quot;,&
 sparse_diff = sparse_res - sparse_res[,2]
 methods_name = colnames(sparse_diff)
 fill_color = c(&quot;red&quot;,&quot;yellow3&quot;, &quot;springgreen&quot;, &quot;springgreen3&quot;, &quot;cyan&quot;,&quot;cyan3&quot;, &quot;deepskyblue&quot;,&quot;violet&quot;,&quot;purple&quot;)
-p1 = plot_res(sparse_diff,title = &quot;Difference from FLASH result (90% zeros)&quot;,
-              methods_name = methods_name, myColors = fill_color)
-methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
+p1 = plot_res(sparse_diff,title = &quot;Difference from flash result (90% zeros)&quot;,
+              methods_name = methods_name, myColors = fill_color)</code></pre>
+<pre><code>Warning: package &#39;scales&#39; was built under R version 3.3.2</code></pre>
+<pre class="r"><code>methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
 p1_cut = plot_res(sparse_diff[-22,c(1,2,3,4,5,7,9)],title = &quot;Difference from FLASH result (90% zeros)&quot;,methods_name = methods_name,myColors = fill_color[c(1,2,3,4,5,7,9)])</code></pre>
 </div>
 <div id="rmse-intermediate-sparse-case-100-simulations" class="section level2">
@@ -783,7 +807,7 @@ sparse_diff = sparse_res - sparse_res[,2]
 # p2 = plot_res(sparse_diff,&quot;Difference from FLASH result (30% zeros)&quot;)
 
 methods_name = colnames(sparse_diff)
-p2 = plot_res(sparse_diff,title = &quot;Difference from FLASH result (30% zeros)&quot;,methods_name = methods_name,myColors = fill_color)
+p2 = plot_res(sparse_diff,title = &quot;Difference from flash result (30% zeros)&quot;,methods_name = methods_name,myColors = fill_color)
 methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
 p2_cut = plot_res(sparse_diff[,c(1,2,3,4,5,7,9)],title = &quot;Difference from FLASH result (30% zeros)&quot;,methods_name = methods_name,myColors = fill_color[c(1,2,3,4,5,7,9)])</code></pre>
 </div>
@@ -794,11 +818,13 @@ colnames(sparse_res) = c(&quot;PMD.cv2&quot;,&quot;flash&quot;,&quot;SFA&quot;,&
 sparse_diff = sparse_res - sparse_res[,2]
 # p3 = plot_res(sparse_diff,&quot;Difference from FLASH result (0% zeros)&quot;)
 methods_name = colnames(sparse_diff)
-p3 = plot_res(sparse_diff,title = &quot;Difference from FLASH result (0% zeros)&quot;,methods_name = methods_name,myColors = fill_color )
+p3 = plot_res(sparse_diff,title = &quot;Difference from flash result (0% zeros)&quot;,methods_name = methods_name,myColors = fill_color )
 methods_name = colnames(sparse_diff)[c(1,2,3,4,5,7,9)]
 p3_cut = plot_res(sparse_diff[,c(1,2,3,4,5,7,9)],title = &quot;Difference from FLASH result (0% zeros)&quot;,methods_name = methods_name,myColors = fill_color[c(1,2,3,4,5,7,9)])</code></pre>
 <pre class="r"><code># gridExtra::grid.arrange(p1,p2,p3,p1_cut,p2_cut,p3_cut,ncol = 3)
-gridExtra::grid.arrange(p1,p1_cut,p2,p2_cut,p3,p3_cut,ncol = 2)</code></pre>
+# gridExtra::grid.arrange(p1,p1_cut,p2,p2_cut,p3,p3_cut,ncol = 2)
+gridExtra::grid.arrange(p1,p2,p3,ncol = 3)</code></pre>
+<pre><code>Warning: Removed 2 rows containing non-finite values (stat_boxplot).</code></pre>
 <p><img src="figure/MSErank1sim.Rmd/unnamed-chunk-6-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="session-information" class="section level2">
@@ -807,7 +833,7 @@ gridExtra::grid.arrange(p1,p1_cut,p2,p2_cut,p3,p3_cut,ncol = 2)</code></pre>
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.13.2 (unknown)
+Running under: OS X 10.13.3 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -816,16 +842,27 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
-[1] MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1  
+ [1] scales_0.4.1    MASS_7.3-47     reshape2_1.4.3  flashr_0.4-6   
+ [5] workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1   R.matlab_3.6.1 
+ [9] softImpute_1.4  Matrix_1.2-11   PMA_1.0.9       impute_1.48.0  
+[13] plyr_1.8.4      ssvd_1.0       
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.14     rstudioapi_0.6   knitr_1.18       magrittr_1.5    
- [5] munsell_0.4.3    colorspace_1.3-2 rlang_0.1.6      stringr_1.2.0   
- [9] plyr_1.8.4       tools_3.3.0      grid_3.3.0       gtable_0.2.0    
-[13] git2r_0.19.0     htmltools_0.3.6  yaml_2.1.16      lazyeval_0.2.0  
-[17] digest_0.6.13    rprojroot_1.2    tibble_1.3.4     gridExtra_2.3   
-[21] ssvd_1.0         evaluate_0.10.1  labeling_0.3     stringi_1.1.6   
-[25] scales_0.4.1     backports_1.1.2 </code></pre>
+ [1] Rcpp_0.12.14      git2r_0.19.0      R.methodsS3_1.7.1
+ [4] R.utils_2.5.0     iterators_1.0.9   tools_3.3.0      
+ [7] digest_0.6.13     memoise_1.1.0     evaluate_0.10.1  
+[10] tibble_1.3.4      gtable_0.2.0      lattice_0.20-35  
+[13] rlang_0.1.6       foreach_1.4.4     rstudioapi_0.6   
+[16] curl_2.8.1        yaml_2.1.16       parallel_3.3.0   
+[19] gridExtra_2.3     httr_1.3.0        withr_2.1.1      
+[22] stringr_1.2.0     knitr_1.18        devtools_1.13.3  
+[25] rprojroot_1.2     grid_3.3.0        R6_2.2.2         
+[28] flashr2_0.4-0     ashr_2.2-3        magrittr_1.5     
+[31] backports_1.1.2   codetools_0.2-15  htmltools_0.3.6  
+[34] colorspace_1.3-2  labeling_0.3      stringi_1.1.6    
+[37] lazyeval_0.2.0    doParallel_1.0.11 munsell_0.4.3    
+[40] pscl_1.5.2        truncnorm_1.0-7   SQUAREM_2017.10-1
+[43] R.oo_1.21.0      </code></pre>
 </div>
 
 <hr>

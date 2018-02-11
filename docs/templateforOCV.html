@@ -12,7 +12,7 @@
 <meta name="author" content="wei wang" />
 
 
-<title>apply flashr2 with OCV</title>
+<title>apply flashr with OCV</title>
 
 <script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -318,9 +318,8 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">apply flashr2 with OCV</h1>
+<h1 class="title toc-ignore">apply flashr with OCV</h1>
 <h4 class="author"><em>wei wang</em></h4>
-<h4 class="date"><em>09-30</em></h4>
 
 </div>
 
@@ -329,10 +328,10 @@ div.tocify {
 shared across the workflowr files. -->
 <!-- Update knitr chunk options -->
 <!-- Insert the date the file was last updated -->
-<p><strong>Last updated:</strong> 2018-01-26</p>
+<p><strong>Last updated:</strong> 2018-02-11</p>
 <!-- Insert the code version (Git commit SHA1) if Git repository exists and R
  package git2r is installed -->
-<p><strong>Code version:</strong> d348408</p>
+<p><strong>Code version:</strong> d53227e</p>
 <!-- Add your analysis here -->
 <div id="preparation" class="section level2">
 <h2>preparation</h2>
@@ -487,22 +486,22 @@ OCV_SSE = function(Y,OCVindex,OCVdata,k_fold = 5,method = &quot;flash&quot;,Kmax
 
 call_method = function(Y_data,method,Kmax = 50){
   if(method == &quot;flash&quot;){
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == &quot;flash_wn&quot;){
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,nullcheck=FALSE)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax,nullcheck=FALSE)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == &quot;flash_gb&quot;){
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax)
-    f = flashr2::flash_backfit(data,f_greedy)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax)
+    f = flashr::flash_backfit(data,f_greedy)
     Y_hat = f$EL %*% t(f$EF)
   }else if(method == &quot;flash_bf&quot;){
-    data = flashr2::flash_set_data(Y_data)
-    f_data = flashr2::flash_add_factors_from_data(data,K = Kmax)
-    f = flashr2::flash_backfit(data,f_data)
+    data = flashr::flash_set_data(Y_data)
+    f_data = flashr::flash_add_factors_from_data(data,K = Kmax)
+    f = flashr::flash_backfit(data,f_data)
     Y_hat = f$EL %*% t(f$EF)
   }else if(method == &quot;PMD&quot;){
     res_log = capture.output({out = PMA.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10)})
@@ -513,9 +512,9 @@ call_method = function(Y_data,method,Kmax = 50){
     }
   }else if(method == &#39;PN&#39;){
     library(ebnm)
-    library(flashr2)
-    data = flashr2::flash_set_data(Y_data)
-    f_greedy = flashr2::flash_add_greedy(data,K=Kmax,ebnm_fn = ebnm_pn)
+    library(flashr)
+    data = flashr::flash_set_data(Y_data)
+    f_greedy = flashr::flash_add_greedy(data,K=Kmax,ebnm_fn = ebnm_pn)
     Y_hat = f_greedy$EL %*% t(f_greedy$EF)
   }else if(method == &#39;PMD_d&#39;){
     out = PMA::PMD(Y_data, K = Kmax)
@@ -534,9 +533,9 @@ call_method = function(Y_data,method,Kmax = 50){
     gsoft = try(softImpute.wrapper(Y_data,ngrids = 10,K = Kmax,fold = 10))
     LL = gsoft$u %*% diag(gsoft$d)
     FF = gsoft$v
-    data = flashr2::flash_set_data(Y_data)
-    f_data = flashr2::flash_add_lf(data, LL=LL, FF=FF)
-    f = flashr2::flash_backfit(data,f_data)
+    data = flashr::flash_set_data(Y_data)
+    f_data = flashr::flash_add_lf(data, LL=LL, FF=FF)
+    f = flashr::flash_backfit(data,f_data)
     Y_hat = f$EL %*% t(f$EF)
   }else{
     # stop(&quot;the method is not implemented yet, please check it out&quot;)
@@ -618,7 +617,7 @@ save(save_path,&#39;RMSE&#39;);</code></pre>
 </div>
 <div id="creat-the-run.r-file-to-run-the-code" class="section level3">
 <h3>creat the run.R file to run the code</h3>
-<p>In this case, we have problem in running <code>flashr2</code> on RCC. so we just try other methods first.</p>
+<p>In this case, we have problem in running <code>flashr</code> on RCC. so we just try other methods first.</p>
 <pre><code>source(&quot;../wrapper.R&quot;)
 library(R.matlab)
 ## run the code
@@ -702,7 +701,7 @@ saveRDS(results,&quot;./boxplot.rds&quot;)</code></pre>
 
 
 library(ggplot2)
-plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;, x_label){
+plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none&quot;, x_label, myColors){
   rmse = as.vector(output)
   N = dim(output)[1]
   methods = rep(x_label, each = N)
@@ -710,7 +709,7 @@ plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none
   p&lt;-ggplot(df, aes(x=Method, y=RMSE, color=Method)) +
     geom_boxplot()+
     # geom_violin()+
-    ggtitle(title) +  theme_bw()+
+    ggtitle(title) +  theme_bw()+  scale_color_manual(values=myColors)+
     theme(legend.position= legend_position, legend.text=element_text(size=15),
           plot.title = element_text(size = 15, face = &quot;bold&quot;),
           axis.text.y = element_text(size =12.6),
@@ -719,6 +718,9 @@ plot_res = function(output,title = &quot;data&quot;,legend_position = &quot;none
 }
 
 setwd(&quot;~/HG/flash_workflow/analysis&quot;)
+
+
+fill_color = c(&quot;red&quot;,&quot;yellow3&quot;, &quot;tan1&quot;,&quot;springgreen3&quot;, &quot;springgreen&quot;,&quot;deepskyblue3&quot;,&quot;deepskyblue&quot;)
 
 ##############  MovieLens data
 
@@ -738,7 +740,7 @@ ML_pn_res = readRDS(&quot;../data/output/missingdata/MovieLens/box_cv_pn.rds&quo
 output = cbind(ML_pn_res[,1],ML_pn_res[,2],ML_res[,3],ml_res[,3],ML_res[,2],ML_res[,4],ml_res[,4])
 
 x_label= c(&quot;flash&quot;,&quot;flash.pn&quot;,&quot;PMD&quot;,&quot;PMD.cv1&quot;,&quot;NBSFA&quot;,&quot;SI&quot;,&quot;SI.cv&quot;)
-plotM = plot_res(output,&quot;MovieLens data&quot;,x_label = x_label)
+plotM = plot_res(output,&quot;MovieLens data&quot;,x_label = x_label,myColors = fill_color)
 
 ############ Breast Cancer data
 
@@ -751,7 +753,7 @@ bc_res = readRDS(&quot;../data/output/missingdata/BreastCancer/box_Breast.rds&qu
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(bc_res[,2],bc_res[,1],BC_res[,3],bc_res[,6],BC_res[,2],BC_res[,4],bc_res[,7])
 x_label= c(&quot;flash&quot;,&quot;flash.pn&quot;,&quot;PMD&quot;,&quot;PMD.cv1&quot;,&quot;NBSFA&quot;,&quot;SI&quot;,&quot;SI.cv&quot;)
-plotB = plot_res(output,&quot;Breast Cancer data&quot;,x_label = x_label)
+plotB = plot_res(output,&quot;Breast cancer data&quot;,x_label = x_label,myColors = fill_color)
 
 ############ GTEx data
 
@@ -768,7 +770,7 @@ gz_pn_res = matrix(as.numeric(gz_pn_res[21:40,]),ncol = 2)
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(gz_res[,1],gz_pn_res[,2],GZ_res[,3],gz_res[,3],GZ_res[,2],GZ_res[,4],gz_res[,4])
 x_label= c(&quot;flash&quot;,&quot;flash.pn&quot;,&quot;PMD&quot;,&quot;PMD.cv1&quot;,&quot;NBSFA&quot;,&quot;SI&quot;,&quot;SI.cv&quot;)
-plotG = plot_res(output,&quot;GTEx data&quot;,x_label = x_label)
+plotG = plot_res(output,&quot;GTEx data&quot;,x_label = x_label,myColors = fill_color)
 
 ############ Text data
 
@@ -781,7 +783,7 @@ pt_res = readRDS(&quot;../data/output/missingdata/DenoiseRtext/box_president.rds
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(pt_res[,3],pt_res[,1],PT_res[,3],pt_res[,6],PT_res[,2],PT_res[,4],pt_res[,7])
 x_label= c(&quot;flash&quot;,&quot;flash.pn&quot;,&quot;PMD&quot;,&quot;PMD.cv1&quot;,&quot;NBSFA&quot;,&quot;SI&quot;,&quot;SI.cv&quot;)
-plotP = plot_res(output,&quot;Text data&quot;,x_label = x_label)
+plotP = plot_res(output,&quot;Presidential address data&quot;,x_label = x_label,myColors = fill_color)
 
 ############ Tumor data
 
@@ -794,12 +796,11 @@ dt_res = readRDS(&quot;../data/output/missingdata/DenoiseRtumor/box_denoiseTumor
 # the result order would be flashG PMD PMDcv NSFA SF SFcv
 output = cbind(dt_res[,2],dt_res[,1],DT_res[,3],dt_res[,6],DT_res[,2],DT_res[,4],dt_res[,7])
 x_label= c(&quot;flash&quot;,&quot;flash.pn&quot;,&quot;PMD&quot;,&quot;PMD.cv1&quot;,&quot;NBSFA&quot;,&quot;SI&quot;,&quot;SI.cv&quot;)
-plotT = plot_res(output,&quot;Tumor data&quot;,x_label = x_label)
-
-# gridExtra::grid.arrange(plotP,plotT,plotG,plotB,plotM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))
+plotT = plot_res(output,&quot;Tumor data&quot;,x_label = x_label,myColors = fill_color)</code></pre>
+<pre class="r"><code># gridExtra::grid.arrange(plotP,plotT,plotG,plotB,plotM, layout_matrix = rbind(c(1,NA,2),c(NA,5,NA),c(4,NA,3)))
 gridExtra::grid.arrange(plotM,plotT,plotG,plotB,plotP, layout_matrix = rbind(c(1,2,3),c(4,5,NA) ))</code></pre>
 <pre><code>Warning: Removed 4 rows containing non-finite values (stat_boxplot).</code></pre>
-<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;" /></p>
+<p><img src="figure/templateforOCV.Rmd/unnamed-chunk-3-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 <div id="other-information" class="section level2">
 <h2>other information</h2>
@@ -811,7 +812,7 @@ gridExtra::grid.arrange(plotM,plotT,plotG,plotB,plotP, layout_matrix = rbind(c(1
 <pre class="r"><code>sessionInfo()</code></pre>
 <pre><code>R version 3.3.0 (2016-05-03)
 Platform: x86_64-apple-darwin13.4.0 (64-bit)
-Running under: OS X 10.13.2 (unknown)
+Running under: OS X 10.13.3 (unknown)
 
 locale:
 [1] en_US.UTF-8/en_US.UTF-8/en_US.UTF-8/C/en_US.UTF-8/en_US.UTF-8
@@ -820,26 +821,29 @@ attached base packages:
 [1] stats     graphics  grDevices utils     datasets  methods   base     
 
 other attached packages:
- [1] R.matlab_3.6.1  MASS_7.3-47     workflowr_0.4.0 rmarkdown_1.6  
- [5] reshape2_1.4.3  ebnm_0.1-7      softImpute_1.4  Matrix_1.2-11  
- [9] ssvd_1.0        flashr2_0.4-0   PMA_1.0.9       impute_1.48.0  
-[13] plyr_1.8.4      ggplot2_2.2.1  
+ [1] denoiseR_1.0    scales_0.4.1    MASS_7.3-47     reshape2_1.4.3 
+ [5] flashr_0.4-6    workflowr_0.4.0 rmarkdown_1.6   ggplot2_2.2.1  
+ [9] R.matlab_3.6.1  softImpute_1.4  Matrix_1.2-11   PMA_1.0.9      
+[13] impute_1.48.0   plyr_1.8.4      ssvd_1.0       
 
 loaded via a namespace (and not attached):
- [1] Rcpp_0.12.14      git2r_0.19.0      R.utils_2.5.0    
- [4] R.methodsS3_1.7.1 iterators_1.0.9   tools_3.3.0      
- [7] digest_0.6.13     evaluate_0.10.1   tibble_1.3.4     
-[10] gtable_0.2.0      lattice_0.20-35   rlang_0.1.6      
-[13] foreach_1.4.4     rstudioapi_0.6    yaml_2.1.16      
-[16] parallel_3.3.0    gridExtra_2.3     stringr_1.2.0    
-[19] knitr_1.18        REBayes_0.85      rprojroot_1.2    
-[22] grid_3.3.0        flashr_0.1.1      ashr_2.2-3       
-[25] magrittr_1.5      backports_1.1.2   scales_0.4.1     
-[28] codetools_0.2-15  htmltools_0.3.6   assertthat_0.2.0 
-[31] colorspace_1.3-2  labeling_0.3      stringi_1.1.6    
-[34] Rmosek_7.1.2      lazyeval_0.2.0    pscl_1.5.2       
-[37] doParallel_1.0.11 munsell_0.4.3     truncnorm_1.0-7  
-[40] SQUAREM_2017.10-1 R.oo_1.21.0      </code></pre>
+ [1] ashr_2.2-3           lattice_0.20-35      colorspace_1.3-2    
+ [4] htmltools_0.3.6      yaml_2.1.16          rlang_0.1.6         
+ [7] R.oo_1.21.0          withr_2.1.1          R.utils_2.5.0       
+[10] foreach_1.4.4        stringr_1.2.0        munsell_0.4.3       
+[13] gtable_0.2.0         R.methodsS3_1.7.1    devtools_1.13.3     
+[16] codetools_0.2-15     leaps_3.0            evaluate_0.10.1     
+[19] memoise_1.1.0        labeling_0.3         knitr_1.18          
+[22] pscl_1.5.2           doParallel_1.0.11    irlba_2.2.1         
+[25] parallel_3.3.0       curl_2.8.1           Rcpp_0.12.14        
+[28] flashClust_1.01-2    backports_1.1.2      scatterplot3d_0.3-40
+[31] truncnorm_1.0-7      gridExtra_2.3        digest_0.6.13       
+[34] stringi_1.1.6        flashr2_0.4-0        grid_3.3.0          
+[37] rprojroot_1.2        tools_3.3.0          magrittr_1.5        
+[40] lazyeval_0.2.0       tibble_1.3.4         cluster_2.0.6       
+[43] FactoMineR_1.36      SQUAREM_2017.10-1    httr_1.3.0          
+[46] rstudioapi_0.6       iterators_1.0.9      R6_2.2.2            
+[49] git2r_0.19.0        </code></pre>
 </div>
 
 <hr>
